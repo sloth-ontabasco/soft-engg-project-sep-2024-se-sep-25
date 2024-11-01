@@ -4,37 +4,32 @@ from urllib.parse import urlencode
 
 import requests
 from flask import make_response, redirect, request, session, url_for
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user
+import datetime
 from flask_restful import Resource, Api
+from flask_jwt_extended import create_access_token, jwt_required, current_user
 
 from ..config import *
 from ..models.response import Response
-from ..models.user import User, UserType
+from ..models.user import User
 
-from ..lib.auth import login_required
-from ..lib.jwt_handler import decode, encode
-from ..db import db 
 
 class UserAPI(Resource):
     """
     Route: /api/users/@me
     """
 
-    @login_required
+    @jwt_required()
     def get(self):
-        try:
-            user_data = User.get_user_from_request(request)
-            return Response.success(user_data=user_data.to_dict())
-        except Exception as e:
-            raise e
+        return current_user.to_dict()
 
 
 class LoginAPI(Resource):
     """
-    Route: /api/auth/<str:provider>/login
+    Route: /api/<str:provider>/login
     """
 
-    def get(self,provider):
+    def get(self, provider):
         """
         Login endpoint, redirects to provider OAuth.
         """
@@ -61,10 +56,10 @@ class LoginAPI(Resource):
 
 class CallbackAPI(Resource):
     """
-    Route: /api/auth/login/<str:provider>/callback
+    Route: /api/<str:provider>/callback
     """
 
-    def get(self,provider):
+    def get(self, provider):
         """
         Route: /api/auth/login/<str:provider>/callback
         Callback endpoint that gets hit after discord OAuth.
@@ -78,7 +73,7 @@ class CallbackAPI(Resource):
         if 'error' in request.args:
             for k, v in request.args.items():
                 if k.startswith('error'):
-                    return Response.error(code=400,message=f'{k}: {v}')
+                    return Response.error(code=400, message=f'{k}: {v}')
             return redirect(FRONTEND_URI)
 
         # make sure that the state parameter matches the one we created in the
@@ -114,40 +109,30 @@ class CallbackAPI(Resource):
         if response.status_code != 200:
             return Response.error(401)
         email = provider_data['userinfo']['email'](response.json())
+        print(response.json)
 
         # find or create the user in the database
-        user =  User.objects(email=email, ).first()
-        print(user)
+        user = User.objects(email=email, ).first()
         if user is None:
-            user = User(email=email, nickname=email.split('@')[0])
+            user = User(email=email, name=email.split('@')[0])
             user.save()
 
+        token = create_access_token(
+            identity=user.email, expires_delta=datetime.timedelta(minutes=5), fresh=True)
         # log the user in
-        login_user(user)
-        return redirect('https://google.com')
+        qs = urlencode({"jwt":token})
+        return redirect(FRONTEND_URI + '?' + qs)
 
 
-class LogoutAPI(Resource):
+
+class TokenAPI(Resource):
     """
-    Route: /api/auth/logout
+    /api/token
+    Endpoint to get JWT    
     """
 
-    @login_required
+    @jwt_required(fresh=True, locations=['query_string'])
     def get(self):
-        """
-        Logout an user.
-        """
-        try:
-            res = make_response(redirect(src.config.FRONTEND_URI))  # type: ignore
-            try:
-                if isinstance(current_user, User) and current_user.id:
-                    logout_user()
-                    res.status_code = 200
-            except AttributeError as ae:
-                if request.cookies.get("token"):
-                    res.delete_cookie("token")
-                    res.status_code = 200
-            return res
-
-        except Exception as e:
-            raise e
+        token = create_access_token(
+            identity=current_user.email, additional_claims=current_user.to_dict(),expires_delta=datetime.timedelta(days=1))
+        return {"token": token}

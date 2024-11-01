@@ -46,7 +46,6 @@ def setup_api(app, api):
     # Authentication Routes
     api.add_resource(LoginAPI, "/api/<string:provider>/login")
     api.add_resource(CallbackAPI, "/api/<string:provider>/callback",endpoint='oauth2_callback')
-    api.add_resource(LogoutAPI, "/api/<string:provider>/logout")
 
 
 def list_routes(app: Flask):

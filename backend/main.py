@@ -8,7 +8,6 @@ from src.setup import setup_api, setup_auth
 
 app, api = None, None
 
-
 def setup_app() -> Flask:
     app = Flask(__name__)
     cors = CORS(

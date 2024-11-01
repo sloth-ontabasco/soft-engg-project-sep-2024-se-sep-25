@@ -1,31 +1,20 @@
 from functools import wraps
-
-from flask import request
-from flask_login import current_user
-from flask_login import login_required as flask_login_required
-
+from flask_jwt_extended import verify_jwt_in_request, get_current_user 
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from src.lib.jwt_handler import token_required
 from src.models.response import Response
 from src.models.user import User
 
-
-def login_required(f):
-    """
-    Decorator for endpoints that can be accessed by both admin and user.
-    It calls `token_required` wrapper for member, and Flask's `login_required` for admin.
-    """
-
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if request.cookies.get("token"):
-            x = token_required(f)
-            return x(*args, **kwargs)
-        else:
-            try:
-                if isinstance(current_user, User) and current_user.id:
-                    x = flask_login_required(f)
-                    return x(*args, **kwargs)
-            except AttributeError as ae:
-                return Response.error(401, "Unauthorized.")
-
-    return decorated
+def check_any_role(roles):
+    def decorator(f):
+        @wraps(f)
+        def decorator_function(*args, **kwargs):
+            verify_jwt_in_request()
+            current_user = get_current_user()
+            print('current user roles',current_user.get_roles())
+            if not set(current_user.get_roles()).intersection(roles):
+                print('erroring here')
+                raise NoAuthorizationError("Role is not allowed.")
+            return f(*args, **kwargs)
+        return decorator_function
+    return decorator

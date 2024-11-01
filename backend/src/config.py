@@ -17,10 +17,6 @@ MONGO_URI = os.getenv("MONGO_URI")
 # FRONTEND
 FRONTEND_URI = os.getenv("FRONTEND_URI")
 
-# JWT
-JWT_KEY = os.getenv("JWT_KEY")
-
-
 OAUTH2_PROVIDERS = {
     # Google OAuth 2.0 documentation:
     # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
@@ -40,13 +36,14 @@ OAUTH2_PROVIDERS = {
 
 class Config:
     DEBUG = False
-    WTF_CSRF_ENABLED = False
+    WTF_CSRF_ENABLED = True
     MONGO_URI = MONGO_URI
     PORT = PORT
     SECRET_KEY = os.getenv("FLASK_SECRET")
     MAX_CONTENT_LENGTH = 25 * 1024 * 1024
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
-
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=6)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(hours=10)
+    JWT_KEY = os.getenv("JWT_KEY")
 
 class LocalDevConfig(Config):
     DEBUG = True

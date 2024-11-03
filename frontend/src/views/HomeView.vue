@@ -1,9 +1,20 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import NavBar from '@/components/NavBar.vue';
+import { mapState } from 'vuex'
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+<div class="flex flex-row flex-nowrap h-svh max-h-svh w-full ">
+  <v-if loggedIn>
+    <NavBar/>
+  </v-if>
+  <RouterView/> 
+</div>
 </template>
+
+<script>
+export default {
+  name: 'HomeView',
+  computed: { ...mapState(['loggedIn']) },
+}
+</script>

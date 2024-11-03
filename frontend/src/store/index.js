@@ -1,14 +1,52 @@
-import { createStore } from "vuex";
+import { createStore } from 'vuex'
+import {login} from '../api/auth'
+import * as jose from 'jose'
+
+const user = JSON.parse(localStorage.getItem('user'))
+const initialState = user
+  ? {
+      loggedIn: true,
+      user: user,
+      msg: '',
+    }
+  : {
+      status: { loggedIn: false },
+      user: null,
+      msg: '',
+    }
 
 export default createStore({
-    state: {},
-    actions: {
-        
+  state: initialState,
+  actions: {
+    async getAuthToken({ commit }, jwt) {
+      try {
+        const res = await login(jwt) 
+        localStorage.setItem("token", res.token);
+        commit('loginSuccess',res.token)
+      } catch(e) {
+        console.log(e)
+        commit("loginFailure");
+        throw new Error("Login Failure");
+      }
     },
-    mutations: {
-        
+  },
+  mutations: {
+    loginSuccess(state, jwt) {
+        let decoded_user = jose.decodeJwt(jwt)
+        localStorage.setItem("user", JSON.stringify(decoded_user));
+        state.user = decoded_user 
+        state.loggedIn = true;
     },
-    modules: {
-        // auth
+    loginFailure(state) {
+        state.loggedIn = false;
+        state.user = null;
     },
-});
+    logout(state) {
+        state.status.loggedIn = false;
+        state.user = null;
+    }
+  },
+  modules: {
+    // auth
+  },
+})

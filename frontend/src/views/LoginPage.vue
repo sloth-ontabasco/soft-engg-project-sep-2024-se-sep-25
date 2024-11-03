@@ -1,5 +1,24 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="">
+    <header>
+      <img
+        alt="IITM Logo"
+        class="logo"
+        src="https://upload.wikimedia.org/wikipedia/en/thumb/6/69/IIT_Madras_Logo.svg/1200px-IIT_Madras_Logo.svg.png"
+        width="200"
+        height="200"
+      />
+
+      <div class="wrapper">
+        <HelloWorld msg="IITM Project Tracker" />
+        <nav>
+          <!-- <RouterLink to="/">Home</RouterLink> -->
+          <!-- <RouterLink to="/about">About</RouterLink> -->
+          <RouterLink to="/profile">Profile</RouterLink>
+        </nav>
+      </div>
+    </header>
+
     <button @click="loginWithGoogle" class="google-login-button">
       <img
         src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png"
@@ -13,14 +32,14 @@
 
 <script>
 export default {
-  name: "GoogleLoginButton",
+  name: 'GoogleLoginButton',
   methods: {
     loginWithGoogle() {
-      window.location.href = "/api/auth/google/login";
-      console.log("Redirecting to Google login...");
+      window.location.href =
+        import.meta.env.VITE_SERVER_BASE_URL + '/google/login'
     },
   },
-};
+}
 </script>
 
 <style scoped>

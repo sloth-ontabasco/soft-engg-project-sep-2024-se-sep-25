@@ -3,16 +3,17 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_restful import Api
-from src.config import CI, PORT, Config, LocalDevConfig
+from src.config import CI, Config, LocalDevConfig
 from src.setup import setup_api, setup_auth
 
 app, api = None, None
+
 
 def setup_app() -> Flask:
     app = Flask(__name__)
     cors = CORS(
         app=app,
-        resources={r"/api/*": {"origins": "*"}},
+        resources={r"/api/*": {"origins": "http://localhost:5173"}},
         supports_credentials=True,
     )
     limiter = Limiter(

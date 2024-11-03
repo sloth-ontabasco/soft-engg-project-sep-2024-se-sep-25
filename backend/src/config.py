@@ -28,6 +28,7 @@ OAUTH2_PROVIDERS = {
         'userinfo': {
             'url': 'https://www.googleapis.com/oauth2/v3/userinfo',
             'email': lambda json: json['email'],
+            'picture': lambda json: json['picture']
         },
         'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
     }

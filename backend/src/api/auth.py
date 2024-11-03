@@ -3,6 +3,7 @@ import time
 from urllib.parse import urlencode
 
 import requests
+from flask_cors import cross_origin
 from flask import make_response, redirect, request, session, url_for
 from flask_login import current_user
 import datetime
@@ -109,20 +110,19 @@ class CallbackAPI(Resource):
         if response.status_code != 200:
             return Response.error(401)
         email = provider_data['userinfo']['email'](response.json())
-        print(response.json)
+        picture = provider_data['userinfo']['picture'](response.json())
 
         # find or create the user in the database
-        user = User.objects(email=email, ).first()
+        user = User.objects(email=email).first()
         if user is None:
-            user = User(email=email, name=email.split('@')[0])
+            user = User(email=email, name=email.split('@')[0],picture=picture, role='student') # TODO: make dynamic based on role
             user.save()
 
         token = create_access_token(
-            identity=user.email, expires_delta=datetime.timedelta(minutes=5), fresh=True)
+            identity=user.email, additional_claims={"transitive": True}, expires_delta=datetime.timedelta(minutes=5), fresh=True)
         # log the user in
-        qs = urlencode({"jwt":token})
+        qs = urlencode({"jwt": token})
         return redirect(FRONTEND_URI + '?' + qs)
-
 
 
 class TokenAPI(Resource):
@@ -131,8 +131,8 @@ class TokenAPI(Resource):
     Endpoint to get JWT    
     """
 
-    @jwt_required(fresh=True, locations=['query_string'])
+    @jwt_required(fresh=True)
     def get(self):
         token = create_access_token(
-            identity=current_user.email, additional_claims=current_user.to_dict(),expires_delta=datetime.timedelta(days=1))
+            identity=current_user.email, additional_claims=current_user.to_dict(), expires_delta=datetime.timedelta(days=1))
         return {"token": token}

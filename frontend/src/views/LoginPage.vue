@@ -1,7 +1,5 @@
 <template>
-    <div class="">
-     
-  
+    <div class=""> 
       <button @click="loginWithGoogle" class="google-login-button">
         <img
           src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png"
@@ -37,8 +35,8 @@
     border-radius: 50px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 3em;
-    margin-left: 5em;
+    margin-top: 10em;
+    margin-left: 12em;
   }
   
   .google-login-button:hover {

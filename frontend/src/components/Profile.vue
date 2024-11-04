@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 
 <template>
-  <div class="flex items-center mx-auto bg-white p-6 rounded-lg shadow">
+  <div class="flex items-center bg-white p-6 rounded-xl shadow">
     <div>
       <h1 class="text-xl text-black font-bold">{{ user.name }} <span @click="editProfile" class="cursor-pointer">✏️</span></h1>
       <p class="text-gray-500">{{ user.email }}</p>
-      <div class="flex items-center mt-2 space-x-2">
+      <div class="flex items-center mt-1">
         <a :href="user.socialLink">
           <div class="text-xl">@{{ user.username }}</div>
         </a>

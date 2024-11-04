@@ -1,5 +1,5 @@
 <script setup>
-import { RouterLink,RouterView, useRoute} from 'vue-router'
+import { RouterView, useRoute} from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue';
 
 const route = useRoute();
@@ -14,7 +14,7 @@ const route = useRoute();
       <nav>
         <!-- <RouterLink to="/">Home</RouterLink> -->
         <!-- <RouterLink to="/about">About</RouterLink> -->
-        <RouterLink to="/profile">Profile</RouterLink>
+        
       </nav>
     </div>
 
@@ -65,7 +65,7 @@ nav a:first-of-type {
   header {
     display: flex;
     place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+    
   }
 
   .logo {

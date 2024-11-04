@@ -1,11 +1,28 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { RouterLink,RouterView, useRoute} from 'vue-router'
+import HelloWorld from './components/HelloWorld.vue';
+
+const route = useRoute();
 </script>
 
 <template>
-  <main>
-    <RouterView />
-  </main>
+  <div v-if="route.path === '/login'">
+    <img alt="IITM Logo" class="logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/6/69/IIT_Madras_Logo.svg/1200px-IIT_Madras_Logo.svg.png" width="200" height="200" />
+
+    <div class="wrapper">
+      <HelloWorld msg="IITM Project Tracker" />
+      <nav>
+        <!-- <RouterLink to="/">Home</RouterLink> -->
+        <!-- <RouterLink to="/about">About</RouterLink> -->
+        <RouterLink to="/profile">Profile</RouterLink>
+      </nav>
+    </div>
+
+
+  </div>
+
+  <RouterView />
+  
 </template>
 
 <style scoped>

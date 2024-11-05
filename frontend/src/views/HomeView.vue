@@ -1,15 +1,15 @@
 <script setup>
-import NavBar from '@/components/NavBar.vue';
+import NavBar from '@/components/NavBar.vue'
 import { mapState } from 'vuex'
 </script>
 
 <template>
-<div class="flex flex-row flex-nowrap h-svh max-h-svh w-full ">
-  <v-if loggedIn>
-    <NavBar/>
-  </v-if>
-  <RouterView/> 
-</div>
+  <div class="h-screen w-screen overflow-hidden">
+    <div class="flex flex-row h-full w-full">
+      <NavBar v-if="loggedIn" class="h-full w-1/4"/>
+      <RouterView class="flex-grow"/>
+    </div>
+  </div>
 </template>
 
 <script>

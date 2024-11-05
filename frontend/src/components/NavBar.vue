@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-[0.3] flex-col flex-nowrap justify-around w-[261px] h-full top-20"
+    class="flex grow-0 flex-col justify-around top-20"
   >
     <div>
       <img
@@ -53,3 +53,12 @@ export default {
   },
 }
 </script>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+}
+</style>

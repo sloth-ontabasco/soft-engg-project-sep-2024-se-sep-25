@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import NavBar from '@/components/NavBar.vue';
 import { mapState } from 'vuex'
 </script>
@@ -17,4 +17,4 @@ export default {
   name: 'HomeView',
   computed: { ...mapState(['loggedIn']) },
 }
-</script>
+</script> -->

@@ -4,10 +4,10 @@ import { mapState } from 'vuex'
 </script>
 
 <template>
-  <div class="h-screen w-screen overflow-hidden">
+  <div class="h-screen w-screen">
     <div class="flex flex-row h-full w-full">
-      <NavBar v-if="loggedIn" class="h-full w-1/4"/>
-      <RouterView class="flex-grow"/>
+      <NavBar v-if="loggedIn" class="w-1/5 min-w-0"/>
+      <RouterView class="flex-grow flex-basis-2/3"/>
     </div>
   </div>
 </template>
@@ -18,3 +18,14 @@ export default {
   computed: { ...mapState(['loggedIn']) },
 }
 </script>
+
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+}
+</style>

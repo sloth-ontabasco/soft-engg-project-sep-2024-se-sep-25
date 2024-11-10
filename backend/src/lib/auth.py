@@ -2,6 +2,8 @@ from functools import wraps
 from flask_jwt_extended import verify_jwt_in_request, get_current_user 
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
+
+
 def check_any_role(roles):
     def decorator(f):
         @wraps(f)

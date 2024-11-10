@@ -42,14 +42,12 @@ const router = createRouter({
           name: 'Teams',
         },
                 {path: 'milestonesubmission', component: MilestoneSubmission, meta: {home:true}, name: 'MilestoneSubmission'}
-
       ]
     },
     {
       path: '/login',
       name: 'login',
       component: LoginPage,
-
     },
     {
       path: '/about',
@@ -101,7 +99,6 @@ router.beforeEach((to, from, next) => {
   } else {
     next()
   }
-
 })
 
 export default router

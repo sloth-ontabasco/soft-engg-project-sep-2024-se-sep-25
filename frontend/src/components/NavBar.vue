@@ -3,7 +3,6 @@ import { Button } from 'primevue'
 </script>
 <template>
   <div class="flex grow-0 flex-col justify-around ps-10">
-
     <div>
       <img
         class="w-[72px] h-[72px] top-0 left-0"

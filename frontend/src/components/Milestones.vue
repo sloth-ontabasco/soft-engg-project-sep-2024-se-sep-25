@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-
     <div>
       <h2 class="text-2xl text-black font-bold p-4">Upcoming Milestones</h2>
       <div v-for="milestone in milestones" :key="milestone.id" class="flex p-4 items-center mt-1 border-b pb-3">
@@ -27,4 +26,3 @@
     },
   };
 </script>
-  

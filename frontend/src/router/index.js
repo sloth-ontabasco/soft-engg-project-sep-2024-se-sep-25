@@ -3,7 +3,7 @@ import store from '../store'
 import Profile from '@/components/ProfilePage.vue'
 import HomeView from '@/views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
-
+import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
 
 
 const router = createRouter({
@@ -16,7 +16,8 @@ const router = createRouter({
       children: [
         {path: '', component: Profile},
         {path: 'profile', component: Profile, meta: {home:true}, name: 'Profile'},
-        {path: 'projects', component: AboutView, meta: {home:true}, name: 'Projects'}
+        {path: 'projects', component: AboutView, meta: {home:true}, name: 'Projects'},
+        {path: 'milestonesubmission', component: MilestoneSubmission, meta: {home:true}, name: 'MilestoneSubmission'}
       ]
     },
     {

@@ -24,6 +24,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginPage.vue'),
+
     },
     {
       path: '/about',
@@ -57,6 +58,7 @@ router.beforeEach((to, from, next) => {
   } else {
     next()
   }
+
 })
 
 export default router

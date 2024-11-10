@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '../store'
+import Profile from '@/components/ProfilePage.vue'
+import HomeView from '@/views/HomeView.vue'
+import AboutView from '../views/AboutView.vue'
+import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
 
-import LoginPage from '@/components/LoginPage.vue'
-import Profile from '@/components/Profile.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,7 +12,19 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: LoginPage
+      component:  HomeView,
+      children: [
+        {path: '', component: Profile},
+        {path: 'profile', component: Profile, meta: {home:true}, name: 'Profile'},
+        {path: 'projects', component: AboutView, meta: {home:true}, name: 'Projects'},
+        {path: 'milestonesubmission', component: MilestoneSubmission, meta: {home:true}, name: 'MilestoneSubmission'}
+      ]
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginPage.vue'),
+
     },
     {
       path: '/about',
@@ -17,14 +32,33 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
+      component: () => import('../views/AboutView.vue'),
     },
     {
-      path : '/profile',
+      path: '/profile',
       name: 'profile',
-      component: Profile
-    }
-  ]
+      component: Profile,
+    },
+  ],
+})
+
+router.beforeEach((to, from, next) => {
+  const publicPages = ['/login']
+  const authRequired = !publicPages.includes(to.path)
+  const loggedIn = localStorage.getItem('token')
+  const urlParams = new URLSearchParams(window.location.search)
+
+  if (authRequired && !loggedIn) {
+    if (to.path === '/' && urlParams.has('jwt')) {
+      let jwt = urlParams.get('jwt')
+      store.dispatch('getAuthToken', jwt).then(next()).catch(() => {
+        next('/login')
+      })
+    } else next('/login')
+  } else {
+    next()
+  }
+
 })
 
 export default router

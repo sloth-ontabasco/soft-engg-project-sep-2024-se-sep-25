@@ -8,11 +8,12 @@ from src.setup import setup_api, setup_auth
 
 app, api = None, None
 
+
 def setup_app() -> Flask:
     app = Flask(__name__)
     cors = CORS(
         app=app,
-        resources={r"/api/*": {"origins": "*"}},
+        resources={r"/api/*": {"origins": "http://localhost:5173"}},
         supports_credentials=True,
     )
     limiter = Limiter(

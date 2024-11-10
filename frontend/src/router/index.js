@@ -2,9 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store'
 import Profile from '@/components/ProfilePage.vue'
 import HomeView from '@/views/HomeView.vue'
-import AboutView from '../views/AboutView.vue'
+import LoginPage from '@/views/LoginPage.vue'
+import ProjectTable from '@/components/ProjectTable.vue'
+import UserTable from '@/components/UserTable.vue'
+import TeamTable from '@/components/TeamTable.vue'
 import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,18 +14,41 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component:  HomeView,
+      component: HomeView,
       children: [
-        {path: '', component: Profile},
-        {path: 'profile', component: Profile, meta: {home:true}, name: 'Profile'},
-        {path: 'projects', component: AboutView, meta: {home:true}, name: 'Projects'},
-        {path: 'milestonesubmission', component: MilestoneSubmission, meta: {home:true}, name: 'MilestoneSubmission'}
+        { path: '', component: Profile },
+        {
+          path: 'profile',
+          component: Profile,
+          meta: { home: true },
+          name: 'Profile',
+        },
+        {
+          path: 'projects',
+          component: ProjectTable,
+          meta: { home: true },
+          name: 'Projects',
+        },
+        {
+          path: 'users',
+          component: UserTable,
+          meta: { home: true },
+          name: 'Users',
+        },
+        {
+          path: 'teams',
+          component: TeamTable,
+          meta: { home: true },
+          name: 'Teams',
+        },
+                {path: 'milestonesubmission', component: MilestoneSubmission, meta: {home:true}, name: 'MilestoneSubmission'}
+
       ]
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginPage.vue'),
+      component: LoginPage,
 
     },
     {
@@ -45,16 +70,34 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const publicPages = ['/login']
   const authRequired = !publicPages.includes(to.path)
-  const loggedIn = localStorage.getItem('token')
+  // const loggedIn = localStorage.getItem('token')
+  console.log('window location: ', window.location.search)
   const urlParams = new URLSearchParams(window.location.search)
 
-  if (authRequired && !loggedIn) {
+  if (authRequired) {
+    console.log('from path: ', from.path)
+    console.log('to path: ', to.path)
+    console.log('urlParams: ', urlParams)
+    if (to.path === '/' && from.path === '/' && !urlParams.has('jwt'))
+      () => {
+        console.log(
+          'calling next() when from and to are same and no jwt is present',
+        )
+        next()
+      }
     if (to.path === '/' && urlParams.has('jwt')) {
       let jwt = urlParams.get('jwt')
-      store.dispatch('getAuthToken', jwt).then(next()).catch(() => {
-        next('/login')
-      })
-    } else next('/login')
+      store
+        .dispatch('getAuthToken', jwt)
+        .then(() => {
+          console.log('calling next() when jwt is present')
+          next()
+        })
+        .catch(() => {
+          next('/login')
+        })
+    }
+    next()
   } else {
     next()
   }

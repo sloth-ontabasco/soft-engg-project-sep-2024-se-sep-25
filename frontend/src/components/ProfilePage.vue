@@ -1,9 +1,10 @@
 <template>
-    <div class="p-10 bg-gray-100 min-h-screen rounded-lg shadow">
+
+    <div class="bg-gray-100 min-h-screen w-full shadow">
       <Profile />
       <UpcomingMilestones />
     </div>
-  </template>
+</template>
   
   <script>
   import Profile from "./Profile.vue";

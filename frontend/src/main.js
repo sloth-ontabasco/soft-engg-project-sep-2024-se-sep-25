@@ -8,6 +8,7 @@ import store from './store'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
 
+
 const app = createApp(App)
 router.app = app
 
@@ -19,3 +20,4 @@ app.use(PrimeVue, {
   },
 })
 app.mount('#app')
+

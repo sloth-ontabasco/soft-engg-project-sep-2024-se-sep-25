@@ -6,6 +6,7 @@ import LoginPage from '@/views/LoginPage.vue'
 import ProjectTable from '@/components/ProjectTable.vue'
 import UserTable from '@/components/UserTable.vue'
 import TeamTable from '@/components/TeamTable.vue'
+import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,13 +40,16 @@ const router = createRouter({
           component: TeamTable,
           meta: { home: true },
           name: 'Teams',
-        }
-      ],
+        },
+                {path: 'milestonesubmission', component: MilestoneSubmission, meta: {home:true}, name: 'MilestoneSubmission'}
+
+      ]
     },
     {
       path: '/login',
       name: 'login',
       component: LoginPage,
+
     },
     {
       path: '/about',
@@ -97,6 +101,7 @@ router.beforeEach((to, from, next) => {
   } else {
     next()
   }
+
 })
 
 export default router

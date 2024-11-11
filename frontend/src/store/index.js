@@ -10,7 +10,7 @@ const initialState = user
       msg: '',
     }
   : {
-      status: { loggedIn: false },
+      loggedIn: false ,
       user: null,
       msg: '',
     }
@@ -42,7 +42,7 @@ export default createStore({
         state.user = null;
     },
     logout(state) {
-        state.status.loggedIn = false;
+        state.loggedIn = false;
         state.user = null;
     }
   },

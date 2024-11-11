@@ -13,12 +13,6 @@ import { Button } from 'primevue'
         class="top-[92px] left-0 [font-family:'Poppins-SemiBold',Helvetica] font-semibold text-white text-3xl tracking-[0] leading-[35px] whitespace-nowrap capitalize"
       >
         {{ user.role }}
-      </div>
-
-      <div
-        class="top-[132px] left-0 opacity-60 [font-family:'Poppins-Regular',Helvetica] font-normal text-white text-[17px] tracking-[0] leading-[27px] whitespace-nowrap"
-      >
-        {{ user.email }}
         <span>
           <Button
             icon="pi pi-sign-out"
@@ -26,9 +20,20 @@ import { Button } from 'primevue'
             variant="text"
             rounded
             aria-label="Cancel"
-            @click="this.$store.dispatch('logout').then(() => this.$router.push('/login'))"
+            @click="
+              () => {
+                this.$store.commit('logout')
+                this.$router.push('/login')
+              }
+            "
           />
         </span>
+      </div>
+
+      <div
+        class="top-[132px] left-0 opacity-60 [font-family:'Poppins-Regular',Helvetica] font-normal text-white text-[17px] tracking-[0] leading-[27px] whitespace-nowrap"
+      >
+        {{ user.email }}
       </div>
     </div>
 

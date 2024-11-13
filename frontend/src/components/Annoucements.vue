@@ -1,62 +1,55 @@
 <template>
-  <div class="basis-3/4">
-    <h2>Annoucements</h2>
-    <div class="flex flex-col ...">
-      <div v-for="(annoucement, index) in this.data" :key="index">
-        <h3>Annoucment {{ index }}</h3>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
-        occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-        mollit anim id est laborum.
+  <div class="flex">
+    <!-- Main Content -->
+    <main class="w-3/4 p-8">
+      <div v-for="resource in resources" :key="resource.id" class="flex p-5 bg-gray-100 rounded-lg mb-4 shadow-md">
+        <div class="w-3/4">
+          <h2 class="text-xl text-black font-bold mb-2">Annoucements {{ resource.id }}</h2>
+          <p class="text-gray-700">{{ resource.description }}</p>
+        </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
 <script>
-import NavBar from './NavBar.vue'
+
 export default {
-  components: {
-    NavBar,
-  },
   data() {
     return {
-      data: ['test'],
-    }
-  },
-  methods: {
-    async Annoucements() {
-      await this.$axios
-        .post('/api/annoucement-router')
-        .then(response => {
-          this.data = response.data
-        })
-        .catch(error => console.error(error))
+      resources: [
+        {
+          id: 1,
+          message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex eacommodo consequat. Duis aute irure dolor in reprehenderit in voluptatevelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+          
+        },
+        {
+          id: 2,
+          message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex eacommodo consequat. Duis aute irure dolor in reprehenderit in voluptatevelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+          
+        },
+        {
+          id: 3,
+          message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex eacommodo consequat. Duis aute irure dolor in reprehenderit in voluptatevelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+          
+        },
+        {
+          id: 4,
+          message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex eacommodo consequat. Duis aute irure dolor in reprehenderit in voluptatevelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+          
+        },
+        
+      ]
     },
   },
-  mounted() {
-    this.Annoucements()
-  },
-}
+},
 </script>
 
-<!-- <style>
-.container {
-    display: flex;
-  }
-  
-  .left {
-    flex: 1; 
-    padding: 20px;
-    background-color: #f0f0f0;
-  }
-  
-  .right {
-    flex: 2; 
-    padding: 20px;
-    background-color: #d0d0d0;
-  }
-</style> -->
+
+
+
+
+
+
+
+

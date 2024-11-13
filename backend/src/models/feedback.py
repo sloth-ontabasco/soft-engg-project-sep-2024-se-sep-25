@@ -3,11 +3,10 @@ import datetime
 
 # Feedback model
 class Feedback(db.Document):
-    feedback_id = db.IntField(primary_key=True)
-    milestone_submission = db.ReferenceField("MilestoneSubmission", required=True)
-    team = db.ReferenceField("Team", required=True)
+    milestone_submission = db.ReferenceField("MilestoneSubmission", required=True, reverse_delete_rule=db.CASCADE)  # Delete feedback if submission is deleted
+    team = db.ReferenceField('Team', reverse_delete_rule=db.CASCADE)  # Delete feedback if team is deleted
     content = db.StringField()
-    posted_by = db.ReferenceField("User")
+    posted_by = db.ReferenceField('User', reverse_delete_rule=db.CASCADE)  # Delete feedback if User who posted it is deleted
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
@@ -16,7 +15,6 @@ class Feedback(db.Document):
     
     def to_dict(self):
         return {
-            "feedback_id": self.feedback_id,
             "milestone_submission": self.milestone_submission,
             "team": self.team,
             "content": self.content,

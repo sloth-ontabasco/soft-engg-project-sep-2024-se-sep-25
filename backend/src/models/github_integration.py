@@ -3,8 +3,7 @@ import datetime
 
 # GitHubIntegration model
 class GitHubIntegration(db.Document):
-    githubintegration_id = db.IntField(primary_key=True)
-    team = db.ReferenceField("Team", required=True)
+    team = db.ReferenceField("Team", required=True, reverse_delete_rule=db.CASCADE)  # Delete integration if team is deleted
     repo_url = db.URLField()
     last_commit = db.DateTimeField()
 

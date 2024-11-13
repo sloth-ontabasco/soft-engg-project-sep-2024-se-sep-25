@@ -4,7 +4,6 @@ from flask_login import RoleMixin
 
 # Role model
 class Role(db.Document, RoleMixin):
-    role_id = db.IntField(primary_key=True)
     name = db.StringField(required=True, choices=['Admin', 'Instructor', 'TA', 'Student'])
     description = db.StringField()
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
@@ -15,7 +14,6 @@ class Role(db.Document, RoleMixin):
     
     def to_dict(self):
         return {
-            "role_id": self.role_id,
             "name": self.name,
             "description": self.description,
             "created_at": self.created_at,

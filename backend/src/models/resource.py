@@ -3,8 +3,7 @@ import datetime
 
 # Resource model
 class Resource(db.Document):
-    resource_id = db.IntField(primary_key=True)
-    project = db.ReferenceField("Project", required=True)
+    project = db.ReferenceField("Project", required=True, reverse_delete_rule=db.CASCADE)  # Delete resource if project is deleted
     title = db.StringField(max_length=128, required=True)
     url = db.URLField()
     description = db.StringField()
@@ -15,7 +14,6 @@ class Resource(db.Document):
     
     def to_dict(self):
         return {
-            "resource_id": self.resource_id,
             "project": self.project,
             "title": self.title,
             "url": self.url,

@@ -1,14 +1,12 @@
-
 from ..db import db
 import datetime
 
 # Milestone model
 class Milestone(db.Document):
-    milestone_id = db.IntField(primary_key=True)
     title = db.StringField(max_length=128, required=True)
     description = db.StringField()
     due_date = db.DateTimeField()
-    project = db.ReferenceField("Project", required=True)
+    project = db.ReferenceField("Project", required=True, reverse_delete_rule=db.CASCADE)  # Delete milestone if project is deleted
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
@@ -17,7 +15,6 @@ class Milestone(db.Document):
     
     def to_dict(self):
         return {
-            "milestone_id": self.milestone_id,
             "title": self.title,
             "description": self.description,
             "due_date": self.due_date,

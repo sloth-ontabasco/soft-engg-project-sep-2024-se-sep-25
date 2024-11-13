@@ -1,14 +1,12 @@
-
 from ..db import db
 import datetime
 
 # MilestoneSubmission model
 class MilestoneSubmission(db.Document):
-    milestone_submission_id = db.IntField(primary_key=True)
-    milestone = db.ReferenceField("Milestone", required=True)
-    team = db.ReferenceField("Team", required=True)
+    milestone = db.ReferenceField("Milestone", required=True, reverse_delete_rule=db.CASCADE)  # Delete submission if milestone is deleted
+    team = db.ReferenceField('Team', reverse_delete_rule=db.CASCADE)  # Delete submission if team is deleted
     status = db.IntField(choices=[(0, 'Not Yet Started'), (1, 'In Progress'), (2, 'Complete'), (3, 'Late Submission')])
-    submission = db.URLField()
+    submission = db.FileField()
     grade = db.StringField()
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
@@ -17,7 +15,6 @@ class MilestoneSubmission(db.Document):
     
     def to_dict(self):
         return {
-            "milestone_submission_id": self.milestone_submission_id,
             "milestone": self.milestone,
             "team": self.team,
             "status": self.status,

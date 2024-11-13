@@ -1,27 +1,26 @@
 from ..db import db
 import datetime
 
+# Project model
 class Project(db.Document):
-    projectId = db.IntField(primary_key=True)
-    title = db.StringField(required=True)
-    type = db.StringField(choices=['Team', 'Individual'], required=True)
+    project_id = db.IntField(primary_key=True)
+    title = db.StringField(max_length=128, required=True)
     description = db.StringField()
     deadline = db.DateTimeField()
-    status = db.IntField(choices=[0, 1, 2, 3])  # 0: Not Yet Started, 1: In Progress, 2: Complete, 3: Late Submission
-    team = db.ReferenceField('Team')
-    created = db.DateTimeField(default=datetime.datetime.utcnow)
-    updated = db.DateTimeField(default=datetime.datetime.utcnow)
+    mentors = db.ListField(db.ReferenceField('User'))
+    created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return f'<Project {self.title}>'
-
+        return f"<Project {self.title}>"
+    
     def to_dict(self):
         return {
-            "projectId": self.projectId,
+            "project_id": self.project_id,
             "title": self.title,
-            "type": self.type,
             "description": self.description,
             "deadline": self.deadline,
-            "status": self.status,
-            "team": str(self.team)
+            "mentors": self.mentors,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
         }

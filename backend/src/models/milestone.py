@@ -2,23 +2,26 @@
 from ..db import db
 import datetime
 
+# Milestone model
 class Milestone(db.Document):
-    milestoneId = db.IntField(primary_key=True)
-    title = db.StringField(required=True)
+    milestone_id = db.IntField(primary_key=True)
+    title = db.StringField(max_length=128, required=True)
     description = db.StringField()
-    dueDate = db.DateTimeField()
-    project = db.ReferenceField('Project')
-    created = db.DateTimeField(default=datetime.datetime.utcnow)
-    updated = db.DateTimeField(default=datetime.datetime.utcnow)
+    due_date = db.DateTimeField()
+    project = db.ReferenceField("Project", required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return f'<Milestone {self.title}>'
-
+        return f"<Milestone {self.title}>"
+    
     def to_dict(self):
         return {
-            "milestoneId": self.milestoneId,
+            "milestone_id": self.milestone_id,
             "title": self.title,
             "description": self.description,
-            "dueDate": self.dueDate,
-            "project": str(self.project)
+            "due_date": self.due_date,
+            "project": self.project,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
         }

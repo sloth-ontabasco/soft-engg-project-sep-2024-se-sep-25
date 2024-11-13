@@ -2,19 +2,22 @@ from ..db import db
 import datetime
 from flask_login import RoleMixin
 
+# Role model
 class Role(db.Document, RoleMixin):
-    roleId = db.IntField(primary_key=True)
-    name = db.StringField(choices=['Admin', 'Instructor', 'TA', 'Student'], required=True)
+    role_id = db.IntField(primary_key=True)
+    name = db.StringField(required=True, choices=['Admin', 'Instructor', 'TA', 'Student'])
     description = db.StringField()
-    created = db.DateTimeField(default=datetime.datetime.utcnow)
-    updated = db.DateTimeField(default=datetime.datetime.utcnow)
+    created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return f'<Role {self.name}>'
-
+        return f"<Role {self.name}>"
+    
     def to_dict(self):
         return {
-            "roleId": self.roleId,
+            "role_id": self.role_id,
             "name": self.name,
-            "description": self.description
+            "description": self.description,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
         }

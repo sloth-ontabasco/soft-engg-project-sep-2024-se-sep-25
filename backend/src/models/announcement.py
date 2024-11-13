@@ -1,21 +1,24 @@
 from ..db import db
 import datetime
 
+# Announcement model
 class Announcement(db.Document):
-    announcementId = db.IntField(primary_key=True)
-    project = db.ReferenceField('Project')
+    announcement_id = db.IntField(primary_key=True)
+    project = db.ReferenceField("Project", required=True)
     content = db.StringField(required=True)
-    postedBy = db.StringField(choices=['Instructor', 'TA'], required=True)
-    created = db.DateTimeField(default=datetime.datetime.utcnow)
-    updated = db.DateTimeField(default=datetime.datetime.utcnow)
+    posted_by = db.StringField(choices=['Instructor', 'TA'], required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return f'<Announcement {self.announcementId}>'
-
+        return f"<Announcement for Project {self.project.title}>"
+    
     def to_dict(self):
         return {
-            "announcementId": self.announcementId,
-            "project": str(self.project),
+            "announcement_id": self.announcement_id,
+            "project": self.project,
             "content": self.content,
-            "postedBy": self.postedBy
+            "posted_by": self.posted_by,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
         }

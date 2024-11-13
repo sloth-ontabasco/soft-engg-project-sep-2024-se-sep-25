@@ -5,6 +5,7 @@ from flask import Flask, request
 from flask_limiter import RateLimitExceeded
 from flask_jwt_extended import JWTManager
 from src.api.auth import *
+from src.api.users import *
 
 
 def setup_auth(app: Flask):
@@ -48,6 +49,9 @@ def setup_api(app, api):
     api.add_resource(LoginAPI, "/api/<string:provider>/login")
     api.add_resource(CallbackAPI, "/api/<string:provider>/callback",endpoint='oauth2_callback')
     api.add_resource(TokenAPI,"/api/token")
+
+    # User Routes
+    api.add_resource(UserAPI,"/api/user/profile")
 
 def list_routes(app: Flask):
 

@@ -15,16 +15,6 @@ from ..models.response import Response
 from ..models.user import User
 
 
-class UserAPI(Resource):
-    """
-    Route: /api/users/@me
-    """
-
-    @jwt_required()
-    def get(self):
-        return current_user.to_dict()
-
-
 class LoginAPI(Resource):
     """
     Route: /api/<str:provider>/login

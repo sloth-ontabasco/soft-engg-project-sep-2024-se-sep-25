@@ -3,6 +3,7 @@ import datetime
 from flask_login import UserMixin
 
 # User model
+# User model
 class User(db.Document, UserMixin):
     username = db.StringField(max_length=64, required=True)
     email = db.StringField(max_length=120, unique=True, required=True)
@@ -12,6 +13,8 @@ class User(db.Document, UserMixin):
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
+    def __repr__(self):
+        return f"<User {self.username}>"
     def __repr__(self):
         return f"<User {self.username}>"
 

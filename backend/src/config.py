@@ -31,6 +31,22 @@ OAUTH2_PROVIDERS = {
             'picture': lambda json: json['picture']
         },
         'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
+    },
+
+    # github oauth documentation:
+    # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app
+
+    'github' : {
+        'client_id': os.environ.get('GITHUB_CLIENT_ID'),
+        'client_secret': os.environ.get('GITHUB_CLIENT_SECRET'),
+        'authorize_url': 'https://github.com/login/oauth/authorize',
+        'token_url': 'https://github.com/login/oauth/access_token',
+        'userinfo':{
+            'url': 'https://api.github.com/user',
+            'email': lambda json: json['login'],
+            'repos_url': lambda json: json['reops_url']
+        },
+        'scopes': ['user:email','repo','user']
     }
 }
 

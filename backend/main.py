@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_restful import Api
-from src.config import CI, Config, LocalDevConfig
+from src.config import CI, PORT, Config, LocalDevConfig
 from src.setup import setup_api, setup_auth
 
 app, api = None, None
@@ -19,7 +19,7 @@ def setup_app() -> Flask:
     limiter = Limiter(
         get_remote_address,
         app=app,
-        default_limits=["1000 per day", "100 per hour"],
+        default_limits=["10000 per day", "1000 per hour"],
         storage_uri="memory://",
     )
     api = Api(app)

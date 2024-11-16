@@ -1,13 +1,15 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-    <div class="mt-8">
-      <h2 class="text-lg text-black font-bold">Upcoming Milestones</h2>
-      <div v-for="milestone in milestones" :key="milestone.id" class="flex justify-between items-center mt-4 border-b pb-2">
+    <div>
+      <h2 class="text-2xl text-black font-bold p-4">Upcoming Milestones</h2>
+      <div v-for="milestone in milestones" :key="milestone.id" class="flex p-4 items-center mt-1 border-b pb-3">
         <div>
-          <p >{{ milestone.title }}</p>
+          <p class="text-black text-lg font-bold">{{ milestone.title }}</p>
           <p class="text-gray-500">{{ milestone.subtitle }}</p>
         </div>
-        <p class="text-gray-400">{{ milestone.date }}</p>
+        <div >
+          <p class="text-gray-400 text-left">{{ milestone.date }}</p>
+        </div>
       </div>
     </div>
 </template>
@@ -24,6 +26,3 @@
     },
   };
 </script>
-  
-  
-  

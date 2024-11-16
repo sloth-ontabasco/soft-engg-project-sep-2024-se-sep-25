@@ -116,8 +116,8 @@ def setup_api(app, api):
     # api.add_resource(DeleteMilestoneSubmissionAPI, '/api/milestones/<string:milestone_id>/submissions/<string:submission_id>')
 
     # Resource Routes
-    api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>')
-    api.add_resource(ProjectResourcesAPI, '/api/resources/<string:project_id>/<string:resource_id>')
+    api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resources/<string:project_id>/<string:resource_id>')
+    # api.add_resource(ProjectResourcesAPI, '/api/resources/<string:project_id>/<string:resource_id>')
 
 
 

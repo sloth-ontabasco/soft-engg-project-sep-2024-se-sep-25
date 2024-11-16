@@ -7,4 +7,3 @@ from .github_integration import GithubIntegration
 from .milestone import Milestone
 from .milestone_submission import MilestoneSubmission
 from .feedback import Feedback
-from .response import Response

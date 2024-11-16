@@ -4,7 +4,7 @@ import datetime
 # Announcement model
 class Announcement(db.Document):
     id = db.StringField(primary_key=True)
-    project = db.ReferenceField("Project", required=True, reverse_delete_rule=db.CASCADE)
+    project = db.ReferenceField('Project', required=True, reverse_delete_rule=db.CASCADE)
     title = db.StringField(max_length=128, required=True)
     content = db.StringField(required=True)
     posted_by = db.StringField(choices=['Instructor', 'TA'], required=True)

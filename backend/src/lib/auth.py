@@ -12,7 +12,7 @@ def check_any_role(roles):
             verify_jwt_in_request()
             current_user = get_current_user()
             print('current user roles', current_user.get_roles())
-            if not set(current_user.get_roles()).intersection(roles):
+            if not set(current_user.role).intersection(roles):
                 print('erroring here')
                 raise NoAuthorizationError("Role is not allowed.")
             return f(*args, **kwargs)

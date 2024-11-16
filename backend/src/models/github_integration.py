@@ -2,7 +2,7 @@ from ..db import db
 import datetime
 
 # GitHubIntegration model
-class GitHubIntegration(db.Document):
+class GithubIntegration(db.Document):
     team = db.ReferenceField("Team", required=True, reverse_delete_rule=db.CASCADE)  # Delete integration if team is deleted
     repo_url = db.URLField()
     last_commit = db.DateTimeField()

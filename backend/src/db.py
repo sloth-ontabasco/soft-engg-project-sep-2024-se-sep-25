@@ -3,3 +3,5 @@ import mongoengine
 
 db  = mongoengine 
 db.connect(db='SE2024-25-Cluster0',host=MONGO_URI)
+
+import src.models

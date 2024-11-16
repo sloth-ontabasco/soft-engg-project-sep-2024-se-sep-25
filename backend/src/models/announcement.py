@@ -1,6 +1,5 @@
 from ..db import db
 import datetime
-from .project import Project
 
 # Announcement model
 class Announcement(db.Document):

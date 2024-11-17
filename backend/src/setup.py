@@ -8,6 +8,7 @@ from src.api.auth import *
 from src.api.users import *
 from src.api.announcements import *
 from src.api.feedbacks import *
+from src.api.milestone_submissions import MilestoneSubmissionAPI
 
 
 def setup_auth(app: Flask):
@@ -64,6 +65,11 @@ def setup_api(app, api):
     api.add_resource(FeedbackAPI, 
                      "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks",
                      "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>")
+
+    # Milestone Submission Routes
+    api.add_resource(MilestoneSubmissionAPI, 
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions",
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:id>")
 
 def list_routes(app: Flask):
 

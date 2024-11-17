@@ -15,10 +15,12 @@ class MilestoneSubmission(db.Document):
     
     def to_dict(self):
         return {
-            "milestone": self.milestone,
-            "team": self.team,
+            "id": str(self.id),
+            "project": str(self.milestone.project.title),
+            "milestone": str(self.milestone.title),
+            "team": str(self.team.team_name),
             "status": self.status,
-            "submission": self.submission,
+            "submission": str(self.submission.id) if self.submission else None,
             "grade": self.grade,
-            "created_at": self.created_at
+            "created_at": self.created_at.isoformat()
         }

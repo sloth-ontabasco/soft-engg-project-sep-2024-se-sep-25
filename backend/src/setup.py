@@ -6,6 +6,7 @@ from flask_limiter import RateLimitExceeded
 from flask_jwt_extended import JWTManager
 from src.api.auth import *
 from src.api.users import *
+from src.api.announcements import *
 
 
 def setup_auth(app: Flask):
@@ -52,6 +53,11 @@ def setup_api(app, api):
 
     # User Routes
     api.add_resource(UserAPI,"/api/user/profile")
+
+    # Announcement Routes
+    api.add_resource(AnnouncementAPI, 
+                     "/api/projects/<string:project_id>/announcements", 
+                     "/api/projects/<string:project_id>/announcements/<string:id>")
 
 def list_routes(app: Flask):
 

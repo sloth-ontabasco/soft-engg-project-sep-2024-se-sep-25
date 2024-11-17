@@ -3,10 +3,10 @@ import datetime
 
 # Feedback model
 class Feedback(db.Document):
-    milestone_submission = db.ReferenceField("MilestoneSubmission", required=True, reverse_delete_rule=db.CASCADE)  # Delete feedback if submission is deleted
-    team = db.ReferenceField('Team', reverse_delete_rule=db.CASCADE)  # Delete feedback if team is deleted
-    content = db.StringField()
-    posted_by = db.ReferenceField('User', reverse_delete_rule=db.CASCADE)  # Delete feedback if User who posted it is deleted
+    milestone_submission = db.ReferenceField("MilestoneSubmission", required=True, reverse_delete_rule=db.CASCADE)
+    team = db.ReferenceField('Team', reverse_delete_rule=db.CASCADE, required=True)
+    content = db.StringField(required=True)
+    posted_by = db.ReferenceField('User', reverse_delete_rule=db.CASCADE, required=True)
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
@@ -15,10 +15,15 @@ class Feedback(db.Document):
     
     def to_dict(self):
         return {
-            "milestone_submission": self.milestone_submission,
-            "team": self.team,
+            "id": str(self.id),
+            "project_title": str(self.milestone_submission.milestone.project.title),
+            "project_id": str(self.milestone_submission.milestone.project.id),
+            "milestone_title": str(self.milestone_submission.milestone.title),
+            "milestone_id": str(self.milestone_submission.milestone.id),
+            "team_name": str(self.team.team_name),
+            "team_id": str(self.team.id),
             "content": self.content,
-            "posted_by": self.posted_by,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "posted_by": str(self.posted_by.username),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
         }

@@ -16,11 +16,12 @@ class Project(db.Document):
     
     def to_dict(self):
         return {
+            "id": str(self.id),
             "title": self.title,
             "description": self.description,
             "deadline": self.deadline,
-            "mentors": self.mentors,
+            "mentors": [mentor.email for mentor in self.mentors],
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "milestones": self.milestones
+            "milestone_ids": [str(milestone.id) for milestone in self.milestones]
         }

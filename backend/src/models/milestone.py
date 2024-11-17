@@ -15,10 +15,12 @@ class Milestone(db.Document):
     
     def to_dict(self):
         return {
+            "id": str(self.id),
             "title": self.title,
             "description": self.description,
             "due_date": self.due_date,
-            "project": self.project,
+            "project_title": self.project.title,
+            "project_id": str(self.project.id),
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }

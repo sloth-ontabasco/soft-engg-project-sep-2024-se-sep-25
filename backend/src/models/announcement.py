@@ -19,7 +19,7 @@ class Announcement(db.Document):
             "id": str(self.id),
             "title": self.title,
             "content": self.content,
-            "posted_by": str(self.posted_by.username),
+            "posted_by": self.posted_by.username,
             "project_id": str(self.project.id),
             "project_title": self.project.title,
             "created_at": self.created_at.isoformat() if self.created_at else None,

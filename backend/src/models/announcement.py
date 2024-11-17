@@ -4,7 +4,6 @@ import datetime
 # Announcement model
 class Announcement(db.Document):
     project = db.ReferenceField('Project', required=True, reverse_delete_rule=db.CASCADE)
-    project = db.ReferenceField('Project', required=True, reverse_delete_rule=db.CASCADE)
     title = db.StringField(max_length=128, required=True)
     content = db.StringField(required=True)
     posted_by = db.ReferenceField('User', reverse_delete_rule=db.CASCADE, required=True)
@@ -17,8 +16,6 @@ class Announcement(db.Document):
     def to_dict(self):
         print(f"Converting Announcement {self.id} to dict")
         return {
-            "id": str(self.id),
-            "title": self.title,
             "id": str(self.id),
             "title": self.title,
             "content": self.content,

@@ -1,11 +1,10 @@
 from flask import request
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_current_user
 from src.models.announcement import Announcement
 from src.models.project import Project
 from src.lib.auth import check_any_role
 from src.models.response import Response
-
 class AnnouncementAPI(Resource):
     @jwt_required()
     def get(self, project_id, id=None):
@@ -13,41 +12,48 @@ class AnnouncementAPI(Resource):
         if not project:
             return Response.error(404, message="Project not found")
         if id:
-            announcement = Announcement.objects(project=project, id=id).first()
+            print(f"Fetching announcement with id: {id} for project: {project_id}")
+            announcement = Announcement.objects(id=id, project=project).first()
             if not announcement:
+                print(f"Announcement with id {id} not found for project {project_id}")
                 return Response.error(404, message="Announcement not found")
+            print(f"Announcement found: {announcement.title}")
             return Response.success(200, announcement=announcement.to_dict())
+        print(f"Fetching all announcements for project: {project_id}")
         announcements = Announcement.objects(project=project)
-        return Response.success(200, announcements=[announcement.to_dict() for announcement in announcements])
+        print(f"Found {announcements.count()} announcements")
+        response = Response.success(200, announcements=[announcement.to_dict() for announcement in announcements])
+        return response
 
     @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def post(self, project_id):
-        data = request.get_json()
         project = Project.objects(id=project_id).first()
         if not project:
             return Response.error(404, message="Project not found")
-        user = get_jwt_identity()
+        data = request.get_json()
+        user = get_current_user()
         announcement = Announcement(
             project=project,
             title=data['title'],
             content=data['content'],
-            posted_by=user['role']
+            posted_by=user.role
         )
         announcement.save()
-        return Response.success(201, announcement=announcement.to_dict())
+        return Response.success(code=201, announcement=announcement.to_dict())
 
     @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def put(self, project_id, id):
-        data = request.get_json()
         project = Project.objects(id=project_id).first()
         if not project:
             return Response.error(404, message="Project not found")
-        announcement = Announcement.objects(project=project, id=id).first()
+        data = request.get_json()
+        announcement = Announcement.objects(id=id, project=project).first()
         if not announcement:
             return Response.error(404, message="Announcement not found")
         announcement.update(**data)
+        print(f"Announcement with id: {announcement.id} updated")
         return Response.success(200, announcement=announcement.to_dict())
 
     @jwt_required()
@@ -56,8 +62,9 @@ class AnnouncementAPI(Resource):
         project = Project.objects(id=project_id).first()
         if not project:
             return Response.error(404, message="Project not found")
-        announcement = Announcement.objects(project=project, id=id).first()
+        announcement = Announcement.objects(id=id, project=project).first()
         if not announcement:
             return Response.error(404, message="Announcement not found")
+        print(f"Announcement with id: {announcement.id} deleted")
         announcement.delete()
         return Response.success(200, message="Announcement deleted")

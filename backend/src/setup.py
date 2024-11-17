@@ -57,7 +57,7 @@ def setup_api(app, api):
 
     # Project Routes
     api.add_resource(ProjectAPI,"/api/project")
-    api.add_resource(ProjectsByMentorAPI, '/projects/instructor/<string:mentor_id>')
+    api.add_resource(ProjectsByMentorAPI, '/api/project/instructor/<string:mentor_id>')
     api.add_resource(ProjectByIdAPI, '/api/project/<string:project_id>')
 
 
@@ -65,9 +65,7 @@ def setup_api(app, api):
     api.add_resource(MilestoneAPI, '/api/milestones/<string:milestone_id>')
     api.add_resource(ProjectMilestonesAPI,"/api/milestones/<project_id>")
     api.add_resource(EditDeleteMilestoneAPI, '/api/milestones/<string:project_id>/<string:milestone_id>')
-    # api.add_resource(MilestoneSubmissionsAPI, '/api/milestones/<string:milestone_id>/submissions')
-    # api.add_resource(AddMilestoneSubmissionAPI, '/api/milestones/<string:milestone_id>/submissions')
-    # api.add_resource(DeleteMilestoneSubmissionAPI, '/api/milestones/<string:milestone_id>/submissions/<string:submission_id>')
+
 
     # Resource Routes
     api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resources/<string:project_id>/<string:resource_id>')

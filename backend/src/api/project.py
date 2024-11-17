@@ -26,6 +26,7 @@ class ProjectAPI(Resource):
         projects = Project.objects()
         return Response.success(data=[project.to_dict() for project in projects])
     
+
     @jwt_required()
     def post(self):
         """
@@ -41,29 +42,32 @@ class ProjectAPI(Resource):
             if field not in data:
                 return Response.error(code=400, message=f"Missing required field: {field}")
 
-        # Convert mentors to a list of User references
-        mentor_ids = data['mentors']
-        mentors = User.objects(id__in=mentor_ids)
-        if len(mentors) != len(mentor_ids):
+        # Convert mentors to a list of User objects
+        mentors = [User.objects(id=mentor_id).first() for mentor_id in data['mentors']]
+        if None in mentors:
             return Response.error(code=400, message="One or more mentors not found")
 
-        # Parse the deadline
-        try:
-            deadline = datetime.strptime(data['deadline'], "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            return Response.error(code=400, message="Invalid date format for deadline. Use 'YYYY-MM-DD HH:MM:SS'.")
+        # Parse deadline string to datetime object
+        deadline_str = str(data['deadline'])
+        deadline = datetime.strptime(deadline_str, '%m/%d/%y %H:%M:%S')
 
-        # Create the project
+        # Create new project
         project = Project(
             title=data['title'],
             description=data['description'],
             deadline=deadline,
             mentors=mentors
         )
+
         project.save()
 
-        return Response.success(data=project.to_dict(), message="Project created successfully.")
-
+        # project = Project(
+        #     title=data['title'],
+        #     description=data['description'],
+        #     deadline=deadline,
+        #     mentors=mentors
+        # )
+        return Response.success(data=project.to_dict(), message="Project created successfully")
     
 class ProjectsByMentorAPI(Resource):
     
@@ -114,7 +118,7 @@ class ProjectByIdAPI(Resource):
         project.description = data.get('description', project.description)
         project.deadline = data.get('deadline', project.deadline)
         project.mentors = [User.objects(id=mentor_id).first() for mentor_id in data.get('mentors', [mentor.id for mentor in project.mentors])]
-        project.updated_at = datetime.datetime.utcnow()
+        project.updated_at = datetime.utcnow()
 
         project.save()
         return Response.success(data=project.to_dict(), message="Project updated successfully")

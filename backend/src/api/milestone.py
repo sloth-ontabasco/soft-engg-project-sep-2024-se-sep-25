@@ -10,6 +10,7 @@ from ..models.role import Role
 from ..models.milestone import Milestone
 from ..models.milestone_submission import MilestoneSubmission
 from ..models.team import Team
+from ..lib.auth import check_any_role
 
 
 class MilestoneAPI(Resource):
@@ -60,6 +61,7 @@ class ProjectMilestonesAPI(Resource):
         return Response.success(data=[milestone.to_dict() for milestone in milestones])
     
     @jwt_required()
+    # @check_any_role(roles=['instructor', 'admin'])
     def post(self, project_id):
         """
         Route: POST /api/projects/<project_id>/milestones
@@ -77,12 +79,16 @@ class ProjectMilestonesAPI(Resource):
         for field in required_fields:
             if field not in data:
                 return Response.error(code=400, message=f"Missing required field: {field}")
+            
+        # Parse due_date string to datetime object
+        due_date_str = str(data['due_date'])
+        due_date = datetime.strptime(due_date_str, '%m/%d/%y %H:%M:%S')
 
         # Create new milestone
         milestone = Milestone(
             title=data['title'],
             description=data['description'],
-            due_date=data['due_date'],
+            due_date=due_date,
             project=project
         )
         milestone.save()
@@ -134,63 +140,3 @@ class EditDeleteMilestoneAPI(Resource):
         milestone.delete()
         return Response.success(message="Milestone deleted successfully")
 
-
-    
-
-
-    
-# class AddMilestoneSubmissionAPI(Resource):
-    
-#     @jwt_required()
-#     def post(self, milestone_id):
-#         """
-#         Route: POST /api/milestones/<milestone_id>/submissions
-#         Description: Adds a submission to a specific milestone.
-#         Requires JWT authentication.
-#         """
-#         milestone = Milestone.objects(id=milestone_id).first()
-#         if not milestone:
-#             return Response.error(code=404, message="Milestone not found")
-        
-#         data = request.get_json()
-
-#         # Validate required fields
-#         required_fields = ['team_id', 'status', 'submission', 'grade']
-#         for field in required_fields:
-#             if field not in data:
-#                 return Response.error(code=400, message=f"Missing required field: {field}")
-
-#         team = Team.objects(id=data['team_id']).first()
-#         if not team:
-#             return Response.error(code=404, message="Team not found")
-
-#         # Create new milestone submission
-#         milestone_submission = MilestoneSubmission(
-#             milestone=milestone,
-#             team=team,
-#             status=data['status'],
-#             submission=data['submission'],
-#             grade=data['grade']
-#         )
-#         milestone_submission.save()
-#         return Response.success(data=milestone_submission.to_dict(), message="Milestone submission added successfully")
-    
-# class DeleteMilestoneSubmissionAPI(Resource):
-    
-#     @jwt_required()
-#     def delete(self, milestone_id, submission_id):
-#         """
-#         Route: DELETE /api/milestones/<milestone_id>/submissions/<submission_id>
-#         Description: Deletes a specific submission from a milestone.
-#         Requires JWT authentication.
-#         """
-#         milestone = Milestone.objects(id=milestone_id).first()
-#         if not milestone:
-#             return Response.error(code=404, message="Milestone not found")
-        
-#         submission = MilestoneSubmission.objects(id=submission_id, milestone=milestone).first()
-#         if not submission:
-#             return Response.error(code=404, message="Submission not found")
-        
-#         submission.delete()
-#         return Response.success(message="Milestone submission deleted successfully")

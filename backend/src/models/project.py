@@ -18,9 +18,11 @@ class Project(db.Document):
         return {
             "title": self.title,
             "description": self.description,
-            "deadline": self.deadline,
-            "mentors": self.mentors,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "deadline": self.deadline.strftime("%m/%d/%y %H:%M:%S") if self.deadline else None,
+            # "deadline": self.deadline.isoformat() if self.deadline else None,
+            # "mentors": self.mentors,
+            "mentors": [str(mentor.id) for mentor in self.mentors],
+            "created_at": self.created_at.strftime("%m/%d/%y %H:%M:%S") if self.deadline else None,
+            "updated_at": self.updated_at.strftime("%m/%d/%y %H:%M:%S") if self.deadline else None,
             "milestones": self.milestones
         }

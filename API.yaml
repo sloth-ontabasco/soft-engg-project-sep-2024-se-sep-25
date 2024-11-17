@@ -1,0 +1,280 @@
+openapi: 3.0.0
+info:
+  title: System API Specification
+  description: API specifications for the student, instructor, TA, and admin views within the system.
+  version: 1.0.0
+
+paths:
+  /users/{userId}:
+    get:
+      summary: Retrieve user details.
+      description: Retrieve the details of the current user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User details returned in JSON format.
+
+  /milestones/upcoming:
+    get:
+      summary: List upcoming milestones.
+      description: Get a list of upcoming milestones across all projects the student is enrolled in.
+      responses:
+        "200":
+          description: List of upcoming milestones.
+
+  /projects:
+    get:
+      summary: List student projects.
+      description: Retrieve a list of projects the student is enrolled in and their statuses.
+      responses:
+        "200":
+          description: List of projects with status.
+
+  /projects/{projectId}/milestones:
+    get:
+      summary: List project milestones.
+      description: Get all milestones for the current project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of milestones for the project.
+
+  /milestones/{milestoneId}:
+    get:
+      summary: Retrieve milestone details.
+      description: View the details of the current milestone.
+      parameters:
+        - name: milestoneId
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Milestone details in JSON format.
+
+  /submissions/{milestoneId}:
+    get:
+      summary: List submitted files.
+      description: View all submitted files for the milestone.
+      parameters:
+        - name: milestoneId
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of submitted files.
+    post:
+      summary: Upload a new file.
+      description: Upload a new file for the milestone.
+      parameters:
+        - name: milestoneId
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Confirmation of successful file upload.
+    delete:
+      summary: Remove a submitted file.
+      description: Remove a submitted file.
+      parameters:
+        - name: milestoneId
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          description: The ID of the file to remove.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Confirmation of file removal.
+
+  /github/{milestoneId}:
+    get:
+      summary: Retrieve GitHub commit history.
+      description: Get GitHub commit history for the current milestone.
+      parameters:
+        - name: milestoneId
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: GitHub commit history.
+
+  /feedback/{milestoneId}:
+    get:
+      summary: Retrieve milestone feedback.
+      description: Retrieve feedback for the current milestone.
+      parameters:
+        - name: milestoneId
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Feedback details.
+
+  /teams/{projectId}:
+    get:
+      summary: View team details.
+      description: View team details and members for the current project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Team details.
+
+  /announcements/{projectId}:
+    get:
+      summary: View project announcements.
+      description: View announcements for the current project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of announcements.
+
+  /resources/{projectId}:
+    get:
+      summary: View project resources.
+      description: View resources for the current project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of resources.
+    post:
+      summary: Create a new resource.
+      description: Create a new resource for the project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resourceData:
+                  type: object
+      responses:
+        "201":
+          description: Resource successfully created.
+    put:
+      summary: Edit a resource.
+      description: Edit an existing resource for the project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+        - name: resourceId
+          in: path
+          required: true
+          description: The ID of the resource to edit.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resourceData:
+                  type: object
+      responses:
+        "200":
+          description: Resource successfully updated.
+    delete:
+      summary: Delete a resource.
+      description: Delete a resource from the project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+        - name: resourceId
+          in: path
+          required: true
+          description: The ID of the resource to delete.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resource successfully deleted.
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string

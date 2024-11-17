@@ -5,7 +5,17 @@ from src.models.announcement import Announcement
 from src.models.project import Project
 from src.lib.auth import check_any_role
 from src.models.response import Response
+
+"""
+API for handling CRUD operations for Announcements
+"""
 class AnnouncementAPI(Resource):
+
+    """
+    Route: /api/<string:project_id>/announcements,
+           /api/<string:project_id>/announcements/<string:id>
+    Description: Get all (or a specific) announcement(s) under a project
+    """
     @jwt_required()
     def get(self, project_id, id=None):
         project = Project.objects(id=project_id).first()
@@ -25,6 +35,11 @@ class AnnouncementAPI(Resource):
         response = Response.success(200, announcements=[announcement.to_dict() for announcement in announcements])
         return response
 
+    """
+    Route: /api/<string:project_id>/announcements
+    Description: Post a new announcement under a project
+    Body: title(required), content(required)
+    """
     @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def post(self, project_id):
@@ -42,6 +57,11 @@ class AnnouncementAPI(Resource):
         announcement.save()
         return Response.success(code=201, announcement=announcement.to_dict())
 
+    """
+    Route: /api/<string:project_id>/announcements/<string:id>
+    Description: Update an announcement
+    Body: title(optional), content(optional)
+    """
     @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def put(self, project_id, id):
@@ -56,6 +76,10 @@ class AnnouncementAPI(Resource):
         print(f"Announcement with id: {announcement.id} updated")
         return Response.success(200, announcement=announcement.to_dict())
 
+    """
+    Route: /api/<string:project_id>/announcements/<string:id>
+    Description: Delete an announcement
+    """
     @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def delete(self, project_id, id):

@@ -9,10 +9,11 @@ def check_any_role(roles):
     def decorator(f):
         @wraps(f)
         def decorator_function(*args, **kwargs):
+            print(f"Checking roles: {roles}")
             verify_jwt_in_request()
             current_user = get_current_user()
-            print('current user roles', current_user.get_roles())
-            if not set(current_user.role).intersection(roles):
+            print('current user roles', current_user.role)
+            if not current_user.role in roles:
                 print('erroring here')
                 raise NoAuthorizationError("Role is not allowed.")
             return f(*args, **kwargs)

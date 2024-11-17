@@ -18,29 +18,34 @@ class AnnouncementAPI(Resource):
     """
     @jwt_required()
     def get(self, project_id, id=None):
-        project = Project.objects(id=project_id).first()
-        if not project:
-            return Response.error(404, message="Project not found")
-        if id:
-            print(f"Fetching announcement with id: {id} for project: {project_id}")
-            announcement = Announcement.objects(id=id, project=project).first()
-            if not announcement:
-                print(f"Announcement with id {id} not found for project {project_id}")
-                return Response.error(404, message="Announcement not found")
-            print(f"Announcement found: {announcement.title}")
-            return Response.success(200, announcement=announcement.to_dict())
-        print(f"Fetching all announcements for project: {project_id}")
-        announcements = Announcement.objects(project=project)
-        print(f"Found {announcements.count()} announcements")
-        response = Response.success(200, announcements=[announcement.to_dict() for announcement in announcements])
-        return response
+        try:
+            project = Project.objects(id=project_id).first()
+            if not project:
+                return Response.error(404, message="Project not found")
+            if id:
+                print(f"Fetching announcement with id: {id} for project: {project_id}")
+                announcement = Announcement.objects(id=id, project=project).first()
+                if not announcement:
+                    print(f"Announcement with id {id} not found for project {project_id}")
+                    return Response.error(404, message="Announcement not found")
+                print(f"Announcement found: {announcement.title}")
+                announcement_dict = announcement.to_dict()
+                return Response.success(200, announcement=announcement_dict)
+            print(f"Fetching all announcements for project: {project_id}")
+            announcements = Announcement.objects(project=project)
+            print(f"Found {announcements.count()} announcements")
+            announcements_list = [announcement.to_dict() for announcement in announcements]
+            response = Response.success(200, announcements=announcements_list)
+            return response
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            return Response.error(500, message="Internal Server Error")
 
     """
     Route: /api/<string:project_id>/announcements
     Description: Post a new announcement under a project
     Body: title(required), content(required)
     """
-    @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def post(self, project_id):
         project = Project.objects(id=project_id).first()
@@ -52,7 +57,7 @@ class AnnouncementAPI(Resource):
             project=project,
             title=data['title'],
             content=data['content'],
-            posted_by=user.role
+            posted_by=user
         )
         announcement.save()
         return Response.success(code=201, announcement=announcement.to_dict())
@@ -62,7 +67,6 @@ class AnnouncementAPI(Resource):
     Description: Update an announcement
     Body: title(optional), content(optional)
     """
-    @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def put(self, project_id, id):
         project = Project.objects(id=project_id).first()
@@ -80,7 +84,6 @@ class AnnouncementAPI(Resource):
     Route: /api/<string:project_id>/announcements/<string:id>
     Description: Delete an announcement
     """
-    @jwt_required()
     @check_any_role(['instructor', 'ta', 'admin'])
     def delete(self, project_id, id):
         project = Project.objects(id=project_id).first()

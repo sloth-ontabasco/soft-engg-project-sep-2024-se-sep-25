@@ -12,8 +12,9 @@ API for handling CRUD operations for Feedbacks
 class FeedbackAPI(Resource):
 
     """
-    Route: /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks
-    Description: Get all feedbacks for a particular submission
+    Route: /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks,
+           /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>
+    Description: Get feedback(s) under a milestone submission
     """
     @jwt_required()
     def get(self, project_id, milestone_id, milestone_submission_id, id=None):

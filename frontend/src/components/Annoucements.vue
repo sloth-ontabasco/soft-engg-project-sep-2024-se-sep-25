@@ -22,7 +22,7 @@
 export default {
   data() {
     return {
-      expandedIndex: null, // Tracks which announcement is expanded
+      expandedIndex: null, // Tracks which announcement is expand
       announcements: [
         {
           id: 1,

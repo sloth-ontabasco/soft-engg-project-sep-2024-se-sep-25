@@ -8,6 +8,7 @@ class Resource(db.Document):
     url = db.URLField()
     description = db.StringField()
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
     def __repr__(self):
         return f"<Resource {self.title}>"

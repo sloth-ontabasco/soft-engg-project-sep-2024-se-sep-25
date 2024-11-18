@@ -15,6 +15,7 @@ class Milestone(db.Document):
     
     def to_dict(self):
         return {
+            "id": str(self.id),
             "title": self.title,
             "description": self.description,
             "due_date": self.due_date.isoformat() if self.due_date else None,

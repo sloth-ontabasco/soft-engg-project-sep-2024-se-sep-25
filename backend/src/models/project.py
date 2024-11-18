@@ -16,6 +16,7 @@ class Project(db.Document):
     
     def to_dict(self):
         return {
+            "id": str(self.id),
             "title": self.title,
             "description": self.description,
             "deadline": self.deadline.isoformat() if self.deadline else None,

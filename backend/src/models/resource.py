@@ -15,8 +15,8 @@ class Resource(db.Document):
     
     def to_dict(self):
         return {
+            "id": str(self.id),
             "project": str(self.project.id) if self.project else None,
-            # "project": self.project,
             "title": self.title,
             "url": self.url,
             "description": self.description,

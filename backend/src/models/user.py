@@ -18,6 +18,7 @@ class User(db.Document, UserMixin):
 
     def to_dict(self):
         return {
+            "id": str(self.id),
             "username": self.username,
             "email": self.email,
             "github_id": self.github_id,

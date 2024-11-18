@@ -16,11 +16,13 @@ class Team(db.Document):
     
     def to_dict(self):
         return {
+            "id": str(self.id),
             "team_name": self.team_name,
             "project_status": self.project_status,
             "grade": self.grade,
-            "project": self.project,
-            "members": self.members,
+            "project_id": str(self.project.id),
+            "project_title": self.project.title,
+            "members": [member.email for member in self.members],
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }

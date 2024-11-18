@@ -14,9 +14,11 @@ class Resource(db.Document):
     
     def to_dict(self):
         return {
-            "project": self.project,
+            "project": str(self.project.id) if self.project else None,
+            # "project": self.project,
             "title": self.title,
             "url": self.url,
             "description": self.description,
-            "created_at": self.created_at
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+
         }

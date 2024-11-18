@@ -8,6 +8,7 @@ from ..models.project import Project
 from ..models.user import User
 from ..models.role import Role
 from ..models.milestone import Milestone
+from ..lib.auth import check_any_role
 
 class ProjectAPI(Resource):
     """
@@ -16,7 +17,7 @@ class ProjectAPI(Resource):
     - Requires JWT authentication for access.
     """
 
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self):
         """
         Route: GET /api/project
@@ -27,7 +28,7 @@ class ProjectAPI(Resource):
         return Response.success(data=[project.to_dict() for project in projects])
     
 
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin'])
     def post(self):
         """
         Route: POST /api/project
@@ -60,18 +61,11 @@ class ProjectAPI(Resource):
         )
 
         project.save()
-
-        # project = Project(
-        #     title=data['title'],
-        #     description=data['description'],
-        #     deadline=deadline,
-        #     mentors=mentors
-        # )
         return Response.success(data=project.to_dict(), message="Project created successfully")
     
 class ProjectsByMentorAPI(Resource):
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, mentor_id):
         """
         Route: GET /api/projects/instructor/<mentor_id>
@@ -87,7 +81,7 @@ class ProjectsByMentorAPI(Resource):
     
 class ProjectByIdAPI(Resource):
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, project_id):
         """
         Route: GET /api/project/<project_id>
@@ -100,7 +94,7 @@ class ProjectByIdAPI(Resource):
         
         return Response.success(data=project.to_dict())
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin'])
     def put(self, project_id):
         """
         Route: PUT /api/project/<project_id>
@@ -113,10 +107,13 @@ class ProjectByIdAPI(Resource):
         
         data = request.get_json()
 
+        deadline_str = str(data['deadline'])
+        deadline = datetime.strptime(deadline_str, '%m/%d/%y %H:%M:%S')
+
         # Update project fields
         project.title = data.get('title', project.title)
         project.description = data.get('description', project.description)
-        project.deadline = data.get('deadline', project.deadline)
+        project.deadline = deadline
         project.mentors = [User.objects(id=mentor_id).first() for mentor_id in data.get('mentors', [mentor.id for mentor in project.mentors])]
         project.updated_at = datetime.utcnow()
 

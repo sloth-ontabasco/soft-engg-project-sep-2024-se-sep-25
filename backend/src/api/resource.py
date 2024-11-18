@@ -11,11 +11,12 @@ from ..models.milestone import Milestone
 from ..models.milestone_submission import MilestoneSubmission
 from ..models.team import Team
 from ..models.resource import Resource as ProjectResource
+from ..lib.auth import check_any_role
 
 
 class ProjectResourcesAPI(Resource):
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, project_id):
         """
         Route: GET /api/resource/<project_id>
@@ -29,7 +30,7 @@ class ProjectResourcesAPI(Resource):
         resources = ProjectResource.objects(project=project)
         return Response.success(data=[resource.to_dict() for resource in resources])
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin'])
     def post(self, project_id):
         """
         Route: POST /api/resource/<project_id>
@@ -58,7 +59,7 @@ class ProjectResourcesAPI(Resource):
         resource.save()
         return Response.success(data=resource.to_dict(), message="Resource added successfully")
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin'])
     def put(self, project_id, resource_id):
         """
         Route: PUT /api/resources/<project_id>/<resource_id>
@@ -79,12 +80,12 @@ class ProjectResourcesAPI(Resource):
         resource.title = data.get('title', resource.title)
         resource.url = data.get('url', resource.url)
         resource.description = data.get('description', resource.description)
-        resource.updated_at = datetime.datetime.utcnow()
+        resource.updated_at = datetime.utcnow()
 
         resource.save()
         return Response.success(data=resource.to_dict(), message="Resource updated successfully")
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin'])
     def delete(self, project_id, resource_id):
         """
         Route: DELETE /api/resources/<project_id>/<resource_id>

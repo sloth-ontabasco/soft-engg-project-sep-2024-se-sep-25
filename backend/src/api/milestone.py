@@ -15,7 +15,7 @@ from ..lib.auth import check_any_role
 
 class MilestoneAPI(Resource):
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, milestone_id):
         """
         Route: GET /api/milestones/<milestone_id>
@@ -30,7 +30,7 @@ class MilestoneAPI(Resource):
     
 class MilestoneSubmissionsAPI(Resource):
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, milestone_id):
         """
         Route: GET /api/milestones/<milestone_id>/submissions
@@ -46,10 +46,10 @@ class MilestoneSubmissionsAPI(Resource):
     
 class ProjectMilestonesAPI(Resource):
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, project_id):
         """
-        Route: GET /api/projects/<project_id>/milestones
+        Route: GET /api/project/milestones/<project_id>
         Description: Retrieves all milestones for a specific project.
         Requires JWT authentication.
         """
@@ -60,11 +60,11 @@ class ProjectMilestonesAPI(Resource):
         milestones = Milestone.objects(project=project)
         return Response.success(data=[milestone.to_dict() for milestone in milestones])
     
-    @jwt_required()
-    # @check_any_role(roles=['instructor', 'admin'])
+   
+    @check_any_role(roles=['instructor', 'admin'])
     def post(self, project_id):
         """
-        Route: POST /api/projects/<project_id>/milestones
+        Route: POST /api/project/milestones/<project_id>
         Description: Adds a milestone to a specific project.
         Requires JWT authentication.
         """
@@ -96,7 +96,8 @@ class ProjectMilestonesAPI(Resource):
     
 class EditDeleteMilestoneAPI(Resource):
     
-    @jwt_required()
+    
+    @check_any_role(roles=['instructor', 'admin'])
     def put(self, project_id, milestone_id):
         """
         Route: PUT /api/milestones/<project_id>/<milestone_id>
@@ -113,16 +114,20 @@ class EditDeleteMilestoneAPI(Resource):
         
         data = request.get_json()
 
+         # Parse due_date string to datetime object
+        due_date_str = str(data['due_date'])
+        due_date = datetime.strptime(due_date_str, '%m/%d/%y %H:%M:%S')
+
         # Update milestone fields
         milestone.title = data.get('title', milestone.title)
         milestone.description = data.get('description', milestone.description)
-        milestone.due_date = data.get('due_date', milestone.due_date)
-        milestone.updated_at = datetime.datetime.utcnow()
+        milestone.due_date = due_date
+        milestone.updated_at = datetime.utcnow()
 
         milestone.save()
         return Response.success(data=milestone.to_dict(), message="Milestone updated successfully")
     
-    @jwt_required()
+    @check_any_role(roles=['instructor', 'admin'])
     def delete(self, project_id, milestone_id):
         """
         Route: DELETE /api/milestones/<project_id>/<milestone_id>

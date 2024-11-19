@@ -144,7 +144,7 @@ class TeamAPI(Resource):
     Route: DELETE /api/<string:project_id>/teams/<string:team_id>
     Description: Delete a team.
     """
-    # @check_any_role(['admin', 'instructor'])
+    @check_any_role(['admin', 'instructor'])
     def delete(self, project_id, team_id):
         try:
             # Fetch the project

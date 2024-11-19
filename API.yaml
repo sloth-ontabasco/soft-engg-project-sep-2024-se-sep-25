@@ -5,41 +5,364 @@ info:
   version: 1.0.0
 
 paths:
-  /users/{userId}:
+  /api/users:
     get:
-      summary: Retrieve user details.
-      description: Retrieve the details of the current user.
+      tags:
+        - User
+      summary: Retrieve all users
+      description: Fetch details of all users (admin only).
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Users found successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              example:
+                "success": false
+                "message": "Unauthorized access"
+                "code": 403
+
+
+  /api/users/{user_id}:
+    get:
+      tags:
+        - User
+      summary: Retrieve user details
+      description: Fetch details of a specific user by ID.
+      operationId: getUserById
       parameters:
-        - name: userId
+        - name: user_id
           in: path
+          description: User ID
           required: true
-          description: The unique identifier for the user.
           schema:
             type: string
       responses:
-        "200":
-          description: User details returned in JSON format.
+        '200':
+          description: User found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: User not found
+                code: 404
 
-  /milestones/upcoming:
-    get:
-      summary: List upcoming milestones.
-      description: Get a list of upcoming milestones across all projects the student is enrolled in.
+    put:
+      tags:
+        - User
+      summary: Update user details
+      description: Update details of a specific user by ID.
+      operationId: updateUser
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: User details to update
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: New username
+                github_id:
+                  type: string
+                  description: New GitHub ID
       responses:
-        "200":
-          description: List of upcoming milestones.
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              example:
+                "success": false
+                "message": "Unauthorized access"
+                "code": 403
 
-  /projects:
-    get:
-      summary: List student projects.
-      description: Retrieve a list of projects the student is enrolled in and their statuses.
+    delete:
+      tags:
+        - User
+      summary: Delete a user
+      description: Delete a specific user by ID.
+      operationId: deleteUser
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
-          description: List of projects with status.
+        '200':
+          description: User deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Role is not allowed.
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: User not found
+                code: 404
 
-  /projects/{projectId}/milestones:
+
+  /api/{project_id}/teams:
     get:
-      summary: List project milestones.
-      description: Get all milestones for the current project.
+      tags:
+        - Team
+      summary: Retrieve teams for a project
+      description: Fetch all teams for a project or a specific team for a student.
+      operationId: getTeamsByProject
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              example:
+                success: false
+                message: Unauthorized access
+                code: 403
+        '404':
+          description: Project or team not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: Project or team not found
+                code: 404
+
+    post:
+      tags:
+        - Team
+      summary: Create a new team
+      description: Create a team for the specified project.
+      operationId: createTeam
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Team details to create
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                team_name:
+                  type: string
+                  description: Team name
+                members:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                    description: Email ID of the team member
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              example:
+                success: false
+                message: "Missing required fields: team_name, members"
+                code: 400
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Role not allowed.
+        '404':
+          description: Project or user not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: Project not found
+                code: 404
+
+
+  /api/{project_id}/teams/{team_id}:
+    put:
+      tags:
+        - Team
+      summary: Update team details
+      description: Update details of a specific team by ID.
+      operationId: updateTeam
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+        - name: team_id
+          in: path
+          description: Team ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Team details to update
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                team_name:
+                  type: string
+                  description: New team name
+                members:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                    description: Email ID of the team member
+      responses:
+        '200':
+          description: Team updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              example:
+                success: false
+                message: "Request body is missing"
+                code: 400
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Role not allowed.
+        '404':
+          description: Project, team or user not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: Project not found
+                code: 404
+
+    delete:
+      tags:
+        - Team
+      summary: Delete a team
+      description: Delete a specific team by ID.
+      operationId: deleteTeam
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+        - name: team_id
+          in: path
+          description: Team ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team deleted successfully
+          content:
+            application/json:
+              example:
+                success: true
+                message: Team deleted successfully
+                code: 200
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Role not allowed.
+        '404':
+          description: Project, team or user not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: Project not found
+                code: 404
+
+
+
+
+
+
+
+  /api/project/milestones/{projectId}:
+    get:
+      tags:
+        - Milestone
+      summary: Retrieve milestones for a project.
+      description: View the details of the milestones for a project.
       parameters:
         - name: projectId
           in: path
@@ -48,11 +371,164 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: List of milestones for the project.
+            "200":
+              description: Request processed successfully.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: Request processed successfully
+                      code:
+                        type: integer
+                        example: 200
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 6739c50a5658280e7567203f
+                            title:
+                              type: string
+                              example: Milestone 1
+                            description:
+                              type: string
+                              example: Description for Milestone 1
+                            due_date:
+                              type: string
+                              format: date-time
+                              example: "2024-06-30T00:00:00"
+                            project:
+                              type: string
+                              example: 6739736b7618cd3a00d4e9b5
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: "2024-11-17T10:27:22.010000"
+                            updated_at:
+                              type: string
+                              format: date-time
+                              example: "2024-11-17T10:27:22.010000"
+                  
+            "404":
+              description:  not found.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: project not found
+                      code:
+                        type: integer
+                        example: 404
 
-  /milestones/{milestoneId}:
+    post:
+      tags:
+        - Milestone
+      summary: adds a milestone to the project
+      description:  adds a milestone to the project using projectId.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Milestone 1 testing
+                description:
+                  type: string
+                  example: This is the first milestone.
+                due_date:
+                  type: string
+                  example: "12/31/24 23:59:59"
+      responses:
+        "200":
+          description: Milestone added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Milestone added successfully
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 673c4a6788adbf17d4ce88e2
+                      title:
+                        type: string
+                        example: Milestone 1 testing
+                      description:
+                        type: string
+                        example: This is the first milestone.
+                      due_date:
+                        type: string
+                        format: date-time
+                        example: "2024-12-31T23:59:59"
+                      project:
+                        type: string
+                        example: 673a1a914ad37936cc72655c
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T08:20:55.449397"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T08:20:55.449397"
+        "404":
+            description:  project not found.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: project not found
+                      code:
+                        type: integer
+                        example: 404
+      
+      
+                        
+  /api/milestones/{milestoneId}:
     get:
+      tags:
+        - Milestone
       summary: Retrieve milestone details.
       description: View the details of the current milestone.
       parameters:
@@ -63,176 +539,80 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: Milestone details in JSON format.
-
-  /submissions/{milestoneId}:
-    get:
-      summary: List submitted files.
-      description: View all submitted files for the milestone.
-      parameters:
-        - name: milestoneId
-          in: path
-          required: true
-          description: The ID of the milestone.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: List of submitted files.
-    post:
-      summary: Upload a new file.
-      description: Upload a new file for the milestone.
-      parameters:
-        - name: milestoneId
-          in: path
-          required: true
-          description: The ID of the milestone.
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-      responses:
-        "201":
-          description: Confirmation of successful file upload.
-    delete:
-      summary: Remove a submitted file.
-      description: Remove a submitted file.
-      parameters:
-        - name: milestoneId
-          in: path
-          required: true
-          description: The ID of the milestone.
-          schema:
-            type: string
-        - name: fileId
-          in: path
-          required: true
-          description: The ID of the file to remove.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Confirmation of file removal.
-
-  /github/{milestoneId}:
-    get:
-      summary: Retrieve GitHub commit history.
-      description: Get GitHub commit history for the current milestone.
-      parameters:
-        - name: milestoneId
-          in: path
-          required: true
-          description: The ID of the milestone.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: GitHub commit history.
-
-  /feedback/{milestoneId}:
-    get:
-      summary: Retrieve milestone feedback.
-      description: Retrieve feedback for the current milestone.
-      parameters:
-        - name: milestoneId
-          in: path
-          required: true
-          description: The ID of the milestone.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Feedback details.
-
-  /teams/{projectId}:
-    get:
-      summary: View team details.
-      description: View team details and members for the current project.
-      parameters:
-        - name: projectId
-          in: path
-          required: true
-          description: The ID of the project.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Team details.
-
-  /announcements/{projectId}:
-    get:
-      summary: View project announcements.
-      description: View announcements for the current project.
-      parameters:
-        - name: projectId
-          in: path
-          required: true
-          description: The ID of the project.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: List of announcements.
-
-  /resources/{projectId}:
-    get:
-      summary: View project resources.
-      description: View resources for the current project.
-      parameters:
-        - name: projectId
-          in: path
-          required: true
-          description: The ID of the project.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: List of resources.
-    post:
-      summary: Create a new resource.
-      description: Create a new resource for the project.
-      parameters:
-        - name: projectId
-          in: path
-          required: true
-          description: The ID of the project.
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                resourceData:
-                  type: object
-      responses:
-        "201":
-          description: Resource successfully created.
+            "200":
+              description: Request processed successfully.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: Request processed successfully
+                      code:
+                        type: integer
+                        example: 200
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                            example: Milestone 2
+                          description:
+                            type: string
+                            example: Description for Milestone 2
+                          due_date:
+                            type: string
+                            format: date-time
+                            example: '2024-07-31T00:00:00'
+                          project:
+                            type: string
+                            example: 6739736b7618cd3a00d4e9b5
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: '2024-11-17T10:27:22.243000'
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: '2024-11-17T10:27:22.243000'
+            "404":
+              description: Milestone not found.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: Milestone not found
+                      code:
+                        type: integer
+                        example: 404
+                        
+  /api/milestones/{project_id}/{milestone_id}:
     put:
-      summary: Edit a resource.
-      description: Edit an existing resource for the project.
+      tags:
+        - Milestone
+      summary: Update a milestone.
+      description: Update the details of a milestone for a specific project.
       parameters:
-        - name: projectId
+        - name: project_id
           in: path
           required: true
           description: The ID of the project.
           schema:
             type: string
-        - name: resourceId
+        - name: milestone_id
           in: path
           required: true
-          description: The ID of the resource to edit.
+          description: The ID of the milestone.
           schema:
             type: string
       requestBody:
@@ -242,22 +622,958 @@ paths:
             schema:
               type: object
               properties:
-                resourceData:
-                  type: object
+                title:
+                  type: string
+                  example: "Updated Milestone Title"
+                description:
+                  type: string
+                  example: "This is an updated description of the milestone."
+                due_date:
+                  type: string
+                  example: "12/31/24 23:59:59"
       responses:
         "200":
-          description: Resource successfully updated.
+          description: Milestone updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Milestone updated successfully
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "673c4a6788adbf17d4ce88e2"
+                      title:
+                        type: string
+                        example: "Updated Milestone Title"
+                      description:
+                        type: string
+                        example: "This is an updated description of the milestone."
+                      due_date:
+                        type: string
+                        format: date-time
+                        example: "2024-12-31T23:59:59"
+                      project:
+                        type: string
+                        example: "673a1a914ad37936cc72655c"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T08:20:55.449000"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T09:05:25.947819"
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: Milestone updated successfully
+                    code: 200
+                    data:
+                      id: "673c4a6788adbf17d4ce88e2"
+                      title: "Updated Milestone Title"
+                      description: "This is an updated description of the milestone."
+                      due_date: "2024-12-31T23:59:59"
+                      project: "673a1a914ad37936cc72655c"
+                      created_at: "2024-11-19T08:20:55.449000"
+                      updated_at: "2024-11-19T09:05:25.947819"
+        "404":
+          description: Milestone not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Milestone not found
+                  code:
+                    type: integer
+                    example: 404
+              examples:
+                milestone_not_found:
+                  value:
+                    success: false
+                    message: Milestone not found
+                    code: 404
+                project_not_found:
+                  value:
+                    success: false
+                    message: Project not found
+                    code: 404
+  
     delete:
-      summary: Delete a resource.
-      description: Delete a resource from the project.
+      tags:
+        - Milestone
+      summary: Delete a milestone.
+      description: Delete a specific milestone for a project.
       parameters:
-        - name: projectId
+        - name: project_id
           in: path
           required: true
           description: The ID of the project.
           schema:
             type: string
-        - name: resourceId
+        - name: milestone_id
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Milestone deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Milestone deleted successfully
+                  code:
+                    type: integer
+                    example: 200
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: Milestone deleted successfully
+                    code: 200
+        "404":
+          description: Resource not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Milestone not found
+                  code:
+                    type: integer
+                    example: 404
+              examples:
+                milestone_not_found:
+                  value:
+                    success: false
+                    message: Milestone not found
+                    code: 404
+                project_not_found:
+                  value:
+                    success: false
+                    message: Project not found
+                    code: 404
+
+
+                        
+    
+  /api/project:
+    get:
+      tags:
+        - Project
+      summary: Retrieve all projects.
+      description: Get a list of all projects with their details and associated milestones.
+      responses:
+        "200":
+          description: Request processed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Request processed successfully
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 6739736b7618cd3a00d4e9b5
+                        title:
+                          type: string
+                          example: Project Alpha
+                        description:
+                          type: string
+                          example: Description for Project Alpha
+                        deadline:
+                          type: string
+                          format: date-time
+                          example: "2024-12-31T00:00:00"
+                        mentors:
+                          type: array
+                          items:
+                            type: string
+                          example: []
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-17T04:39:07.432000"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-17T04:39:07.432000"
+                        milestones:
+                          type: array
+                          items:
+                            type: string
+                          example: [
+                            "6739c50a5658280e7567203f",
+                            "6739c50a5658280e75672040",
+                            "6739c50a5658280e75672041",
+                            "6739c565c87af9b20a0ab4d4",
+                            "6739c565c87af9b20a0ab4d5",
+                            "6739c565c87af9b20a0ab4d6"
+                          ]
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: Request processed successfully
+                    code: 200
+                    data:
+                      - id: 6739736b7618cd3a00d4e9b5
+                        title: Project Alpha
+                        description: Description for Project Alpha
+                        deadline: "2024-12-31T00:00:00"
+                        mentors: []
+                        created_at: "2024-11-17T04:39:07.432000"
+                        updated_at: "2024-11-17T04:39:07.432000"
+                        milestones:
+                          - 6739c50a5658280e7567203f
+                          - 6739c50a5658280e75672040
+                          - 6739c50a5658280e75672041
+                          - 6739c565c87af9b20a0ab4d4
+                          - 6739c565c87af9b20a0ab4d5
+                          - 6739c565c87af9b20a0ab4d6
+                      - id: 6739736c7618cd3a00d4e9b6
+                        title: Project Beta
+                        description: Description for Project Beta
+                        deadline: "2024-11-30T00:00:00"
+                        mentors: []
+                        created_at: "2024-11-17T04:39:08.165000"
+                        updated_at: "2024-11-17T04:39:08.165000"
+                        milestones: []
+ 
+    post:
+      tags:
+        - Project
+      summary: Create a new project.
+      description: Add a new project with its details and associated mentors.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the project.
+                  example: New Project
+                description:
+                  type: string
+                  description: A description of the project.
+                  example: This is a description of the new project.
+                deadline:
+                  type: string
+                  format: date-time
+                  description: The deadline for the project.
+                  example: "2024-12-31T23:59:59"
+                mentors:
+                  type: array
+                  items:
+                    type: string
+                  description: A list of mentor IDs associated with the project.
+                  example: ["672a2e5508de9792700b3c1b"]
+              required:
+                - title
+                - description
+                - deadline
+      responses:
+        "200":
+          description: Project created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Project created successfully
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 673c67c6bcf9c55e26d2604f
+                      title:
+                        type: string
+                        example: New Project
+                      description:
+                        type: string
+                        example: This is a description of the new project.
+                      deadline:
+                        type: string
+                        format: date-time
+                        example: "2024-12-31T23:59:59"
+                      mentors:
+                        type: array
+                        items:
+                          type: string
+                        example: ["672a2e5508de9792700b3c1b"]
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T10:26:14.110337"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T10:26:14.110337"
+                      milestones:
+                        type: array
+                        items:
+                          type: string
+                        example: []
+        "400":
+          description: Missing required field in the input.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Missing required field - title
+                  code:
+                    type: integer
+                    example: 400
+
+  /api/projects/user/{user_id}:
+    get:
+      tags:
+        - Project
+      summary: Retrieve projects for a specific user.
+      description: Fetch the list of projects associated with a user by their user ID.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The ID of the user whose projects are to be fetched.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Request processed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Request processed successfully
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "6739a225f820acac986de4e5"
+                        title:
+                          type: string
+                          example: "New Project2"
+                        description:
+                          type: string
+                          example: "This is a description of the new project."
+                        deadline:
+                          type: string
+                          format: date-time
+                          example: "2024-12-31T23:59:59"
+                        mentors:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                            - "672a2e5508de9792700b3c1b"
+                            - "672dd5186cc42a25f60ec26e"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-17T07:58:29.765000"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-17T07:58:29.765000"
+                        milestones:
+                          type: array
+                          items:
+                            type: string
+                          example: []
+  /api/project/{project_id}:
+    get:
+      tags:
+        - Project
+      summary: Retrieve a project by its ID.
+      description: Fetch the details of a specific project using its project ID.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to be retrieved.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Request processed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Request processed successfully"
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "6739736c7618cd3a00d4e9b6"
+                      title:
+                        type: string
+                        example: "Project Beta"
+                      description:
+                        type: string
+                        example: "Description for Project Beta"
+                      deadline:
+                        type: string
+                        format: date-time
+                        example: "2024-11-30T00:00:00"
+                      mentors:
+                        type: array
+                        items:
+                          type: string
+                        example: []
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-17T04:39:08.165000"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-17T04:39:08.165000"
+                      milestones:
+                        type: array
+                        items:
+                          type: string
+                        example: []
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Project not found"
+                  code:
+                    type: integer
+                    example: 404
+
+  
+    put:
+      tags:
+        - Project
+      summary: Update a project by its ID.
+      description: Update the details of an existing project using the provided project ID.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to be updated.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Updated Project Title"
+                description:
+                  type: string
+                  example: "This is an updated description."
+                deadline:
+                  type: string
+                  format: date-time
+                  example: "2024-12-31T23:59:59"
+                mentors:
+                  type: array
+                  items:
+                    type: string
+                  example: ["672a2e5508de9792700b3c1b", "672dd5186cc42a25f60ec26e"]
+      responses:
+        "200":
+          description: Project updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Project updated successfully"
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "673a1a914ad37936cc72655c"
+                      title:
+                        type: string
+                        example: "Updated Project Title"
+                      description:
+                        type: string
+                        example: "This is an updated description."
+                      deadline:
+                        type: string
+                        format: date-time
+                        example: "2024-12-31T23:59:59"
+                      mentors:
+                        type: array
+                        items:
+                          type: string
+                        example: ["672a2e5508de9792700b3c1b", "672dd5186cc42a25f60ec26e"]
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-17T16:32:17.651000"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T11:26:52.100059"
+                      milestones:
+                        type: array
+                        items:
+                          type: string
+                        example: []
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Project not found"
+                  code:
+                    type: integer
+                    example: 404
+                    
+  
+    delete:
+      tags:
+        - Project
+      summary: Delete a project by its ID.
+      description: Delete a project using the provided project ID.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to be deleted.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Project deleted successfully"
+                  code:
+                    type: integer
+                    example: 200
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Project not found"
+                  code:
+                    type: integer
+                    example: 404
+
+
+  /api/resource/{project_id}:
+    get:
+      tags:
+        - Resource
+      summary: Retrieve resources for a specific project.
+      description: Fetch all resources associated with the specified project ID.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to fetch resources for.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Request processed successfully, resources found for the project.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Request processed successfully"
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "673adabaca0bb57e4742bbe3"
+                        project:
+                          type: string
+                          example: "673a1a914ad37936cc72655c"
+                        title:
+                          type: string
+                          example: "Resource Title"
+                        url:
+                          type: string
+                          example: "http://example.com/resource"
+                        description:
+                          type: string
+                          example: "This is a description of the resource."
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-18T06:12:10.925000"
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Project not found"
+                  code:
+                    type: integer
+                    example: 404
+
+  
+    post:
+      tags:
+        - Resource
+      summary: Add a new resource for a specific project.
+      description: Create a new resource associated with the given project ID.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to add the resource to.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Resource Title"
+                url:
+                  type: string
+                  example: "http://example.com/resource"
+                description:
+                  type: string
+                  example: "This is a description of the resource."
+      responses:
+        "200":
+          description: Resource added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Resource added successfully"
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "673c81e362aa931f142abfb6"
+                      project:
+                        type: string
+                        example: "673c6b4bbcf9c55e26d26050"
+                      title:
+                        type: string
+                        example: "Resource Title"
+                      url:
+                        type: string
+                        example: "http://example.com/resource"
+                      description:
+                        type: string
+                        example: "This is a description of the resource."
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T12:17:39.812527"
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Project not found"
+                  code:
+                    type: integer
+                    example: 404
+        "400":
+          description: Missing required field.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Missing required field: title"
+                  code:
+                    type: integer
+                    example: 400
+  /api/resource/{project_id}/{resource_id}:
+    put:
+      tags:
+        - Resource
+      summary: Update a resource for a specific project.
+      description: Modify the details of an existing resource associated with the given project and resource IDs.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project the resource belongs to.
+          schema:
+            type: string
+        - name: resource_id
+          in: path
+          required: true
+          description: The ID of the resource to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Updated Resource Title"
+                url:
+                  type: string
+                  example: "http://example.com/updated-resource"
+                description:
+                  type: string
+                  example: "This is an updated description of the resource."
+      responses:
+        "200":
+          description: Resource updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Resource updated successfully"
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "673c7ff262aa931f142abfb5"
+                      project:
+                        type: string
+                        example: "673c6b4bbcf9c55e26d26050"
+                      title:
+                        type: string
+                        example: "Updated Resource Title"
+                      url:
+                        type: string
+                        example: "http://example.com/updated-resource"
+                      description:
+                        type: string
+                        example: "This is an updated description of the resource."
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T12:09:22.396000"
+        "404":
+          description: Project or resource not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Project not found
+                  code:
+                    type: integer
+                    example: 404
+              examples:
+                project_not_found:
+                  value:
+                    success: false
+                    message: Project not found
+                    code: 404
+                resource_not_found:
+                  value:
+                    success: false
+                    message: Resource not found
+                    code: 404
+ 
+    delete:
+      tags:
+        - Resource
+      summary: Delete a resource from a specific project.
+      description: Remove a resource identified by its ID from the specified project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project the resource belongs to.
+          schema:
+            type: string
+        - name: resource_id
           in: path
           required: true
           description: The ID of the resource to delete.
@@ -265,16 +1581,842 @@ paths:
             type: string
       responses:
         "200":
-          description: Resource successfully deleted.
+          description: Resource deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Resource deleted successfully"
+                  code:
+                    type: integer
+                    example: 200
+        "404":
+          description: Project or resource not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Resource not found
+                  code:
+                    type: integer
+                    example: 404
+              examples:
+                project_not_found:
+                  value:
+                    success: false
+                    message: Project not found
+                    code: 404
+                resource_not_found:
+                  value:
+                    success: false
+                    message: Resource not found
+                    code: 404
+  /api/projects/{project_id}/milestones/{milestone_id}/submissions/{milestone_submission_id}/feedbacks:
+      get:
+        tags:
+          - Feedback
+        summary: Get feedbacks for a specific milestone submission.
+        description: Retrieve all feedbacks for the specified milestone submission in a project.
+        parameters:
+          - name: project_id
+            in: path
+            required: true
+            description: The ID of the project.
+            schema:
+              type: string
+          - name: milestone_id
+            in: path
+            required: true
+            description: The ID of the milestone.
+            schema:
+              type: string
+          - name: milestone_submission_id
+            in: path
+            required: true
+            description: The ID of the milestone submission.
+            schema:
+              type: string
+        responses:
+          "200":
+            description: Feedbacks retrieved successfully.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Request processed successfully"
+                    code:
+                      type: integer
+                      example: 200
+                    feedbacks:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "6739cc4f4b9a5c9e5c7b6c22"
+                          project_title:
+                            type: string
+                            example: "Project Alpha"
+                          project_id:
+                            type: string
+                            example: "6739736b7618cd3a00d4e9b5"
+                          milestone_title:
+                            type: string
+                            example: "Milestone 1"
+                          milestone_id:
+                            type: string
+                            example: "6739c50a5658280e7567203f"
+                          team_name:
+                            type: string
+                            example: "Team Gambit"
+                          team_id:
+                            type: string
+                            example: "6739c50a5658280e75672042"
+                          content:
+                            type: string
+                            example: "Updated feedback for milestone-1, team gambit"
+                          posted_by:
+                            type: string
+                            example: "21f2000061"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2024-11-17T10:58:23.637000"
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: "2024-11-17T10:58:23.637000"
+          "404":
+            description: Milestone submission not found.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: false
+                    message:
+                      type: string
+                      example: "Milestone Submission not found"
+                    code:
+                      type: integer
+                      example: 404
+  
+      post:
+        tags:
+          - Feedback
+        summary: Add feedback for a specific milestone submission.
+        description: Add a new feedback entry for the specified milestone submission within a project.
+        parameters:
+          - name: project_id
+            in: path
+            required: true
+            description: The ID of the project.
+            schema:
+              type: string
+          - name: milestone_id
+            in: path
+            required: true
+            description: The ID of the milestone.
+            schema:
+              type: string
+          - name: milestone_submission_id
+            in: path
+            required: true
+            description: The ID of the milestone submission.
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                    description: The content of the feedback.
+                    example: "This is the feedback content."
+        responses:
+          "201":
+            description: Feedback created successfully.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    code:
+                      type: integer
+                      example: 201
+                    message:
+                      type: string
+                      example: "Success"
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "5f8d0d55b54764421b7156c7"
+                        project_title:
+                          type: string
+                          example: "Project Title"
+                        project_id:
+                          type: string
+                          example: "5f8d0d55b54764421b7156c6"
+                        milestone_title:
+                          type: string
+                          example: "Milestone Title"
+                        milestone_id:
+                          type: string
+                          example: "5f8d0d55b54764421b7156c5"
+                        team_name:
+                          type: string
+                          example: "Team Name"
+                        team_id:
+                          type: string
+                          example: "5f8d0d55b54764421b7156c4"
+                        content:
+                          type: string
+                          example: "This is the feedback content."
+                        posted_by:
+                          type: string
+                          example: "username"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-19T15:41:58.753Z"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-19T15:41:58.753Z"
+          "404":
+            description: Milestone submission not found.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: false
+                    code:
+                      type: integer
+                      example: 404
+                    message:
+                      type: string
+                      example: "Milestone Submission not found"
+               
 
+  /api/projects/{project_id}/milestones/{milestone_id}/submissions/{milestone_submission_id}/feedbacks/{id}:
+    put:
+      tags:
+        - Feedback
+      summary: Update feedback for a specific milestone submission.
+      description: Update the feedback content for the specified feedback entry within a milestone submission of a project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+        - name: milestone_id
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+        - name: milestone_submission_id
+          in: path
+          required: true
+          description: The ID of the milestone submission.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The ID of the feedback.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: The updated feedback content.
+                  example: "This is the updated feedback content."
+      responses:
+        "200":
+          description: Feedback updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c7"
+                      milestone_submission:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c6"
+                      team:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c5"
+                      content:
+                        type: string
+                        example: "This is the updated feedback content."
+                      posted_by:
+                        type: string
+                        example: "username"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+        "404":
+          description: Feedback not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Feedback not found"
+              
+
+
+    delete:
+      tags:
+        - Feedback
+      summary: Delete a specific feedback for a milestone submission.
+      description: Deletes the feedback identified by the given `id` within the specified project, milestone, and milestone submission.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project.
+          schema:
+            type: string
+        - name: milestone_id
+          in: path
+          required: true
+          description: The ID of the milestone.
+          schema:
+            type: string
+        - name: milestone_submission_id
+          in: path
+          required: true
+          description: The ID of the milestone submission.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The ID of the feedback to delete.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Feedback deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Feedback deleted successfully"
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Feedback deleted successfully"
+        "404":
+          description: Feedback not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Feedback not found"
+              examples:
+                feedback_not_found:
+                  value:
+                    code: 404
+                    message: "Feedback not found"
+
+  /api/{project_id}/announcements:
+    get:
+      tags:
+        - Announcements
+      summary: Retrieve all announcements for a specific project.
+      description: Fetches a list of announcements associated with the specified project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to fetch announcements for.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved announcements.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "5f8d0d55b54764421b7156c7"
+                        title:
+                          type: string
+                          example: "Announcement Title 1"
+                        content:
+                          type: string
+                          example: "This is the content of the first announcement."
+                        posted_by:
+                          type: string
+                          example: "username1"
+                        project_id:
+                          type: string
+                          example: "5f8d0d55b54764421b7156c6"
+                        project_title:
+                          type: string
+                          example: "Project Title"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-19T15:41:58.753Z"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: "2024-11-19T15:41:58.753Z"
+              
+  /api/{project_id}/announcements/{id}:
+    get:
+      tags:
+        - Announcements
+      summary: Retrieve a specific announcement for a project.
+      description: Fetches the details of a specific announcement associated with a project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to which the announcement belongs.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The ID of the announcement to retrieve.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved the announcement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c7"
+                      title:
+                        type: string
+                        example: "Announcement Title"
+                      content:
+                        type: string
+                        example: "This is the content of the announcement."
+                      posted_by:
+                        type: string
+                        example: "username"
+                      project_id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c6"
+                      project_title:
+                        type: string
+                        example: "Project Title"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+
+  
+    post:
+      tags:
+        - Announcements
+      summary: Create a new announcement for a project.
+      description: Adds a new announcement to the specified project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project to add the announcement to.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "New Announcement"
+                content:
+                  type: string
+                  example: "This is the content of the new announcement."
+      responses:
+        "201":
+          description: Announcement created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c7"
+                      title:
+                        type: string
+                        example: "New Announcement"
+                      content:
+                        type: string
+                        example: "This is the content of the new announcement."
+                      posted_by:
+                        type: string
+                        example: "username"
+                      project_id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c6"
+                      project_title:
+                        type: string
+                        example: "Project Title"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Project not found"
+
+  
+    put:
+      tags:
+        - Announcements
+      summary: Update an existing announcement for a project.
+      description: Updates the details of a specific announcement in a given project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project containing the announcement.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The ID of the announcement to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Updated Announcement Title"
+                content:
+                  type: string
+                  example: "This is the updated content of the announcement."
+      responses:
+        "200":
+          description: Announcement updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c7"
+                      title:
+                        type: string
+                        example: "Updated Announcement Title"
+                      content:
+                        type: string
+                        example: "This is the updated content of the announcement."
+                      posted_by:
+                        type: string
+                        example: "username"
+                      project_id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156c6"
+                      project_title:
+                        type: string
+                        example: "Project Title"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2024-11-19T15:41:58.753Z"
+            
+        "404":
+          description: Announcement not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Announcement not found"
+                    
+
+    delete:
+      tags:
+        - Announcements
+      summary: Delete a specific announcement for a project.
+      description: Deletes the announcement with the given ID in the specified project.
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The ID of the project containing the announcement to delete.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The ID of the announcement to delete.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Announcement deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Announcement deleted successfully"
+              
+        "404":
+          description: Announcement not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "Announcement not found"
+                    
+                    
+                    
 components:
   schemas:
     User:
-      type: object
-      properties:
-        userId:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
+        type: object
+        properties:
+          id:
+            type: string
+            description: Unique identifier for the user
+          username:
+            type: string
+            description: Username of the user
+          email:
+            type: string
+            format: email
+            description: Email address of the user
+          github_id:
+            type: string
+            nullable: true
+            description: GitHub ID of the user, if available
+          role:
+            type: string
+            description: Role of the user (e.g., student, admin, etc.)
+          status:
+            type: integer
+            description: Status of the user (e.g., active, inactive)
+    Team:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Unique identifier for the team
+          team_name:
+            type: string
+            description: Name of the team
+          project_status:
+            type: string
+            nullable: true
+            description: Current status of the project associated with the team
+          grade:
+            type: string
+            nullable: true
+            description: Grade of the team for the project, if available
+          project_id:
+            type: string
+            description: Unique identifier for the project associated with the team
+          project_title:
+            type: string
+            description: Title of the project associated with the team
+          members:
+            type: array
+            items:
+              type: string
+              format: email
+              description: Email addresses of team members
+          created_at:
+            type: string
+            format: date-time
+            description: Timestamp when the team was created
+          updated_at:
+            type: string
+            format: date-time
+            description: Timestamp when the team was last updated
+            
+    securitySchemes:
+      jwtAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+
+             

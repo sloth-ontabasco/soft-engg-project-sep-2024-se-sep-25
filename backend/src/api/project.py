@@ -21,7 +21,7 @@ class ProjectAPI(Resource):
     def get(self):
         """
         Route: GET /api/project
-        Description: Retrieves the project details of the currently authenticated user.
+        Description: Retrieves the project details.
         Requires JWT authentication.
         """
         projects = Project.objects()
@@ -63,20 +63,20 @@ class ProjectAPI(Resource):
         project.save()
         return Response.success(data=project.to_dict(), message="Project created successfully")
     
-class ProjectsByMentorAPI(Resource):
+class ProjectsByUserAPI(Resource):
     
     @check_any_role(roles=['instructor', 'admin','student'])
-    def get(self, mentor_id):
+    def get(self, user_id):
         """
-        Route: GET /api/projects/instructor/<mentor_id>
-        Description: Retrieves all projects assigned to a specific mentor.
+        Route: GET /api/projects/user/<user_id>
+        Description: Retrieves all projects assigned to a specific user.
         Requires JWT authentication.
         """
-        mentor = User.objects(id=mentor_id).first()
-        if not mentor:
-            return Response.error(code=404, message="Mentor not found")
+        user = User.objects(id=user_id).first()
+        if not user:
+            return Response.error(code=404, message="User not found")
         
-        projects = Project.objects(mentors=mentor)
+        projects = Project.objects(mentors=user)
         return Response.success(data=[project.to_dict() for project in projects])
     
 class ProjectByIdAPI(Resource):
@@ -119,4 +119,17 @@ class ProjectByIdAPI(Resource):
 
         project.save()
         return Response.success(data=project.to_dict(), message="Project updated successfully")
+    
+    def delete(self, project_id):
+        """
+        Route: DELETE /api/project/<project_id>
+        Description: Deletes a specific project by its ID.
+        Requires JWT authentication.
+        """
+        project = Project.objects(id=project_id).first()
+        if not project:
+            return Response.error(code=404, message="Project not found")
+        
+        project.delete()
+        return Response.success(message="Project deleted successfully")
 

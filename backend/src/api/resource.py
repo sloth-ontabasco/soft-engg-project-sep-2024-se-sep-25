@@ -62,7 +62,7 @@ class ProjectResourcesAPI(Resource):
     @check_any_role(roles=['instructor', 'admin'])
     def put(self, project_id, resource_id):
         """
-        Route: PUT /api/resources/<project_id>/<resource_id>
+        Route: PUT /api/resource/<project_id>/<resource_id>
         Description: Edits a resource for a specific project.
         Requires JWT authentication.
         """
@@ -88,7 +88,7 @@ class ProjectResourcesAPI(Resource):
     @check_any_role(roles=['instructor', 'admin'])
     def delete(self, project_id, resource_id):
         """
-        Route: DELETE /api/resources/<project_id>/<resource_id>
+        Route: DELETE /api/resource/<project_id>/<resource_id>
         Description: Deletes a resource for a specific project.
         Requires JWT authentication.
         """

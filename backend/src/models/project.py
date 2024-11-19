@@ -23,5 +23,5 @@ class Project(db.Document):
             "mentors": [str(mentor.id) for mentor in self.mentors],
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "milestones": self.milestones
+            "milestones": [str(milestone.id) for milestone in self.milestones]
         }

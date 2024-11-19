@@ -69,7 +69,7 @@ def setup_api(app, api):
 
     # Project Routes
     api.add_resource(ProjectAPI,"/api/project")
-    api.add_resource(ProjectsByMentorAPI, '/api/project/instructor/<string:mentor_id>')
+    api.add_resource(ProjectsByUserAPI, '/api/project/user/<string:user_id>')
     api.add_resource(ProjectByIdAPI, '/api/project/<string:project_id>')
 
 
@@ -80,9 +80,8 @@ def setup_api(app, api):
 
 
     # Resource Routes
-    api.add_resource(ProjectResourcesAPI, '/api/resources/<string:project_id>','/api/resources/<string:project_id>/<string:resource_id>')
-    # api.add_resource(ProjectResourcesAPI, '/api/resources/<string:project_id>/<string:resource_id>')
-
+    api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resource/<string:project_id>/<string:resource_id>')
+    
 
 
 def list_routes(app: Flask):

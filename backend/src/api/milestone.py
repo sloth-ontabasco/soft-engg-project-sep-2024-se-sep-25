@@ -28,21 +28,7 @@ class MilestoneAPI(Resource):
         
         return Response.success(data=milestone.to_dict())
     
-class MilestoneSubmissionsAPI(Resource):
-    
-    @check_any_role(roles=['instructor', 'admin','student'])
-    def get(self, milestone_id):
-        """
-        Route: GET /api/milestones/<milestone_id>/submissions
-        Description: Retrieves all submissions for a specific milestone.
-        Requires JWT authentication.
-        """
-        milestone = Milestone.objects(id=milestone_id).first()
-        if not milestone:
-            return Response.error(code=404, message="Milestone not found")
-        
-        submissions = MilestoneSubmission.objects(milestone=milestone)
-        return Response.success(data=[submission.to_dict() for submission in submissions])
+
     
 class ProjectMilestonesAPI(Resource):
     

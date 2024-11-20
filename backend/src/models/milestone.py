@@ -6,7 +6,7 @@ class Milestone(db.Document):
     title = db.StringField(max_length=128, required=True)
     description = db.StringField()
     due_date = db.DateTimeField()
-    project = db.ReferenceField("Project", required=True, reverse_delete_rule=db.CASCADE)  # Delete milestone if project is deleted
+    project = db.ReferenceField("Project", required=True)  # Delete milestone if project is deleted
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 

@@ -19,9 +19,9 @@ class Project(db.Document):
             "id": str(self.id),
             "title": self.title,
             "description": self.description,
-            "deadline": self.deadline,
-            "mentors": [mentor.email for mentor in self.mentors],
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "milestone_ids": [str(milestone.id) for milestone in self.milestones]
+            "deadline": self.deadline.isoformat() if self.deadline else None,
+            "mentors": [str(mentor.id) for mentor in self.mentors],
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "milestones": [str(milestone.id) for milestone in self.milestones]
         }

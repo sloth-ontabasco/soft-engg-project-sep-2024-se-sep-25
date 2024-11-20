@@ -70,7 +70,7 @@ class UserAPI(Resource):
                 github_id=data.get('github_id', current_user.github_id),
             )
             print(f"User with id {user_id} updated successfully")
-            return Response.success(200, message="User updated successfully")
+            return Response.success(200, user=current_user.reload().to_dict(), message="User updated successfully")
 
         except Exception as e:
             print(f"Error occurred: {e}")

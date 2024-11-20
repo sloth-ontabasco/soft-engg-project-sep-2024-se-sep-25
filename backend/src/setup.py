@@ -9,7 +9,9 @@ from src.api.users import *
 from src.api.teams import *
 from src.api.announcements import *
 from src.api.feedbacks import *
-
+from src.api.project import *
+from src.api.milestone import *
+from src.api.resource import *
 
 def setup_auth(app: Flask):
  
@@ -72,6 +74,23 @@ def setup_api(app, api):
     api.add_resource(FeedbackAPI, 
                      "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks",
                      "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>")
+
+    # Project Routes
+    api.add_resource(ProjectAPI,"/api/project")
+    api.add_resource(ProjectsByUserAPI, '/api/project/user/<string:user_id>')
+    api.add_resource(ProjectByIdAPI, '/api/project/<string:project_id>')
+
+
+    # Milestone Routes 
+    api.add_resource(MilestoneAPI, '/api/milestones/<string:milestone_id>')
+    api.add_resource(ProjectMilestonesAPI,"/api/project/milestones/<project_id>")
+    api.add_resource(EditDeleteMilestoneAPI, '/api/milestones/<string:project_id>/<string:milestone_id>')
+
+
+    # Resource Routes
+    api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resource/<string:project_id>/<string:resource_id>')
+    
+
 
 def list_routes(app: Flask):
 

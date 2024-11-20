@@ -16,11 +16,10 @@ class Resource(db.Document):
     def to_dict(self):
         return {
             "id": str(self.id),
-            "project_id": str(self.project.id),
-            "project_title": self.project.title,
+            "project": str(self.project.id) if self.project else None,
             "title": self.title,
             "url": self.url,
             "description": self.description,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+
         }

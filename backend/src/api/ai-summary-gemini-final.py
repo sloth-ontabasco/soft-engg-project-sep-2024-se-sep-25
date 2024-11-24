@@ -134,13 +134,40 @@ milestone_description = "Identify users of the application - primary, secondary 
 # milestone_title = "Scheduling and Design"
 # milestone_description = "Project Schedule - come up with a schedule of your overall project based on the user stories created in the previous milestones. Create a schedule for your sprints and iterations, timings of your scrum meetings etc. Trello board, Gantt chart - specifying your tasks and contributions. Project Scheduling Tools - which tools are you using? E.g. Pivotal Tracker, Jira. Design of Components - Describe different components of your system based on the user stories created in the previous milestones. Software Design - Basic class diagrams of your proposed system. Details/Minutes of a few scrum meetings. Most of the pages in the UI."
 
+def process_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description, output_pdf_path):
+    start_time = time.time()
+    generative_summary = summarize_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description)
+    end_time = time.time()
+    
+    print(f"Time taken to generate response: {end_time - start_time} seconds")
+    
+    # Call the save_summary_to_pdf method (assuming it takes the summary as a parameter)
+    save_summary_to_pdf(generative_summary, output_pdf_path)
 
-start_time = time.time()
-generative_summary = summarize_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description)
-end_time = time.time()
 
-print(f"Time taken to generate response: {end_time - start_time} seconds")
+############################################################################################################
+##################################START OF THE MAIN METHOD################################################
+############################################################################################################
 
-# Save summaries and similarity score to PDF
-output_pdf_path = os.path.join(os.getcwd(), "backend\\src\\api\\reports", "summary_report.pdf")
-save_summary_to_pdf(generative_summary, output_pdf_path)
+if __name__ == "__main__":
+    #example values below. 
+    zip_file_path = os.path.join(os.getcwd(), "backend", "src", "api", "submissions", "milestone_1.zip")
+    rubrix_file_path = os.path.join(os.getcwd(), "backend", "src", "api", "submissions", "milestone_1_rubrix.png")
+    milestone_title = "Identify User Requirements"
+    milestone_description = "Identify users of the application - primary, secondary and tertiary users. Write user stories for the requirements, based on the SMART guidelines discussed in the lectures."
+    output_pdf_path = os.path.join(os.getcwd(), "backend", "src", "api", "reports", "summary_report.pdf")
+    process_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description, output_pdf_path)
+    
+    #general method. 
+    # this will be un-commented when the above code is integrated with the backend API
+    
+    # parser = argparse.ArgumentParser(description='Process some files.')
+    # parser.add_argument('zip_file_path', type=str, help='Path to the zip file')
+    # parser.add_argument('rubrix_file_path', type=str, help='Path to the rubrix file')
+    # parser.add_argument('milestone_title', type=str, help='Title of the milestone')
+    # parser.add_argument('milestone_description', type=str, help='Description of the milestone')
+    # parser.add_argument('milestone_description', type=str, help='Path for the output PDF file')
+
+    # args = parser.parse_args()
+
+    # process_files(args.zip_file_path, args.rubrix_file_path, args.milestone_title, args.milestone_description)

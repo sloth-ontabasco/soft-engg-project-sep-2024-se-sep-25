@@ -98,26 +98,35 @@ def generate_content(prompt, context):
     return response.text
 
 def upload_file_to_gemini(image_path, context):
+    start_time = time.time()
     image = genai.upload_file(image_path)
     context.append(image)
     print("Image Uploaded : ", image.name)
+    end_time = time.time()
+    print(f"Time taken to upload rubrix to Gemini: {end_time - start_time} seconds")
             
 def summarize_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description):
     prompt = generate_evaluation_prompt(milestone_title, milestone_description);
     files = extract_zip(zip_file_path)
     context = [prompt];
     
-    if(rubrix_file_path):
+    if(rubrix_file_path.strip() != ""):
         file_path = os.path.join("submissions", rubrix_file_path)
         upload_file_to_gemini(file_path, context)
     
     for file_name in files:
         file_path = os.path.join("extracted_files", file_name)
+        start_time = time.time()
         sample_pdf = genai.upload_file(file_path)
+        end_time = time.time()
+        print(f"Time taken to upload PDF file to Gemini: {end_time - start_time} seconds")
         context.append(sample_pdf)
         model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+        start_time = time.time()
         response = model.generate_content(context)
-
+        end_time = time.time()
+        print(f"Time taken to generate response from Gen AI: {end_time - start_time} seconds")
+        
     return response.text
 
 # Example usage
@@ -139,7 +148,7 @@ def process_files(zip_file_path, rubrix_file_path, milestone_title, milestone_de
     generative_summary = summarize_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description)
     end_time = time.time()
     
-    print(f"Time taken to generate response: {end_time - start_time} seconds")
+    print(f"Time taken to generate overall response: {end_time - start_time} seconds")
     
     # Call the save_summary_to_pdf method (assuming it takes the summary as a parameter)
     save_summary_to_pdf(generative_summary, output_pdf_path)
@@ -153,6 +162,7 @@ if __name__ == "__main__":
     #example values below. 
     zip_file_path = os.path.join(os.getcwd(), "backend", "src", "api", "submissions", "milestone_1.zip")
     rubrix_file_path = os.path.join(os.getcwd(), "backend", "src", "api", "submissions", "milestone_1_rubrix.png")
+    # rubrix_file_path = ""; # No rubrix file provided
     milestone_title = "Identify User Requirements"
     milestone_description = "Identify users of the application - primary, secondary and tertiary users. Write user stories for the requirements, based on the SMART guidelines discussed in the lectures."
     output_pdf_path = os.path.join(os.getcwd(), "backend", "src", "api", "reports", "summary_report.pdf")
@@ -166,7 +176,7 @@ if __name__ == "__main__":
     # parser.add_argument('rubrix_file_path', type=str, help='Path to the rubrix file')
     # parser.add_argument('milestone_title', type=str, help='Title of the milestone')
     # parser.add_argument('milestone_description', type=str, help='Description of the milestone')
-    # parser.add_argument('milestone_description', type=str, help='Path for the output PDF file')
+    # parser.add_argument('output_pdf_path', type=str, help='Path for the output PDF file')
 
     # args = parser.parse_args()
 

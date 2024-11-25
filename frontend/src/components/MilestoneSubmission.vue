@@ -43,18 +43,34 @@
           </ul>
 
           <!-- Buttons: Upload, Download, Delete -->
-          <div class="flex gap-2 mt-4">
-            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
-              Upload Files
-              <input type="file" class="hidden" @change="handleFileUpload" />
-            </label>
-            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
-              Download
-            </button>
-            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
-              Delete
-            </button>
+          <div class="flex justify-between mt-4">
+            <!-- Left-aligned buttons -->
+            <div class="flex gap-2">
+              <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
+                Upload Files
+                <input type="file" class="hidden" @change="handleFileUpload" />
+              </label>
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
+                Download
+              </button>
+              <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
+                Delete
+              </button>
+            </div>
+            
+            <!-- Right-aligned button -->
+            <div>
+              <button 
+                class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
+                :disabled="!isMilestoneSubmitted "
+                @click="getReport"
+              >
+                GenAI Report
+              </button>
+            </div>
           </div>
+
         </div>
 
         <!-- GitHub Tracker Section -->
@@ -87,6 +103,11 @@
 <script>
 export default {
   name: "MilestoneSubmission",
+  data(){
+    return{
+      isMilestoneSubmitted:false
+    }
+  },
   methods: {
     handleFileUpload(event) {
       const files = event.target.files;
@@ -102,6 +123,9 @@ export default {
     deleteAllSubmissions() {
       console.log("Deleting all submissions...");
       // Implement delete all submissions logic here
+    },
+    getReport(){
+
     }
   }
 };

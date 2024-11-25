@@ -82,6 +82,7 @@ class ProjectAnalyticsAPI(Resource):
                 "total_students": total_students,
                 "total_tas": total_tas,
                 "late_submission_change": late_submission_change,
+                "days_till_due": (current_milestone.due_date - current_date).days,
                 "submissions_by_milestone": submissions_by_milestone,
             }
 

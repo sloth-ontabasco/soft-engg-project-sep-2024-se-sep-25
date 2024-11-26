@@ -12,6 +12,7 @@ from src.api.feedbacks import *
 from src.api.project import *
 from src.api.milestone import *
 from src.api.resource import *
+from src.api.submission import MilestoneSubmissionAPI  # Import the API resource
 
 def setup_auth(app: Flask):
  
@@ -86,7 +87,9 @@ def setup_api(app, api):
     api.add_resource(ProjectMilestonesAPI,"/api/project/milestones/<project_id>")
     api.add_resource(EditDeleteMilestoneAPI, '/api/milestones/<string:project_id>/<string:milestone_id>')
 
-
+    # Milestone Submission Routes
+    api.add_resource(MilestoneSubmissionAPI, "/api/submission", "/api/submission/<string:submission_id>")
+    
     # Resource Routes
     api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resource/<string:project_id>/<string:resource_id>')
     

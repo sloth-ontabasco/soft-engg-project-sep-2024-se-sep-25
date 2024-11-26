@@ -8,7 +8,6 @@ import shutil
 import google.generativeai as genai
 import os
 
-# genai.configure(api_key=os.environ["API_KEY"])
 genai.configure(api_key="AIzaSyD2SrL0lIQjWz9s_-k-CDYAJEl5C4SXbCo")
 
 def generate_evaluation_prompt(milestone_title, milestone_description):
@@ -143,7 +142,12 @@ milestone_description = "Identify users of the application - primary, secondary 
 # milestone_title = "Scheduling and Design"
 # milestone_description = "Project Schedule - come up with a schedule of your overall project based on the user stories created in the previous milestones. Create a schedule for your sprints and iterations, timings of your scrum meetings etc. Trello board, Gantt chart - specifying your tasks and contributions. Project Scheduling Tools - which tools are you using? E.g. Pivotal Tracker, Jira. Design of Components - Describe different components of your system based on the user stories created in the previous milestones. Software Design - Basic class diagrams of your proposed system. Details/Minutes of a few scrum meetings. Most of the pages in the UI."
 
-def process_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description, output_pdf_path):
+def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description, output_pdf_path):
+    
+    temp_zip_path = "temp_milestone.zip"
+    with open(temp_zip_path, "wb") as temp_zip_file:
+        temp_zip_file.write(zip_file_data)
+        
     start_time = time.time()
     generative_summary = summarize_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description)
     end_time = time.time()
@@ -153,6 +157,7 @@ def process_files(zip_file_path, rubrix_file_path, milestone_title, milestone_de
     # Call the save_summary_to_pdf method (assuming it takes the summary as a parameter)
     save_summary_to_pdf(generative_summary, output_pdf_path)
 
+    os.remove(temp_zip_path)
 
 ############################################################################################################
 ##################################START OF THE MAIN METHOD################################################
@@ -167,7 +172,6 @@ if __name__ == "__main__":
     milestone_description = "Identify users of the application - primary, secondary and tertiary users. Write user stories for the requirements, based on the SMART guidelines discussed in the lectures."
     output_pdf_path = os.path.join(os.getcwd(), "backend", "src", "api", "reports", "summary_report.pdf")
     process_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description, output_pdf_path)
-    
     #general method. 
     # this will be un-commented when the above code is integrated with the backend API
     

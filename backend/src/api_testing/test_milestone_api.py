@@ -28,7 +28,7 @@ def test_get_milestone(client, user, project):
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=user):
             response = client.get(f'/api/milestones/{milestone.id}')
-            print("Actual response:", response.json)  # Print actual response
+            print("response:", response.status_code)
             assert response.status_code == 200
             data = response.json
             assert data['data']['title'] == "Test Milestone"
@@ -46,7 +46,7 @@ def test_create_milestone(client, user, project):
                 data=json.dumps(payload),
                 content_type="application/json"
             )
-            print("Actual response:", response.json)  # Print actual response
+            print("response:", response.status_code)
             assert response.status_code == 200
             data = response.json
             assert data['data']["title"] == "New Milestone"
@@ -67,7 +67,7 @@ def test_update_milestone(client, user, project):
                 data=json.dumps(payload),
                 content_type="application/json"
             )
-            print("Actual response:", response.json)  # Print actual response
+            print("response:", response.status_code)
             assert response.status_code == 200
             data = response.json
             assert data['data']["title"] == "Updated Milestone"
@@ -79,7 +79,7 @@ def test_delete_milestone(client, user, project):
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=user):
             response = client.delete(f'/api/milestones/{project.id}/{milestone.id}')
-            print("Actual response:", response.json)  # Print actual response
+            print("response:", response.status_code)
             assert response.status_code == 200
             assert response.json['message'] == "Milestone deleted successfully"
 
@@ -89,7 +89,7 @@ def test_get_milestones_by_project(client, user, project):
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=user):
             response = client.get(f'/api/project/milestones/{project.id}')
-            print("Actual response:", response.json)  # Print actual response
+            print("response:", response.status_code)
             assert response.status_code == 200
             data = response.json
             assert isinstance(data['data'], list)

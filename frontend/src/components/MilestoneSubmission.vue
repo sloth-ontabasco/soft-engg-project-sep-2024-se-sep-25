@@ -64,10 +64,28 @@
                 class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
                 :disabled="!isMilestoneSubmitted "
-                @click="getReport"
+                @click="uploadZipFile"
               >
                 GenAI Report
               </button>
+            </div>
+          </div>
+            <!-- PDF Viewer Modal -->
+          <div 
+            v-if="showPDF" 
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50"
+          >
+            <div class="bg-white p-4 rounded shadow-lg w-4/5 h-4/5 relative">
+              <button 
+                class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                @click="closePDF"
+              >
+                Close
+              </button>
+              <iframe 
+                :src="pdfURL" 
+                class="w-full h-full border-none"
+              ></iframe>
             </div>
           </div>
 
@@ -105,7 +123,9 @@ export default {
   name: "MilestoneSubmission",
   data(){
     return{
-      isMilestoneSubmitted:false
+      isMilestoneSubmitted: true, // Example state
+      showPDF: false, // Controls the visibility of the PDF modal
+      pdfURL: null, // URL for the fetched PDF
     }
   },
   methods: {
@@ -124,11 +144,57 @@ export default {
       console.log("Deleting all submissions...");
       // Implement delete all submissions logic here
     },
-    getReport(){
 
+
+    uploadZipFile(event) {
+      const file = event.target.files[0];
+
+      if (!file || file.type !== 'application/zip') {
+        alert('Please upload a valid ZIP file.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Send ZIP file to the backend
+      axios
+        .post('/api/submissions', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        .then(response => {
+          // Handle the response (e.g., fetching and displaying the PDF result)
+          this.fetchAndDisplayPDF(response.data.pdfPath);
+        })
+        .catch(error => {
+          console.error('Error uploading ZIP file:', error);
+        });
+    },
+
+
+
+
+
+    fetchAndDisplayPDF(pdfPath) {
+      axios
+        .get(pdfPath, { responseType: 'blob' })
+        .then(response => {
+          // Create a blob URL for the fetched PDF
+          this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+          this.showPDF = true; // Show the PDF viewer
+        })
+        .catch(error => {
+          console.error('Error fetching GenAI report:', error);
+        });
+    },
+    closePDF() {
+      this.showPDF = false; // Hide the PDF viewer
+      this.pdfURL = null; // Clean up the URL
+    },
+   
     }
-  }
-};
+  };
+
 </script>
 
 <style scoped>

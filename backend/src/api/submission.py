@@ -73,7 +73,7 @@ class MilestoneSubmissionAPI(Resource):
             rubrix_file_path = ""; # No rubrix file provided
             milestone_title = milestone_submission.milestone.title
             milestone_description = milestone_submission.milestone.description
-            output_pdf_path = os.path.join(os.getcwd(), "backend", "src", "api", "reports", "summary_report.pdf")
+            output_pdf_path = os.path.join(os.getcwd(), "src", "api", "reports", "summary_report.pdf")
 
             process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description, output_pdf_path)
         else:

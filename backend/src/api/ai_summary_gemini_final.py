@@ -148,6 +148,7 @@ def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_de
     with open(temp_zip_path, "wb") as temp_zip_file:
         temp_zip_file.write(zip_file_data)
         
+    zip_file_path = os.path.join(os.getcwd(), temp_zip_path)
     start_time = time.time()
     generative_summary = summarize_files(zip_file_path, rubrix_file_path, milestone_title, milestone_description)
     end_time = time.time()

@@ -61,9 +61,9 @@
             <!-- Right-aligned button -->
             <div>
               <button 
-                class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
+                class="bg-gray-400 text-white px-4 py-2 rounded"
                 :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
-                :disabled="!isMilestoneSubmitted "
+              
                 @click="fetchReport"
               >
                 GenAI Report
@@ -150,8 +150,9 @@ export default {
 
 
     fetchReport() {
-      axios
-        .get('/api/submission', { responseType: 'blob' })
+      console.log('testing')
+      this.$axios
+        .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
         .then(response => {
           // Create a blob URL for the fetched PDF
           this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));

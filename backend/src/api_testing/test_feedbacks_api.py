@@ -61,7 +61,8 @@ def test_instructor_create_feedback(client, instructor, project, milestone_submi
     }
     with patch('src.lib.auth.get_current_user', return_value=instructor):
         response = client.post(
-            f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks",
+            f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}" + 
+            f"/submissions/{milestone_submission.id}/feedbacks",
             data=json.dumps(payload),
             content_type="application/json",
             headers=auth_header
@@ -71,18 +72,22 @@ def test_instructor_create_feedback(client, instructor, project, milestone_submi
         assert data['feedback']["content"] == "This is a new feedback."
 
 def test_instructor_get_feedback(client, instructor, project, milestone_submission):
-    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, team=milestone_submission.team, posted_by=instructor)
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=instructor)
     feedback.save()
     feedback_id = feedback.id
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=instructor):
-            response = client.get(f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks/{feedback_id}")
+            response = client.get(f"/api/projects/{project.id}/milestones/" +
+                                  f"{milestone_submission.milestone.id}/submissions/" +
+                                  f"{milestone_submission.id}/feedbacks/{feedback_id}")
             assert response.status_code == 200
             data = response.json
             assert data['feedback']["content"] == "Test Feedback"
 
 def test_instructor_update_feedback(client, instructor, project, milestone_submission):
-    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, team=milestone_submission.team, posted_by=instructor)
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=instructor)
     feedback.save()
     feedback_id = feedback.id
     update_payload = {
@@ -91,28 +96,35 @@ def test_instructor_update_feedback(client, instructor, project, milestone_submi
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=instructor):
             response = client.put(
-                f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks/{feedback_id}",
+                f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}"
+                + f"/submissions/{milestone_submission.id}/feedbacks/{feedback_id}",
                 data=json.dumps(update_payload),
                 content_type="application/json"
             )
             assert response.status_code == 200
             
 def test_instructor_delete_feedback(client, instructor, project, milestone_submission):
-    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, team=milestone_submission.team, posted_by=instructor)
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=instructor)
     feedback.save()
     feedback_id = feedback.id
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=instructor):
-            response = client.delete(f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks/{feedback_id}")
+            response = client.delete(f"/api/projects/{project.id}/milestones/"
+                                     + f"{milestone_submission.milestone.id}/submissions/"
+                                     + f"{milestone_submission.id}/feedbacks/{feedback_id}")
             assert response.status_code == 200
 
 def test_student_get_feedback(client, student, project, milestone_submission):
-    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, team=milestone_submission.team, posted_by=student)
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=student)
     feedback.save()
     feedback_id = feedback.id
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=student):
-            response = client.get(f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks/{feedback_id}")
+            response = client.get(f"/api/projects/{project.id}/milestones/"
+                                  + f"{milestone_submission.milestone.id}/submissions/"
+                                  + f"{milestone_submission.id}/feedbacks/{feedback_id}")
             assert response.status_code == 200
             data = response.json
             assert data['feedback']["content"] == "Test Feedback"
@@ -124,14 +136,16 @@ def test_student_create_feedback(client, student, project, milestone_submission)
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=student):
             response = client.post(
-                f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks",
+                f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}"
+                + f"/submissions/{milestone_submission.id}/feedbacks",
                 data=json.dumps(payload),
                 content_type="application/json"
             )
             assert response.status_code == 401
 
 def test_student_update_feedback(client, student, project, milestone_submission):
-    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, team=milestone_submission.team, posted_by=student)
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=student)
     feedback.save()
     feedback_id = feedback.id
     update_payload = {
@@ -140,17 +154,21 @@ def test_student_update_feedback(client, student, project, milestone_submission)
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=student):
             response = client.put(
-                f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks/{feedback_id}",
+                f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}"
+                + f"/submissions/{milestone_submission.id}/feedbacks/{feedback_id}",
                 data=json.dumps(update_payload),
                 content_type="application/json"
             )
             assert response.status_code == 401
 
 def test_student_delete_feedback(client, student, project, milestone_submission):
-    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, team=milestone_submission.team, posted_by=student)
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=student)
     feedback.save()
     feedback_id = feedback.id
     with patch('src.lib.auth.verify_jwt_in_request'):
         with patch('src.lib.auth.get_current_user', return_value=student):
-            response = client.delete(f"/api/projects/{project.id}/milestones/{milestone_submission.milestone.id}/submissions/{milestone_submission.id}/feedbacks/{feedback_id}")
+            response = client.delete(f"/api/projects/{project.id}/milestones/"
+                                     + f"{milestone_submission.milestone.id}/submissions/"
+                                     + f"{milestone_submission.id}/feedbacks/{feedback_id}")
             assert response.status_code == 401

@@ -64,7 +64,7 @@
                 class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
                 :disabled="!isMilestoneSubmitted "
-                @click="uploadZipFile"
+                @click="fetchReport"
               >
                 GenAI Report
               </button>
@@ -149,7 +149,7 @@ export default {
 
 
 
-    fetchAndDisplayPDF() {
+    fetchReport() {
       axios
         .get('/api/submission', { responseType: 'blob' })
         .then(response => {

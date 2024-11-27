@@ -146,38 +146,12 @@ export default {
     },
 
 
-    uploadZipFile(event) {
-      const file = event.target.files[0];
 
-      if (!file || file.type !== 'application/zip') {
-        alert('Please upload a valid ZIP file.');
-        return;
-      }
 
-      const formData = new FormData();
-      formData.append('file', file);
 
-      // Send ZIP file to the backend
+    fetchAndDisplayPDF() {
       axios
-        .post('/api/submissions', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
-        .then(response => {
-          // Handle the response (e.g., fetching and displaying the PDF result)
-          this.fetchAndDisplayPDF(response.data.pdfPath);
-        })
-        .catch(error => {
-          console.error('Error uploading ZIP file:', error);
-        });
-    },
-
-
-
-
-
-    fetchAndDisplayPDF(pdfPath) {
-      axios
-        .get(pdfPath, { responseType: 'blob' })
+        .get('/api/submission', { responseType: 'blob' })
         .then(response => {
           // Create a blob URL for the fetched PDF
           this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));

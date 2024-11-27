@@ -63,6 +63,22 @@ def test_instructor_get_announcement(client, instructor, project):
             assert data['announcement']["title"] == "Test Announcement"
             assert data['announcement']["content"] == "Test Content"
 
+def test_instructor_get_all_announcements(client, instructor, project):
+    announcement = Announcement(title="Test Announcement", content="Test Content", 
+                                project=project, posted_by=instructor)
+    announcement.save()
+    announcement = Announcement(title="Test Announcement 2", content="Test Content 2", 
+                                project=project, posted_by=instructor)
+    announcement.save()
+    with patch('src.lib.auth.verify_jwt_in_request'):
+        with patch('src.lib.auth.get_current_user', return_value=instructor):
+            response = client.get(f"/api/projects/{project.id}/announcements")
+            assert response.status_code == 200
+            data = response.json
+            assert len(data['announcements']) == 2
+            assert data['announcements'][0]["title"] == "Test Announcement"
+            assert data['announcements'][1]["title"] == "Test Announcement 2"
+
 def test_instructor_update_announcement(client, instructor, project):
     announcement = Announcement(title="Test Announcement", content="Test Content", project=project, posted_by=instructor)
     announcement.save()
@@ -100,6 +116,22 @@ def test_student_get_announcement(client, student, project):
             data = response.json
             assert data['announcement']["title"] == "Test Announcement"
             assert data['announcement']["content"] == "Test Content"
+
+def test_student_get_all_announcements(client, student, project):
+    announcement = Announcement(title="Test Announcement", content="Test Content", 
+                                project=project, posted_by=student)
+    announcement.save()
+    announcement = Announcement(title="Test Announcement 2", content="Test Content 2", 
+                                project=project, posted_by=student)
+    announcement.save()
+    with patch('src.lib.auth.verify_jwt_in_request'):
+        with patch('src.lib.auth.get_current_user', return_value=student):
+            response = client.get(f"/api/projects/{project.id}/announcements")
+            assert response.status_code == 200
+            data = response.json
+            assert len(data['announcements']) == 2
+            assert data['announcements'][0]["title"] == "Test Announcement"
+            assert data['announcements'][1]["title"] == "Test Announcement 2"
 
 def test_student_create_announcement(client, student, project):
     payload = {

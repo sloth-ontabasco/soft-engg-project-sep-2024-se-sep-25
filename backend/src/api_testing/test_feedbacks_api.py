@@ -85,6 +85,24 @@ def test_instructor_get_feedback(client, instructor, project, milestone_submissi
             data = response.json
             assert data['feedback']["content"] == "Test Feedback"
 
+def test_instructor_get_all_feedbacks(client, instructor, project, milestone_submission):
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=instructor)
+    feedback.save()
+    feedback = Feedback(content="Test Feedback 2", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=instructor)
+    feedback.save()
+    with patch('src.lib.auth.verify_jwt_in_request'):
+        with patch('src.lib.auth.get_current_user', return_value=instructor):
+            response = client.get(f"/api/projects/{project.id}/milestones/" +
+                                  f"{milestone_submission.milestone.id}/submissions/" +
+                                  f"{milestone_submission.id}/feedbacks")
+            assert response.status_code == 200
+            data = response.json
+            assert len(data['feedbacks']) == 2
+            assert data['feedbacks'][0]["content"] == "Test Feedback"
+            assert data['feedbacks'][1]["content"] == "Test Feedback 2"
+
 def test_instructor_update_feedback(client, instructor, project, milestone_submission):
     feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
                         team=milestone_submission.team, posted_by=instructor)
@@ -128,6 +146,24 @@ def test_student_get_feedback(client, student, project, milestone_submission):
             assert response.status_code == 200
             data = response.json
             assert data['feedback']["content"] == "Test Feedback"
+
+def test_student_get_all_feedbacks(client, student, project, milestone_submission):
+    feedback = Feedback(content="Test Feedback", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=student)
+    feedback.save()
+    feedback = Feedback(content="Test Feedback 2", milestone_submission=milestone_submission, 
+                        team=milestone_submission.team, posted_by=student)
+    feedback.save()
+    with patch('src.lib.auth.verify_jwt_in_request'):
+        with patch('src.lib.auth.get_current_user', return_value=student):
+            response = client.get(f"/api/projects/{project.id}/milestones/"
+                                  + f"{milestone_submission.milestone.id}/submissions/"
+                                  + f"{milestone_submission.id}/feedbacks")
+            assert response.status_code == 200
+            data = response.json
+            assert len(data['feedbacks']) == 2
+            assert data['feedbacks'][0]["content"] == "Test Feedback"
+            assert data['feedbacks'][1]["content"] == "Test Feedback 2"
 
 def test_student_create_feedback(client, student, project, milestone_submission):
     payload = {

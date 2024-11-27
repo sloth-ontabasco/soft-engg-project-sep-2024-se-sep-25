@@ -9,5 +9,6 @@ from .milestone_submission import MilestoneSubmission
 from .feedback import Feedback
 from ..db import db
 
-Milestone.register_delete_rule(Project, "project", db.CASCADE)
+# Milestone.register_delete_rule(Project, "project", db.CASCADE)
+Milestone.register_delete_rule(Project, "milestones", db.PULL)
 

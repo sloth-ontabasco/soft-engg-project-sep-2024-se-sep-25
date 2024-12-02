@@ -16,7 +16,6 @@ class FeedbackAPI(Resource):
            /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>
     Description: Get feedback(s) under a milestone submission
     """
-    # @jwt_required()
     @check_any_role(['instructor', 'student', 'admin'])
     def get(self, project_id, milestone_id, milestone_submission_id, id=None):
         milestone_submission = MilestoneSubmission.objects(id=milestone_submission_id).first()
@@ -63,7 +62,6 @@ class FeedbackAPI(Resource):
     Body: content(optional)
     """
     @check_any_role(['instructor', 'admin'])
-    # @jwt_required()
     def put(self, project_id, milestone_id, milestone_submission_id, id):
         milestone_submission = MilestoneSubmission.objects(id=milestone_submission_id).first()
         if not milestone_submission:

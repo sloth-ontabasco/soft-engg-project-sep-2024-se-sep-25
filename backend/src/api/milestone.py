@@ -14,7 +14,7 @@ from ..lib.auth import check_any_role
 
 class MilestoneAPI(Resource):
     
-    # @check_any_role(roles=['instructor', 'admin','student'])
+    @check_any_role(roles=['instructor', 'admin','student'])
     def get(self, milestone_id):
         """
         Route: GET /api/milestones/<milestone_id>
@@ -46,7 +46,7 @@ class ProjectMilestonesAPI(Resource):
         return Response.success(data=[milestone.to_dict() for milestone in milestones])
     
    
-    # @check_any_role(roles=['instructor', 'admin'])
+    @check_any_role(roles=['instructor', 'admin'])
     def post(self, project_id):
         """
         Route: POST /api/project/milestones/<project_id>
@@ -116,7 +116,7 @@ class EditDeleteMilestoneAPI(Resource):
         milestone.save()
         return Response.success(data=milestone.to_dict(), message="Milestone updated successfully")
     
-    @check_any_role(roles=['instructor', 'admin'])
+    # @check_any_role(roles=['instructor', 'admin'])
     def delete(self, project_id, milestone_id):
         """
         Route: DELETE /api/milestones/<project_id>/<milestone_id>

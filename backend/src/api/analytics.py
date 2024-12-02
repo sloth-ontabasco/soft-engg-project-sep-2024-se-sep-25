@@ -21,7 +21,7 @@ class ProjectAnalyticsAPI(Resource):
     Description: Fetch analytics data for a specific project.
     """
 
-    # @check_any_role(['admin', 'instructor', 'ta'])
+    @check_any_role(['admin', 'instructor', 'ta'])
     def get(self, project_id):
         try:
             # Fetch the project by ID

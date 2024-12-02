@@ -8,6 +8,7 @@ import UserTable from '@/components/UserTable.vue'
 import TeamTable from '@/components/TeamTable.vue'
 import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
 import Annoucements from '@/components/Annoucements.vue'
+import CreateMilestone from '@/components/CreateMilestone.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +54,12 @@ const router = createRouter({
           component: Annoucements,
           meta: { home: true },
           name: 'Announcements',
+        },
+        {
+          path: 'createmilestones',
+          component: CreateMilestone,
+          meta: { home:true },
+          name: 'CreateMilestone',
         }
       ],
     },

@@ -1,19 +1,35 @@
 <template>
   <div class="flex min-h-screen bg-gray-100">
-    
     <!-- Main Content -->
     <main class="flex-1 p-10">
       <!-- Breadcrumb Navigation -->
-      <nav class="text-sm text-gray-600 mb-5">
-        <a href="#" class="hover:underline">All Projects</a> / 
-        <a href="#" class="hover:underline">SE Sept 2024</a> / 
-        <span>Milestone 1</span>
+      <nav class="flex justify-between items-center text-sm text-gray-600 mb-5">
+        <div>
+          <a href="#" class="hover:underline">All Projects</a> / 
+          <a href="#" class="hover:underline">SE Sept 2024</a> / 
+          <!-- Milestone Dropdown -->
+          <select
+            v-model="selectedMilestone"
+            @change="handleMilestoneChange"
+            class="border rounded px-3 py-1 text-gray-600 bg-gray-100 focus:outline-none focus:ring"
+          >
+            <option
+              v-for="milestone in milestones"
+              :key="milestone"
+              :value="milestone"
+            >
+              {{ milestone }}
+            </option>
+          </select>
+        </div>
       </nav>
 
       <!-- Header -->
-      <h1 class="text-black text-3xl font-bold mb-5">User Stories Submission</h1>
+      <h1 class="text-black text-3xl font-bold mb-5">
+        {{ selectedMilestone }} - User Stories Submission
+      </h1>
       <p class="text-gray-700 mb-5">
-        Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature...
+        Use the options below to manage files and review feedback for {{ selectedMilestone }}.
       </p>
 
       <!-- Tags -->
@@ -44,29 +60,39 @@
 
           <!-- Buttons: Upload, Download, Delete -->
           <div class="flex gap-2 mt-4">
-            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
+            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700">
               Upload Files
-              <input type="file" class="hidden" @change="handleFileUpload" />
+              <input type="file" class="hidden" multiple @change="handleFileUpload" />
             </label>
-            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
+            <button
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+              @click="downloadAllFiles"
+            >
               Download
             </button>
-            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
+            <button
+              class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+              @click="deleteAllSubmissions"
+            >
               Delete
             </button>
+            <div :class="['px-4 py-2 rounded text-sm font-semibold ml-auto', isDeadlineNear ? 'bg-red-500 text-white animate-pulse' : 'bg-pink-200 text-black']">
+    Deadline: {{ deadline }}
+</div>
+
           </div>
         </div>
 
         <!-- GitHub Tracker Section -->
         <div class="bg-white shadow-md rounded-lg p-5">
-          <h2 class="text-black text-lg font-bold mb-3">GitHub Tracker - Milestone 1</h2>
+          <h2 class="text-black text-lg font-bold mb-3">GitHub Tracker - {{ selectedMilestone }}</h2>
           <ul>
             <li class="mb-3">
-              <span class="text-blue-500">JIRA-5677 Google OAuth</span>
+              <span class="text-blue-500 cursor-pointer">JIRA-5677 Google OAuth</span>
               <p class="text-gray-600 text-sm">@student.email closed this issue Oct 1, 3:33PM</p>
             </li>
             <li class="mb-3">
-              <span class="text-blue-500">JIRA-Issue-5902 Google OAuth Login Bug</span>
+              <span class="text-blue-500 cursor-pointer">JIRA-Issue-5902 Google OAuth Login Bug</span>
               <p class="text-gray-600 text-sm">@student.email closed this issue Oct 1, 3:33PM</p>
             </li>
           </ul>
@@ -77,7 +103,7 @@
       <div class="bg-white shadow-md rounded-lg p-5 mt-8">
         <h2 class="text-black text-lg font-bold mb-3">TA Feedback</h2>
         <p class="text-gray-700">
-          It is a long established fact that a reader will be distracted by the readable content of a page...
+          Ensure all required files are uploaded before the deadline. Contact your TA for further clarifications.
         </p>
       </div>
     </main>
@@ -87,26 +113,49 @@
 <script>
 export default {
   name: "MilestoneSubmission",
+  data() {
+    return {
+      milestones: ["Milestone 1", "Milestone 2", "Milestone 3"],
+      selectedMilestone: "Milestone 1",
+      deadline: "2024-12-05", // Example deadline
+      isDeadlineNear: false,
+    };
+  },
   methods: {
     handleFileUpload(event) {
-      const files = event.target.files;
+      const files = Array.from(event.target.files);
       if (files.length) {
-        console.log('Files selected:', files);
-        // Handle file upload logic here
+        files.forEach(file => {
+          console.log(`File selected: ${file.name}`);
+        });
       }
+    },
+    checkDeadline() {
+      const today = new Date();
+      const deadlineDate = new Date(this.deadline);
+      const diffInDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+
+      // If the deadline is within 3 days, set `isDeadlineNear` to true
+      this.isDeadlineNear = diffInDays <= 3;
     },
     downloadAllFiles() {
       console.log("Downloading all files...");
-      // Implement download all files logic here
+      alert("All files have been downloaded successfully.");
     },
     deleteAllSubmissions() {
       console.log("Deleting all submissions...");
-      // Implement delete all submissions logic here
+      const confirmed = confirm("Are you sure you want to delete all submissions?");
+      if (confirmed) {
+        alert("All submissions have been deleted.");
+      }
+    },
+    handleMilestoneChange() {
+      console.log("Selected Milestone:", this.selectedMilestone);
+      alert(`Switched to ${this.selectedMilestone}`);
     }
+  },
+  mounted(){
+    this.checkDeadline();
   }
 };
 </script>
-
-<style scoped>
-/* Add custom styles if needed */
-</style>

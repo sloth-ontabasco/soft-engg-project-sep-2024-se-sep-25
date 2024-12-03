@@ -13,6 +13,7 @@ from src.api.project import *
 from src.api.milestone import *
 from src.api.resource import *
 from src.api.submission import MilestoneSubmissionAPI  # Import the API resource
+from src.api.analytics import *
 
 def setup_auth(app: Flask):
  
@@ -92,6 +93,9 @@ def setup_api(app, api):
     
     # Resource Routes
     api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resource/<string:project_id>/<string:resource_id>')
+
+    # Analytics Routes
+    api.add_resource(ProjectAnalyticsAPI, '/api/<string:project_id>/analytics')
     
 
 

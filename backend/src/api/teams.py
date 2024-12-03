@@ -21,7 +21,7 @@ class TeamAPI(Resource):
         - For Admins, Instructors, and TAs: Retrieve all teams working on a specific project.
         - For Students: Retrieve the team they belong to for the specified project.
     """
-    @jwt_required()
+    @check_any_role(['admin', 'student', 'instructor', 'ta'])
     def get(self, project_id):
         try:
             # Fetch the project

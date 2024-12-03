@@ -43,18 +43,52 @@
           </ul>
 
           <!-- Buttons: Upload, Download, Delete -->
-          <div class="flex gap-2 mt-4">
-            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
-              Upload Files
-              <input type="file" class="hidden" @change="handleFileUpload" />
-            </label>
-            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
-              Download
-            </button>
-            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
-              Delete
-            </button>
+          <div class="flex justify-between mt-4">
+            <!-- Left-aligned buttons -->
+            <div class="flex gap-2">
+              <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
+                Upload Files
+                <input type="file" class="hidden" @change="handleFileUpload" />
+              </label>
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
+                Download
+              </button>
+              <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
+                Delete
+              </button>
+            </div>
+            
+            <!-- Right-aligned button -->
+            <div>
+              <button 
+                class="bg-gray-400 text-white px-4 py-2 rounded"
+                :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
+              
+                @click="fetchReport"
+              >
+                GenAI Report
+              </button>
+            </div>
           </div>
+            <!-- PDF Viewer Modal -->
+          <div 
+            v-if="showPDF" 
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50"
+          >
+            <div class="bg-white p-4 rounded shadow-lg w-4/5 h-4/5 relative">
+              <button 
+                class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                @click="closePDF"
+              >
+                Close
+              </button>
+              <iframe 
+                :src="pdfURL" 
+                class="w-full h-full border-none"
+              ></iframe>
+            </div>
+          </div>
+
         </div>
 
         <!-- GitHub Tracker Section -->
@@ -87,6 +121,13 @@
 <script>
 export default {
   name: "MilestoneSubmission",
+  data(){
+    return{
+      isMilestoneSubmitted: true, // Example state
+      showPDF: false, // Controls the visibility of the PDF modal
+      pdfURL: null, // URL for the fetched PDF
+    }
+  },
   methods: {
     handleFileUpload(event) {
       const files = event.target.files;
@@ -102,9 +143,33 @@ export default {
     deleteAllSubmissions() {
       console.log("Deleting all submissions...");
       // Implement delete all submissions logic here
+    },
+
+
+
+
+
+    fetchReport() {
+      console.log('testing')
+      this.$axios
+        .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
+        .then(response => {
+          // Create a blob URL for the fetched PDF
+          this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+          this.showPDF = true; // Show the PDF viewer
+        })
+        .catch(error => {
+          console.error('Error fetching GenAI report:', error);
+        });
+    },
+    closePDF() {
+      this.showPDF = false; // Hide the PDF viewer
+      this.pdfURL = null; // Clean up the URL
+    },
+   
     }
-  }
-};
+  };
+
 </script>
 
 <style scoped>

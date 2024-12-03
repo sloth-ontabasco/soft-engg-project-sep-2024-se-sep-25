@@ -18,7 +18,7 @@ class UserAPI(Resource):
            GET /api/users
     Description: Retrieve the details of all users or a specific user.
     """
-    @jwt_required()
+    @check_any_role(['admin', 'student', 'instructor', 'ta'])
     def get(self, user_id=None):
 
         try:
@@ -55,7 +55,7 @@ class UserAPI(Resource):
     Description: Update the details of a user.
     Body: username, github_id
     """
-    @jwt_required()
+    @check_any_role(['admin', 'student', 'instructor', 'ta'])
     def put(self, user_id):
         try:
             # Check if the user is modifying their own data
@@ -70,7 +70,7 @@ class UserAPI(Resource):
                 github_id=data.get('github_id', current_user.github_id),
             )
             print(f"User with id {user_id} updated successfully")
-            return Response.success(200, message="User updated successfully")
+            return Response.success(200, user=current_user.reload().to_dict(), message="User updated successfully")
 
         except Exception as e:
             print(f"Error occurred: {e}")

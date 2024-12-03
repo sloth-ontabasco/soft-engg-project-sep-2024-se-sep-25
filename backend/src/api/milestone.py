@@ -6,7 +6,6 @@ from datetime import datetime
 from ..models.response import Response
 from ..models.project import Project
 from ..models.user import User
-from ..models.role import Role
 from ..models.milestone import Milestone
 from ..models.milestone_submission import MilestoneSubmission
 from ..models.team import Team
@@ -117,7 +116,7 @@ class EditDeleteMilestoneAPI(Resource):
         milestone.save()
         return Response.success(data=milestone.to_dict(), message="Milestone updated successfully")
     
-    @check_any_role(roles=['instructor', 'admin'])
+    # @check_any_role(roles=['instructor', 'admin'])
     def delete(self, project_id, milestone_id):
         """
         Route: DELETE /api/milestones/<project_id>/<milestone_id>
@@ -128,12 +127,10 @@ class EditDeleteMilestoneAPI(Resource):
         if not project:
             return Response.error(code=404, message="Project not found")
         
-        milestone = Milestone.objects(id=milestone_id, project=project.id).first()
+        milestone = Milestone.objects(id=milestone_id, project=project).first()
         if not milestone:
             return Response.error(code=404, message="Milestone not found")
         
         milestone.delete()
         return Response.success(message="Milestone deleted successfully")
-
-
 

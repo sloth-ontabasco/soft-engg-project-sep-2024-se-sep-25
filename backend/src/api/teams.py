@@ -21,7 +21,7 @@ class TeamAPI(Resource):
         - For Admins, Instructors, and TAs: Retrieve all teams working on a specific project.
         - For Students: Retrieve the team they belong to for the specified project.
     """
-    @jwt_required()
+    @check_any_role(['admin', 'student', 'instructor', 'ta'])
     def get(self, project_id):
         try:
             # Fetch the project
@@ -144,7 +144,7 @@ class TeamAPI(Resource):
     Route: DELETE /api/<string:project_id>/teams/<string:team_id>
     Description: Delete a team.
     """
-    # @check_any_role(['admin', 'instructor'])
+    @check_any_role(['admin', 'instructor'])
     def delete(self, project_id, team_id):
         try:
             # Fetch the project

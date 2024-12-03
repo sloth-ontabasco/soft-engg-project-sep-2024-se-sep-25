@@ -17,6 +17,9 @@ MONGO_URI = os.getenv("MONGO_URI")
 # FRONTEND
 FRONTEND_URI = os.getenv("FRONTEND_URI")
 
+#GEMINI API
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 OAUTH2_PROVIDERS = {
     # Google OAuth 2.0 documentation:
     # https://developers.google.com/identity/protocols/oauth2/web-server#httprest

@@ -1,5 +1,6 @@
 from .user import User
 from .milestone import Milestone
+from .milestone import Milestone
 from .project import Project
 from .team import Team
 from .resource import Resource

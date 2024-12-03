@@ -16,7 +16,7 @@ class FeedbackAPI(Resource):
            /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>
     Description: Get feedback(s) under a milestone submission
     """
-    @jwt_required()
+    @check_any_role(['instructor', 'student', 'admin'])
     def get(self, project_id, milestone_id, milestone_submission_id, id=None):
         milestone_submission = MilestoneSubmission.objects(id=milestone_submission_id).first()
         if not milestone_submission:
@@ -40,7 +40,7 @@ class FeedbackAPI(Resource):
     Description: Post a new feedback under a milestone submission
     Body: content(required)
     """
-    @check_any_role(['instructor', 'ta', 'admin'])
+    @check_any_role(['instructor', 'admin'])
     def post(self, project_id, milestone_id, milestone_submission_id):
         milestone_submission = MilestoneSubmission.objects(id=milestone_submission_id).first()
         if not milestone_submission:
@@ -61,7 +61,7 @@ class FeedbackAPI(Resource):
     Description: Update a feedback
     Body: content(optional)
     """
-    @check_any_role(['instructor', 'ta', 'admin'])
+    @check_any_role(['instructor', 'admin'])
     def put(self, project_id, milestone_id, milestone_submission_id, id):
         milestone_submission = MilestoneSubmission.objects(id=milestone_submission_id).first()
         if not milestone_submission:
@@ -77,7 +77,7 @@ class FeedbackAPI(Resource):
     Route: /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>
     Description: Delete a feedback
     """
-    @check_any_role(['instructor', 'ta', 'admin'])
+    @check_any_role(['instructor', 'admin'])
     def delete(self, project_id, milestone_id, milestone_submission_id, id):
         milestone_submission = MilestoneSubmission.objects(id=milestone_submission_id).first()
         if not milestone_submission:

@@ -16,7 +16,7 @@ class AnnouncementAPI(Resource):
            /api/<string:project_id>/announcements/<string:id>
     Description: Get all (or a specific) announcement(s) under a project
     """
-    @jwt_required()
+    @check_any_role(['instructor', 'student', 'admin'])
     def get(self, project_id, id=None):
         try:
             project = Project.objects(id=project_id).first()
@@ -46,7 +46,7 @@ class AnnouncementAPI(Resource):
     Description: Post a new announcement under a project
     Body: title(required), content(required)
     """
-    @check_any_role(['instructor', 'ta', 'admin'])
+    @check_any_role(['instructor', 'admin'])
     def post(self, project_id):
         project = Project.objects(id=project_id).first()
         if not project:
@@ -67,7 +67,7 @@ class AnnouncementAPI(Resource):
     Description: Update an announcement
     Body: title(optional), content(optional)
     """
-    @check_any_role(['instructor', 'ta', 'admin'])
+    @check_any_role(['instructor','admin'])
     def put(self, project_id, id):
         project = Project.objects(id=project_id).first()
         if not project:
@@ -84,7 +84,7 @@ class AnnouncementAPI(Resource):
     Route: /api/<string:project_id>/announcements/<string:id>
     Description: Delete an announcement
     """
-    @check_any_role(['instructor', 'ta', 'admin'])
+    @check_any_role(['instructor', 'admin'])
     def delete(self, project_id, id):
         project = Project.objects(id=project_id).first()
         if not project:

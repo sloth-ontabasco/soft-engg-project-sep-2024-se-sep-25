@@ -46,7 +46,8 @@ OAUTH2_PROVIDERS = {
             'email': lambda json: json['login'],
             'repos_url': lambda json: json['reops_url']
         },
-        'scopes': ['user:email','repo','user']
+        # 'scopes': ['user:email','repo','user']
+        'scopes': ['user','repo','user:email']
     }
 }
 

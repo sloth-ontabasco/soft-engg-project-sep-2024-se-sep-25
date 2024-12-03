@@ -13,3 +13,5 @@ from ..db import db
 # Milestone.register_delete_rule(Project, "project", db.CASCADE)
 Milestone.register_delete_rule(Project, "milestones", db.PULL)
 
+#the below was there in announcements branch
+#Project.register_delete_rule(Milestone, "milestones", db.CASCADE)

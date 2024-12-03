@@ -92,27 +92,40 @@ class CallbackAPI(Resource):
         if not oauth2_token:
             return Response.error(401)
 
+        
         # use the access token to get the user's email address
         response = requests.get(provider_data['userinfo']['url'], headers={
             'Authorization': 'Bearer ' + oauth2_token,
             'Accept': 'application/json',
         })
+        email = provider_data['userinfo']['email'](response.json())
+        print(email)
+        print(response.json())
         if response.status_code != 200:
             return Response.error(401)
+        # if provider == 'google':
         email = provider_data['userinfo']['email'](response.json())
-        picture = provider_data['userinfo']['picture'](response.json())
+        if provider == 'google':
+            picture = provider_data['userinfo']['picture'](response.json())
 
         # find or create the user in the database
         user = User.objects(email=email).first()
         if user is None:
-            user = User(email=email, username=email.split('@')[0], picture=picture, role='student') # TODO: make dynamic based on role
+            user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
             user.save()
 
         token = create_access_token(
-            identity=user.email, additional_claims={"transitive": True}, expires_delta=datetime.timedelta(minutes=5), fresh=True)
+        identity=user.email, additional_claims={"transitive": True}, expires_delta=datetime.timedelta(minutes=5), fresh=True)
         # log the user in
         qs = urlencode({"jwt": token})
         return redirect(FRONTEND_URI + '?' + qs)
+        
+        
+
+        
+        
+
+        
 
 
 class TokenAPI(Resource):

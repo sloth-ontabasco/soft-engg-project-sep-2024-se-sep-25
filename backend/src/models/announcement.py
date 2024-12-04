@@ -11,7 +11,7 @@ class Announcement(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return f"<Announcement for Project {self.project.title}>"
+        return f"<Announcement {self.id} for Project {self.project.title}>"
     
     def to_dict(self):
         print(f"Converting Announcement {self.id} to dict")

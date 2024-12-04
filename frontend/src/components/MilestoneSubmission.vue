@@ -59,28 +59,55 @@
           </ul>
 
           <!-- Buttons: Upload, Download, Delete -->
+          <div class="flex justify-between mt-4">
+            <!-- Left-aligned buttons -->
           <div class="flex gap-2 mt-4">
-            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700">
+            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
               Upload Files
-              <input type="file" class="hidden" multiple @change="handleFileUpload" />
+              <input type="file" class="hidden" @change="handleFileUpload" />
             </label>
-            <button
-              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-              @click="downloadAllFiles"
-            >
+            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700" @click="downloadAllFiles">
               Download
             </button>
-            <button
-              class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
-              @click="deleteAllSubmissions"
-            >
+            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700" @click="deleteAllSubmissions">
               Delete
             </button>
             <div :class="['px-4 py-2 rounded text-sm font-semibold ml-auto', isDeadlineNear ? 'bg-red-500 text-white animate-pulse' : 'bg-pink-200 text-black']">
     Deadline: {{ deadline }}
 </div>
-
           </div>
+          <!-- Right-aligned button -->
+          <div>
+              <button 
+                class="bg-gray-400 text-white px-4 py-2 rounded"
+                :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
+              
+                @click="fetchReport"
+              >
+                GenAI Report
+              </button>
+            </div>
+          </div>
+                      <!-- PDF Viewer Modal -->
+                      <div 
+            v-if="showPDF" 
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50"
+          >
+            <div class="bg-white p-4 rounded shadow-lg w-4/5 h-4/5 relative">
+              <button 
+                class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                @click="closePDF"
+              >
+                Close
+              </button>
+              <iframe 
+                :src="pdfURL" 
+                class="w-full h-full border-none"
+              ></iframe>
+            </div>
+          </div>
+
+        </div>
         </div>
 
         <!-- GitHub Tracker Section -->
@@ -107,19 +134,23 @@
         </p>
       </div>
     </main>
+    
   </div>
 </template>
 
 <script>
 export default {
   name: "MilestoneSubmission",
-  data() {
-    return {
+  data(){
+    return{
+      isMilestoneSubmitted: true, // Example state
+      showPDF: false, // Controls the visibility of the PDF modal
+      pdfURL: null, // URL for the fetched PDF
       milestones: ["Milestone 1", "Milestone 2", "Milestone 3"],
       selectedMilestone: "Milestone 1",
       deadline: "2024-12-05", // Example deadline
       isDeadlineNear: false,
-    };
+    }
   },
   methods: {
     handleFileUpload(event) {
@@ -152,10 +183,59 @@ export default {
     handleMilestoneChange() {
       console.log("Selected Milestone:", this.selectedMilestone);
       alert(`Switched to ${this.selectedMilestone}`);
-    }
+    },
+    fetchReport() {
+          this.$store.commit('showLoader') 
+      this.$axios
+        .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
+        .then(response => {
+          // Create a blob URL for the fetched PDF
+          this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'text/html' }));
+          this.showPDF = true; // Show the PDF viewer
+          this.$store.commit('hideLoader') // Hide loader
+        })
+        .catch(error => {
+          console.error('Error fetching GenAI report:', error);
+          this.$store.commit('hideLoader') // Hide loader
+        });
+    },
+    closePDF() {
+      this.showPDF = false; // Hide the PDF viewer
+      this.pdfURL = null; // Clean up the URL
+    },
   },
   mounted(){
     this.checkDeadline();
   }
 };
 </script>
+
+<style scoped>
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8); /* Translucent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loader {
+  border: 16px solid rgba(243, 243, 243, 0.7); /* Translucent border */
+  border-radius: 50%;
+  border-top: 16px solid rgba(52, 152, 219, 0.8); /* Translucent border-top */
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  background: rgba(255, 255, 255, 0.8); /* Translucent background */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>

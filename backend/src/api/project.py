@@ -6,7 +6,6 @@ from datetime import datetime
 from ..models.response import Response
 from ..models.project import Project
 from ..models.user import User
-from ..models.role import Role
 from ..models.milestone import Milestone
 from ..lib.auth import check_any_role
 

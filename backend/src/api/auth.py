@@ -91,6 +91,8 @@ class CallbackAPI(Resource):
         oauth2_token = response.json().get('access_token')
         if not oauth2_token:
             return Response.error(401)
+        
+        print(response.json())
 
         
         # use the access token to get the user's email address
@@ -98,12 +100,96 @@ class CallbackAPI(Resource):
             'Authorization': 'Bearer ' + oauth2_token,
             'Accept': 'application/json',
         })
-        email = provider_data['userinfo']['email'](response.json())
-        print(email)
-        print(response.json())
+        # email = provider_data['userinfo']['email'](response.json())
+        # print(email)
+        user_info = response.json()
+        print(user_info)
+        print("--------------------------------------------------------")
         if response.status_code != 200:
             return Response.error(401)
-        # if provider == 'google':
+        
+        # Fetch repositories
+        # repos_url = user_info['repos_url']
+        repos_url = 'https://api.github.com/user/repos'
+        repos_response = requests.get(repos_url, headers={
+            'Authorization': f'token {oauth2_token}',
+            'Accept': 'application/json'
+        })
+
+        print(repos_url)
+        print("--------------------------------------------------------")
+
+        if repos_response.status_code != 200:
+            return Response.error(code=repos_response.status_code, message="Failed to fetch repositories")
+
+        repos = repos_response.json()
+        if not repos:
+            return Response.error(code=404, message="No repositories found")
+
+        # For simplicity, we'll use the first repository
+        repo = repos[0]
+        repo_url = repo['html_url']
+
+        print(repo_url)
+        print("--------------------------------------------------------")
+        print(repo['full_name'])
+        print("--------------------------------------------------------")
+        # ===================================================================
+
+        # Fetch all commits from a branch
+        branch = 'staging'
+        commits_url = f"https://api.github.com/repos/{repo['full_name']}/commits?sha={branch}&per_page=10"
+        commits_response = requests.get(commits_url, headers={
+            'Authorization': f'Bearer {oauth2_token}',
+            # 'Accept': 'application/json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Accept': 'application/vnd.github.v3+json'
+        })
+
+        if commits_response.status_code != 200:
+            return Response.error(code=commits_response.status_code, message="Failed to fetch commits")
+
+        commits = commits_response.json()
+        print(commits[-1]['sha'])
+        print("--------------------------------------------------------")
+        all_commit_comments = []
+
+        for commit in commits:
+            commit_sha = commit['sha']
+            commit_comments_url = f"https://api.github.com/repos/{repo['full_name']}/commits/{commit_sha}/comments"
+            comments_response = requests.get(commit_comments_url, headers={
+                'Authorization': f'Bearer {oauth2_token}',
+                # 'Accept': 'application/json'
+                'Accept': 'application/vnd.github.v3+json'
+            })
+
+        print(comments_response.json())
+        #     if comments_response.status_code == 200:
+        #         comments = comments_response.json()
+        #         all_commit_comments.extend(comments)
+
+        # print(f"All commit comments: {all_commit_comments}")
+        
+
+        # =============================================================================
+        
+        # Fetch the last commit
+        # commits_url = repo['commits_url'].replace('{/sha}', '')
+        # commits_response = requests.get(commits_url, headers={
+        #     'Authorization': f'token {oauth2_token}',
+        #     'Accept': 'application/json'
+        # })
+
+        # if commits_response.status_code != 200:
+        #     return Response.error(code=commits_response.status_code, message="Failed to fetch commits")
+
+        # commits = commits_response.json()
+        # last_commit = commits[0]['sha'] if commits else None
+
+        # print(last_commit)
+        # print("--------------------------------------------------------")
+
+        
         email = provider_data['userinfo']['email'](response.json())
         if provider == 'google':
             picture = provider_data['userinfo']['picture'](response.json())
@@ -118,6 +204,7 @@ class CallbackAPI(Resource):
         identity=user.email, additional_claims={"transitive": True}, expires_delta=datetime.timedelta(minutes=5), fresh=True)
         # log the user in
         qs = urlencode({"jwt": token})
+        github ={"repo_url": repo_url, "commits": commits}
         return redirect(FRONTEND_URI + '?' + qs)
         
         

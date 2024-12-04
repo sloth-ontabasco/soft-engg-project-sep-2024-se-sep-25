@@ -8,11 +8,13 @@ const initialState = user
       loggedIn: true,
       user: user,
       msg: '',
+      loading: false
     }
   : {
       loggedIn: false ,
       user: null,
       msg: '',
+      loading: false
     }
 
 export default createStore({
@@ -44,7 +46,14 @@ export default createStore({
     logout(state) {
         state.loggedIn = false;
         state.user = null;
-    }
+    },
+    showLoader(state) {
+      console.log('showLoader called')
+      state.loading = true
+    },
+    hideLoader(state) {
+      state.loading = false
+    },
   },
   modules: {
     // auth

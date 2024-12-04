@@ -115,9 +115,7 @@
         </p>
       </div>
     </main>
-    <div v-if="loader" class="overlay">
-      <div class="loader"></div>
-    </div>
+    
   </div>
 </template>
 
@@ -128,7 +126,6 @@ export default {
     return{
       isMilestoneSubmitted: true, // Example state
       showPDF: false, // Controls the visibility of the PDF modal
-      loader: false, //Loader
       pdfURL: null, // URL for the fetched PDF
     }
   },
@@ -149,18 +146,18 @@ export default {
       // Implement delete all submissions logic here
     },
     fetchReport() {
-      this.loader = true; // Show loader
+          this.$store.commit('showLoader') 
       this.$axios
         .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
         .then(response => {
           // Create a blob URL for the fetched PDF
           this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'text/html' }));
           this.showPDF = true; // Show the PDF viewer
-          this.loader = false; // Hide loader
+          this.$store.commit('hideLoader') // Hide loader
         })
         .catch(error => {
           console.error('Error fetching GenAI report:', error);
-          this.loader = false; // Hide loader
+          this.$store.commit('hideLoader') // Hide loader
         });
     },
     closePDF() {

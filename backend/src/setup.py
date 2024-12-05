@@ -14,6 +14,8 @@ from src.api.milestone import *
 from src.api.resource import *
 from src.api.submission import MilestoneSubmissionAPI  # Import the API resource
 from src.api.analytics import *
+from src.api.github import *
+
 
 def setup_auth(app: Flask):
  
@@ -96,6 +98,9 @@ def setup_api(app, api):
 
     # Analytics Routes
     api.add_resource(ProjectAnalyticsAPI, '/api/<string:project_id>/analytics')
+
+    api.add_resource(CreateGithubIntegrationAPI, '/api/github/integration')
+    api.add_resource(GetRepoCommitsAPI, '/api/github/commits')
     
 
 

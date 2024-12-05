@@ -4,6 +4,7 @@ import datetime
 # GitHubIntegration model
 class GithubIntegration(db.Document):
     team = db.ReferenceField("Team", required=True, reverse_delete_rule=db.CASCADE)  # Delete integration if team is deleted
+    token = db.StringField()
     repo_url = db.URLField()
     last_commit = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
@@ -18,7 +19,8 @@ class GithubIntegration(db.Document):
             "team_name": self.team.team_name,
             "team_id": str(self.team.id),
             "repo_url": self.repo_url,
-            "last_commit": self.last_commit,
+            "last_commit": self.last_commit.isoformat(),
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
+    

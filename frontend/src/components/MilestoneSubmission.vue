@@ -129,6 +129,10 @@ export default {
       pdfURL: null, // URL for the fetched PDF
     }
   },
+  created() {
+    // write the logic here to fetch the milestone details from project ID
+    // get project ID like so $route.params.id
+  },
   methods: {
     handleFileUpload(event) {
       const files = event.target.files;

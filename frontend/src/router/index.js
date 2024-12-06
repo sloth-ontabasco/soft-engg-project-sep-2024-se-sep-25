@@ -43,7 +43,7 @@ const router = createRouter({
           name: 'Teams',
         },
         {
-          path: 'milestonesubmission',
+          path: 'milestonesubmission/:id',
           component: MilestoneSubmission,
           meta: { home: true },
           name: 'Milestones',

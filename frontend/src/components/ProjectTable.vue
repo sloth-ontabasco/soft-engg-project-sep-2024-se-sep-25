@@ -4,6 +4,9 @@
     <DataTable
       :value="projects"
       v-model:editingRows="editingRows"
+      v-model:filters="filters"
+      filterDisplay="row"
+      :loding="loading"
       editMode="row"
       @row-edit-save="onRowEditSave"
       stripedRows
@@ -11,7 +14,7 @@
       :rows="10"
       :rowsPerPageOptions="[10, 20, 50]"
       size="large"
-      :globalFilterFields="['title', 'description']"
+      :globalFilterFields="['global', 'title', 'description', 'deadline']"
     >
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -37,26 +40,42 @@
       </template>
       <template #empty> No data found. </template>
       <template #loading> Loading data... Please wait. </template>
-      <Column
-        v-for="col of columns"
-        :key="col.field"
-        :field="col.field"
-        :header="col.header"
-        removableSort
-      >
+      <Column :field="'title'" :header="'Title'" removableSort>
         <template #editor="{ data, field }">
-          <InputText
-            v-if="col.type !== 'date'"
-            v-model="data[field]"
-            fluid
-          />
-          <DatePicker v-else id="datepicker-24h" v-model="data[field]" showTime hourFormat="24" fluid 
-            dateFormat="yy-mm-dd'T'HH:mm:ss"/>
-
+          <InputText v-model="data[field]" fluid />
         </template>
         <template #body="{ data, field }">
-          <span v-if="col.type === 'date'">{{ formatDate(data[field]) }}</span>
-          <span v-else>{{ data[field] }}</span>
+          <span>{{ data[field] }}</span>
+        </template>
+      </Column>
+      <Column :field="'description'" :header="'Description'" removableSort>
+        <template #editor="{ data, field }">
+          <InputText v-model="data[field]" fluid />
+        </template>
+        <template #body="{ data, field }">
+          <span>{{ data[field] }}</span>
+        </template>
+      </Column>
+      <Column :field="'deadline'" :header="'Deadline'" sortable>
+        <template #editor="{ data, field }">
+          <DatePicker
+            id="datepicker-24h"
+            v-model="data[field]"
+            showTime
+            hourFormat="24"
+            fluid
+            dateFormat="yy-mm-dd'T'HH:mm:ss"
+          />
+        </template>
+        <template #body="{ data, field }">
+          <span>{{ formatDate(data[field]) }}</span>
+        </template>
+        <template #filter="{ filterModel }">
+          <DatePicker
+            v-model="filterModel.value"
+            dateFormat="mm/dd/yy"
+            placeholder="mm/dd/yyyy"
+          />
         </template>
       </Column>
       <Column
@@ -66,7 +85,12 @@
       ></Column>
       <Column v-if="allowView" class="w-24 !text-end">
         <template #body="{ data }">
-          <Button icon="pi pi-search" class="p-button-secondary" rounded></Button>
+          <Button
+            @click="this.$router.push('/milestonesubmission/' + data.id)"
+            icon="pi pi-search"
+            class="p-button-secondary"
+            rounded
+          ></Button>
         </template>
       </Column>
     </DataTable>
@@ -76,12 +100,12 @@
 <script>
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import { FilterMatchMode } from '@primevue/core/api'
+import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import Button from 'primevue/button'
-import { getProjects } from '../api/project'
+import { getProjects, updateProject } from '../api/project'
 import { DatePicker } from 'primevue'
 
 export default {
@@ -93,7 +117,7 @@ export default {
     InputText,
     IconField,
     Button,
-    DatePicker
+    DatePicker,
   },
   data() {
     return {
@@ -105,6 +129,12 @@ export default {
       ],
       filters: {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        description: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        deadline: {
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
+        },
       },
       loading: true,
       editingRows: [],
@@ -114,19 +144,51 @@ export default {
   },
   async created() {
     try {
+      this.loading = true
       const response = await getProjects()
       if (response.success) {
         this.projects = response.data
+        this.loading = false
       } else {
         console.error('Failed to fetch projects:', response.message)
+        this.loading = false
       }
     } catch (error) {
       console.error('Error fetching projects:', error)
+      this.loading = false
     }
   },
   methods: {
     onRowEditSave(event) {
-      this.$emit('row-edit-save', event)
+      console.log('row edit save', event)
+      const project = event.data
+      updateProject(project.id, project.data)
+        .then(response => {
+          if (response.success) {
+            this.$toast.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Project updated successfully',
+              life: 3000,
+            })
+          } else {
+            this.$toast.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: response.message,
+              life: 3000,
+            })
+          }
+        })
+        .catch(error => {
+          console.error('Error updating project:', error)
+          this.$toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update project',
+            life: 3000,
+          })
+        })
     },
     exportCSV() {
       this.$refs.dt.exportCSV()

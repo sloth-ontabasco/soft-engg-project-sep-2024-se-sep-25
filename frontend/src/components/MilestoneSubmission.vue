@@ -73,7 +73,7 @@
               <!-- Loading Spinner -->
               <div v-if="loading" >
                 <img src="../assets/Loading_2.gif" width="50" height="50"/>
-              </div>  
+              </div>
             </div>
           </div>
 

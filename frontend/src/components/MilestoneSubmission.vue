@@ -1,4 +1,5 @@
 <template>
+  
   <div class="flex min-h-screen bg-gray-100">
     
     <!-- Main Content -->
@@ -60,7 +61,7 @@
             
             <!-- Right-aligned button -->
             <div>
-              <button 
+              <button  v-if="!loading"
                 class="bg-gray-400 text-white px-4 py-2 rounded"
                 :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
               
@@ -68,12 +69,22 @@
               >
                 GenAI Report
               </button>
+
+              <!-- Loading Spinner -->
+              <div v-if="loading" >
+                <img src="../assets/Loading_2.gif" width="50" height="50"/>
+              </div>  
             </div>
           </div>
+
+
+
+
             <!-- PDF Viewer Modal -->
+
           <div 
             v-if="showPDF" 
-            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50"
+            class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
           >
             <div class="bg-white p-4 rounded shadow-lg w-4/5 h-4/5 relative">
               <button 
@@ -82,12 +93,18 @@
               >
                 Close
               </button>
+              
+
+
+              <!-- PDF Display -->
               <iframe 
+                
                 :src="pdfURL" 
                 class="w-full h-full border-none"
               ></iframe>
             </div>
           </div>
+
 
         </div>
 
@@ -113,9 +130,11 @@
         <p class="text-gray-700">
           It is a long established fact that a reader will be distracted by the readable content of a page...
         </p>
+        
       </div>
     </main>
   </div>
+  
 </template>
 
 <script>
@@ -126,6 +145,7 @@ export default {
       isMilestoneSubmitted: true, // Example state
       showPDF: false, // Controls the visibility of the PDF modal
       pdfURL: null, // URL for the fetched PDF
+      loading:false
     }
   },
   methods: {
@@ -150,17 +170,23 @@ export default {
 
 
     fetchReport() {
-      console.log('testing')
+      this.loading=true
+      
       this.$axios
         .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
         .then(response => {
           // Create a blob URL for the fetched PDF
+          
           this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
           this.showPDF = true; // Show the PDF viewer
+          
         })
         .catch(error => {
           console.error('Error fetching GenAI report:', error);
-        });
+        })
+        .finally(()=>{
+          this.loading = false
+        })
     },
     closePDF() {
       this.showPDF = false; // Hide the PDF viewer
@@ -173,5 +199,6 @@ export default {
 </script>
 
 <style scoped>
-/* Add custom styles if needed */
+
+
 </style>

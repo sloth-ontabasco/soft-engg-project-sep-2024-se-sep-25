@@ -7,9 +7,7 @@ import ProjectTable from '@/components/ProjectTable.vue'
 import UserTable from '@/components/UserTable.vue'
 import TeamTable from '@/components/TeamTable.vue'
 import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
-
 import Annoucements from '@/components/Annoucements.vue'
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

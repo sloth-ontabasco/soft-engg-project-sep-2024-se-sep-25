@@ -88,6 +88,7 @@
               ></iframe>
             </div>
           </div>
+
         </div>
 
         <!-- GitHub Tracker Section -->
@@ -114,6 +115,7 @@
         </p>
       </div>
     </main>
+    
   </div>
 </template>
 
@@ -142,7 +144,7 @@ export default {
     deleteAllSubmissions() {
       console.log("Deleting all submissions...");
       // Implement delete all submissions logic here
-   },
+    },
     fetchReport() {
           this.$store.commit('showLoader') 
       this.$axios

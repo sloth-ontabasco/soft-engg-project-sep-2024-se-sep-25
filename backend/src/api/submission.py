@@ -1,7 +1,6 @@
 import os
-from flask import Blueprint, request, send_file
-from flask_restful import Resource, Api
-from io import BytesIO
+from flask import request, send_file
+from flask_restful import Resource
 
 from ..models.response import Response
 from ..models.milestone import Milestone
@@ -73,12 +72,12 @@ class MilestoneSubmissionAPI(Resource):
             rubrix_file_path = ""; # No rubrix file provided
             milestone_title = milestone_submission.milestone.title
             milestone_description = milestone_submission.milestone.description
-            output_pdf_path = os.path.join(os.getcwd(), "src", "api", "reports", "summary_report.pdf")
+            # output_pdf_path = os.path.join(os.getcwd(), "src", "api", "reports", "summary_report.pdf")
 
-            process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description, output_pdf_path)
+            process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description)
         else:
             return Response.error(code=404, message="Milestone submission file not found")
 
         # Return the generated PDF file as a downloadable response
-        return send_file(output_pdf_path, as_attachment=True, download_name="summary_report.pdf")
+        return send_file(os.path.join(os.getcwd(), "submission_evaluation.html"), as_attachment=True, download_name="submission_evaluation.html")
         # return Response.success(data=submission_data, message="Milestone submission retrieved successfully")

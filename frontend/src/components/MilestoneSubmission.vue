@@ -115,6 +115,7 @@
         </p>
       </div>
     </main>
+    
   </div>
 </template>
 
@@ -144,22 +145,19 @@ export default {
       console.log("Deleting all submissions...");
       // Implement delete all submissions logic here
     },
-
-
-
-
-
     fetchReport() {
-      console.log('testing')
+          this.$store.commit('showLoader') 
       this.$axios
         .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
         .then(response => {
           // Create a blob URL for the fetched PDF
-          this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+          this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'text/html' }));
           this.showPDF = true; // Show the PDF viewer
+          this.$store.commit('hideLoader') // Hide loader
         })
         .catch(error => {
           console.error('Error fetching GenAI report:', error);
+          this.$store.commit('hideLoader') // Hide loader
         });
     },
     closePDF() {
@@ -173,5 +171,31 @@ export default {
 </script>
 
 <style scoped>
-/* Add custom styles if needed */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8); /* Translucent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loader {
+  border: 16px solid rgba(243, 243, 243, 0.7); /* Translucent border */
+  border-radius: 50%;
+  border-top: 16px solid rgba(52, 152, 219, 0.8); /* Translucent border-top */
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  background: rgba(255, 255, 255, 0.8); /* Translucent background */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>

@@ -43,17 +43,50 @@
           </ul>
 
           <!-- Buttons: Upload, Download, Delete -->
-          <div class="flex gap-2 mt-4">
-            <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
-              Upload Files
-              <input type="file" class="hidden" @change="handleFileUpload" />
-            </label>
-            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
-              Download
-            </button>
-            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
-              Delete
-            </button>
+          <div class="flex justify-between mt-4">
+            <!-- Left-aligned buttons -->
+            <div class="flex gap-2">
+              <label class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">
+                Upload Files
+                <input type="file" class="hidden" @change="handleFileUpload" />
+              </label>
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" @click="downloadAllFiles">
+                Download
+              </button>
+              <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" @click="deleteAllSubmissions">
+                Delete
+              </button>
+            </div>
+            
+            <!-- Right-aligned button -->
+            <div>
+              <button 
+                class="bg-gray-400 text-white px-4 py-2 rounded"
+                :class="{ 'bg-yellow-500 hover:bg-yellow-600': isMilestoneSubmitted }"
+              
+                @click="fetchReport"
+              >
+                GenAI Report
+              </button>
+            </div>
+          </div>
+            <!-- PDF Viewer Modal -->
+          <div 
+            v-if="showPDF" 
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50"
+          >
+            <div class="bg-white p-4 rounded shadow-lg w-4/5 h-4/5 relative">
+              <button 
+                class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                @click="closePDF"
+              >
+                Close
+              </button>
+              <iframe 
+                :src="pdfURL" 
+                class="w-full h-full border-none"
+              ></iframe>
+            </div>
           </div>
         </div>
 
@@ -87,6 +120,13 @@
 <script>
 export default {
   name: "MilestoneSubmission",
+  data(){
+    return{
+      isMilestoneSubmitted: true, // Example state
+      showPDF: false, // Controls the visibility of the PDF modal
+      pdfURL: null, // URL for the fetched PDF
+    }
+  },
   methods: {
     handleFileUpload(event) {
       const files = event.target.files;
@@ -102,11 +142,58 @@ export default {
     deleteAllSubmissions() {
       console.log("Deleting all submissions...");
       // Implement delete all submissions logic here
+   },
+    fetchReport() {
+          this.$store.commit('showLoader') 
+      this.$axios
+        .get('/api/submission/674611a5dc0301f4122804ea', { responseType: 'blob' })
+        .then(response => {
+          // Create a blob URL for the fetched PDF
+          this.pdfURL = URL.createObjectURL(new Blob([response.data], { type: 'text/html' }));
+          this.showPDF = true; // Show the PDF viewer
+          this.$store.commit('hideLoader') // Hide loader
+        })
+        .catch(error => {
+          console.error('Error fetching GenAI report:', error);
+          this.$store.commit('hideLoader') // Hide loader
+        });
+    },
+    closePDF() {
+      this.showPDF = false; // Hide the PDF viewer
+      this.pdfURL = null; // Clean up the URL
+    },
+   
     }
-  }
-};
+  };
+
 </script>
 
 <style scoped>
-/* Add custom styles if needed */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8); /* Translucent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loader {
+  border: 16px solid rgba(243, 243, 243, 0.7); /* Translucent border */
+  border-radius: 50%;
+  border-top: 16px solid rgba(52, 152, 219, 0.8); /* Translucent border-top */
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  background: rgba(255, 255, 255, 0.8); /* Translucent background */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>

@@ -13,6 +13,21 @@ import { Button } from 'primevue'
         class="top-[92px] left-0 [font-family:'Poppins-SemiBold',Helvetica] font-semibold text-white text-3xl tracking-[0] leading-[35px] whitespace-nowrap capitalize"
       >
         {{ user.role }}
+        <span>
+          <Button
+            icon="pi pi-sign-out"
+            severity="danger"
+            variant="text"
+            rounded
+            aria-label="Cancel"
+            @click="
+              () => {
+                this.$store.commit('logout')
+                this.$router.push('/login')
+              }
+            "
+          />
+        </span>
       </div>
 
       <div

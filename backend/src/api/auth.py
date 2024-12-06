@@ -186,14 +186,16 @@ class CallbackAPI(Resource):
 
 class GetRepoCommitsAPI(Resource):
     """
-    Route: /api/github/commits
+    Route: /api/github/commits/<sting:team_id>
     """
 
-    def get(self):
+    def get(self,team_id):
         """
         Fetch commits for a given repository.
         """
         repo_name = request.args.get('repo_name')
+        start_date = request.args.get('start_date')  # Format: YYYY-MM-DDTHH:MM:SSZ
+        end_date = request.args.get('end_date') # Format: YYYY-MM-DDTHH:MM:SSZ
         if not repo_name:
             return Response.error(code=400, message="Missing repository name")
 
@@ -215,7 +217,7 @@ class GetRepoCommitsAPI(Resource):
         default_branch = repo['default_branch']
 
         # Fetch commits from the default branch
-        commits_url = f"https://api.github.com/repos/{repo_name}/commits?sha={default_branch}"
+        commits_url = f"https://api.github.com/repos/{repo_name}/commits?sha={default_branch}&since={start_date}&until={end_date}"
         commits_response = requests.get(commits_url, headers={
             'Authorization': f'token {oauth2_token}',
             'Accept': 'application/json'
@@ -236,10 +238,23 @@ class GetRepoCommitsAPI(Resource):
             }
             
             all_commit_comments.append(commit_data)
+
+        # Save commits to the database
+        team = team_id  # Replace with logic to fetch the current team, e.g., from session or request context
+        integration = GithubIntegration.objects(team=team).first()
+        if not integration:
+            integration = GithubIntegration(
+                team=team,
+                token=oauth2_token,
+                repo_url=repo_url
+            )
+        integration.save_commits(all_commit_comments)
             
         repo_commit = {
             'repo_name': repo_name,
             'default_branch': default_branch,
+            'start_date': start_date,
+            'end_date': end_date,
             'commits': all_commit_comments
         }
         

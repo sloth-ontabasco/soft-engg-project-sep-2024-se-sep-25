@@ -60,6 +60,7 @@
           { field: 'name', header: 'Team Name' },
           { field: 'memberCount', header: 'Member Count' },
           { field: 'createdDate', header: 'Created Date' },
+
           { field: 'status.choices.value', header: 'Status' },
         ],
       }

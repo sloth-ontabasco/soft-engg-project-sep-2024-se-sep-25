@@ -34,6 +34,16 @@ import { Button } from 'primevue'
         class="top-[132px] left-0 opacity-60 [font-family:'Poppins-Regular',Helvetica] font-normal text-white text-[17px] tracking-[0] leading-[27px] whitespace-nowrap"
       >
         {{ user.email }}
+        <span>
+          <Button
+            icon="pi pi-sign-out"
+            severity="danger"
+            variant="text"
+            rounded
+            aria-label="Cancel"
+            @click="this.$store.dispatch('logout').then(() => this.$router.push('/login'))"
+          />
+        </span>
       </div>
     </div>
 

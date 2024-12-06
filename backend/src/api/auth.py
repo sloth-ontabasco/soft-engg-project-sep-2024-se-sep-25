@@ -13,6 +13,8 @@ from flask_jwt_extended import create_access_token, jwt_required, current_user
 from ..config import *
 from ..models.response import Response
 from ..models.user import User
+from ..models.team import Team
+from ..models.github_integration import GithubIntegration
 
 
 class LoginAPI(Resource):
@@ -132,8 +134,36 @@ class CallbackAPI(Resource):
             rqs = urlencode({"repos": repo_list})
             
             
-            # Save the OAuth2 token
-            session['oauth2_token'] = oauth2_token #save in db
+            # Save the OAuth2 token to database
+            user_email = provider_data['userinfo']['email'](user_info)
+            user = User.objects(email=user_email).first()
+            if not user:
+                user = User(email=user_email, username=user_email.split('@')[0], role='student')  # Adjust role as needed
+                user.save()
+
+            team = Team.objects(members__in=[user]).first()
+            if not team:
+                return Response.error(code=404, message="Team not found")
+            
+            print(team.to_dict())
+
+            github_integration = GithubIntegration.objects(team=team).first()
+            if not github_integration:
+                github_integration = GithubIntegration(
+                    team=team,
+                    token=oauth2_token,
+                    repo_url=repo_list[0]['html_url'] if repo_list else None,
+                    last_commit=None
+                )
+            else:
+                github_integration.token = oauth2_token
+                # github_integration.repo_url = repo_list[0]['html_url'] if repo_list else github_integration.repo_url
+
+            github_integration.save()
+
+
+            # save OAuth2 token in session 
+            session['oauth2_token'] = oauth2_token
             # return repo_list
             return redirect(FRONTEND_URI + '?' + rqs)
         
@@ -197,24 +227,6 @@ class GetRepoCommitsAPI(Resource):
         commits = commits_response.json()
         all_commit_comments = []
 
-        # for commit in commits:
-        #     commit_sha = commit['sha']
-        #     commit_comments_url = f"https://api.github.com/repos/{repo_name}/commits/{commit_sha}/comments"
-        #     comments_response = requests.get(commit_comments_url, headers={
-        #         'Authorization': f'token {oauth2_token}',
-        #         'Accept': 'application/json'
-        #     })
-        
-
-            # if comments_response.status_code == 200:
-            #     comments = comments_response.json()
-            #     all_commit_comments.extend(comments)
-        # repo_commit = {
-        #     'repo_name': repo_name,
-        #     'default_branch': default_branch,
-        #     'commits': commits,
-        #     'commit_comments': all_commit_comments
-        # }
         for commit in commits:
             commit_data ={
                 'sha': commit['sha'],

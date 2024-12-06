@@ -27,7 +27,7 @@ class GithubIntegration(db.Document):
             "team_id": str(self.team.id),
             "token": self.token,
             "repo_url": self.repo_url,
-            "last_commit": self.last_commit.isoformat(),
+            "last_commit": [commit.to_mongo() for commit in self.last_commit],
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }

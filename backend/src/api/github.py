@@ -50,5 +50,37 @@ class CreateGithubIntegrationAPI(Resource):
         github_integration.save()
 
         return Response.success(data=github_integration.to_dict(), message="GitHub integration created successfully")
+    
+class GetAllGithubIntegrationsAPI(Resource):
+    """
+    Route: /api/github/integrations
+    """
+
+    # @jwt_required()
+    def get(self,team_id = None):
+        """
+        Fetch all GitHub integrations.
+        """
+        if team_id is None:
+            integrations = GithubIntegration.objects()
+            integrations_list = [integration.to_dict() for integration in integrations]
+            return jsonify({
+                'success': True,
+                'data': integrations_list,
+                'message': 'GitHub integrations fetched successfully'
+            })
         
+        team = Team.objects(id=team_id).first()
+        if not team:
+            return Response.error(code=404, message="Team not found")
+
+        github_integration = GithubIntegration.objects(team=team).first()
+        if not github_integration:
+            return Response.error(code=404, message="GitHub integration not found")
+
+        return jsonify({
+            'success': True,
+            'data': github_integration.to_dict(),
+            'message': 'GitHub integration fetched successfully'
+        })
 

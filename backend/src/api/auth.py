@@ -152,12 +152,10 @@ class CallbackAPI(Resource):
                 github_integration = GithubIntegration(
                     team=team,
                     token=oauth2_token,
-                    repo_url=repo_list[0]['html_url'] if repo_list else None,
                     last_commit=None
                 )
             else:
                 github_integration.token = oauth2_token
-                # github_integration.repo_url = repo_list[0]['html_url'] if repo_list else github_integration.repo_url
 
             github_integration.save()
 

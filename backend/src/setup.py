@@ -101,8 +101,8 @@ def setup_api(app, api):
 
     api.add_resource(CreateGithubIntegrationAPI, '/api/github/integration')
     api.add_resource(GetRepoCommitsAPI, '/api/github/commits/<string:team_id>')
+    api.add_resource(GetAllGithubIntegrationsAPI, '/api/github/integration','/api/github/integration/<string:team_id>')
     
-
 
 def list_routes(app: Flask):
 

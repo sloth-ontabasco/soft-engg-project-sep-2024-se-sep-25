@@ -86,7 +86,7 @@
       <Column v-if="allowView" class="w-24 !text-end">
         <template #body="{ data }">
           <Button
-            @click="this.$router.push('/milestonesubmission/' + data.id)"
+            @click="() => $router.push(`/project/${data.id}/milestonesubmission`)"
             icon="pi pi-search"
             class="p-button-secondary"
             rounded

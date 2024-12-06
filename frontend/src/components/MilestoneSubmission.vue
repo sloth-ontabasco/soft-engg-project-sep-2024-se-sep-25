@@ -5,7 +5,7 @@
     <main class="flex-1 p-10">
       <!-- Breadcrumb Navigation -->
       <nav class="text-sm text-gray-600 mb-5">
-        <a href="#" class="hover:underline">All Projects</a> / 
+        <router-link :to="'/projects'" class="hover:underline">All Projects</router-link> / 
         <a href="#" class="hover:underline">SE Sept 2024</a> / 
         <span>Milestone 1</span>
       </nav>

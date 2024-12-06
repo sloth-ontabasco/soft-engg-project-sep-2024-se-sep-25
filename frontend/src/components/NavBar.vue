@@ -38,7 +38,7 @@ import { Button } from 'primevue'
     </div>
 
     <div>
-      <RouterLink v-for="r in routes" :key="r.path" :to="r.path">
+      <RouterLink v-for="r in routes" :key="r.path" :to="{name: r.name, params: {projectId: projectId}}">
         <div
           :class="[
             'font-family:\'Poppins-SemiBold\',Helvetica',
@@ -68,11 +68,21 @@ export default {
     routes() {
       return this.$router
         .getRoutes()
-        .filter(r => Object.prototype.hasOwnProperty.call(r.meta, 'home'))
+        .filter(r => Object.prototype.hasOwnProperty.call(r.meta, this.sidebarType))
+        .filter(r => Object.prototype.hasOwnProperty.call(r.meta, this.user.role))
     },
   },
   props: {
-    sidebarType: String,
+    sidebarType: {
+      type: String,
+      default: 'home',
+      required: true
+    },
+    projectId: {
+      type: String,
+      default: null,
+      required: false
+    }
   },
 }
 </script>

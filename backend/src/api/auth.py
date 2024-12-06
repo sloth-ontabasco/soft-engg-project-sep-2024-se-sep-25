@@ -128,10 +128,14 @@ class CallbackAPI(Resource):
 
             # list of repos with url
             repo_list = [{repo['full_name']: repo['html_url']} for repo in repos]
+            # endcoded repo list query string
+            rqs = urlencode({"repos": repo_list})
+            
             
             # Save the OAuth2 token
             session['oauth2_token'] = oauth2_token #save in db
-            return repo_list
+            # return repo_list
+            return redirect(FRONTEND_URI + '?' + rqs)
         
         email = provider_data['userinfo']['email'](response.json())
         picture = provider_data['userinfo']['picture'](response.json())

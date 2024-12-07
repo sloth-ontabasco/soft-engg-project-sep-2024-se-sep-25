@@ -1,4 +1,5 @@
 import datetime
+from io import BytesIO
 import os
 from flask import request, send_file
 from flask_jwt_extended import get_current_user
@@ -63,19 +64,13 @@ class MilestoneSubmissionAPI(Resource):
             file_data = milestone_submission.submission.read()
             submission_data['submission_file'] = file_data.decode('latin1')  # Convert binary to string for JSON
             
-            zip_file_data = file_data
-            rubrix_file_path = ""; # No rubrix file provided
-            milestone_title = milestone_submission.milestone.title
-            milestone_description = milestone_submission.milestone.description
-            # output_pdf_path = os.path.join(os.getcwd(), "src", "api", "reports", "summary_report.pdf")
-
-            process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description)
+            # Wrap the file_data in a BytesIO object
+            file_stream = BytesIO(file_data)
         else:
             return Response.error(code=404, message="Milestone submission file not found")
 
-        # Return the generated PDF file as a downloadable response
-        return send_file(os.path.join(os.getcwd(), "submission_evaluation.html"), as_attachment=True, download_name="submission_evaluation.html")
-        # return Response.success(data=submission_data, message="Milestone submission retrieved successfully")
+        # Return the milestone submission file
+        return send_file(file_stream, as_attachment=True, download_name="submission.zip")
 
     @check_any_role(roles=['instructor', 'ta', 'admin'])
     def delete(self, submission_id):

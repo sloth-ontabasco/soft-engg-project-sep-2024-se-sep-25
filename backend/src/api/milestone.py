@@ -31,7 +31,7 @@ class MilestoneAPI(Resource):
     
 class ProjectMilestonesAPI(Resource):
     
-    @check_any_role(roles=['instructor', 'admin','student'])
+    @check_any_role(roles=['instructor', 'admin','student', 'ta'])
     def get(self, project_id):
         """
         Route: GET /api/project/milestones/<project_id>

@@ -37,7 +37,7 @@ class UserAPI(Resource):
                 return Response.success(200, user=user.to_dict(), message="User found")
 
             # If no user_id is provided, check admin privileges before fetching all users
-            if current_user.role != 'admin':
+            if current_user.role not in ['admin','instructor','ta']:
                 print("Unauthorized access attempt by non-admin user")
                 return Response.error(403, message="Unauthorized access")
 

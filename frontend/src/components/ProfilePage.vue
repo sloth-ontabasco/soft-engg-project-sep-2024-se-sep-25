@@ -4,6 +4,7 @@
       <UpcomingMilestones />
     </div>
 </template>
+
   
   <script>
   import Profile from "./Profile.vue";

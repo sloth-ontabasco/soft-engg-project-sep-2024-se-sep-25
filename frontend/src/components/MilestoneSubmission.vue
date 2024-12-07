@@ -7,21 +7,40 @@
       <nav class="text-sm text-gray-600 mb-5">
         <router-link :to="'/projects'" class="hover:underline">All Projects</router-link> / 
         <a href="#" class="hover:underline">SE Sept 2024</a> / 
-        <span>Milestone 1</span>
+        <select v-model="selectedMilestone" @change="handleMilestoneChange" class="border rounded px-3 py-1 text-gray-600 bg-gray-100 focus:outline-none focus:ring">
+            <option v-for="milestone in milestones" :key="milestone.id" :value="milestone.id">{{ milestone.title }}</option>
+            <option value="add-milestone">➕ Add a Milestone</option>
+          </select>
+          
+          <select v-model="selectedTeam" @change="handleTeamChange" class="border rounded px-3 py-1 text-black bg-gray-100 focus:outline-none focus:ring">
+          <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
+        </select>
       </nav>
 
       <!-- Header -->
-      <h1 class="text-black text-3xl font-bold mb-5">User Stories Submission</h1>
-      <p class="text-gray-700 mb-5">
-        Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature...
-      </p>
-
-      <!-- Tags -->
-      <div class="flex gap-2 mb-5">
-        <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">Files Required</span>
-        <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">User Stories</span>
-        <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">Architecture</span>
+      <div class="group flex items-center justify-between">
+        <div>
+          <h1 v-if="!editingHeading" class="text-black text-3xl font-bold mb-5">
+            {{ selectedMilestoneTitle }} - User Stories Submission
+          </h1>
+          <input v-else type="text" v-model="editedHeading" class="border p-2 rounded text-3xl font-bold mb-5" @keyup.enter="saveHeading" />
+        </div>
+        <button class="hidden group-hover:inline-block text-white px-4 py-2 rounded" @click="toggleHeadingEdit">✏️</button>
       </div>
+
+      <div class="group flex items-center justify-between">
+        <div>
+          <p v-if="!editingDescription" class="text-gray-700 mb-5">
+            Use the options below to manage files and review feedback for {{ selectedMilestoneTitle }}.
+          </p>
+          <textarea v-else v-model="editedDescription" class="w-full p-2 border rounded focus:outline-none focus:ring mb-5" @keyup.enter="saveDescription"></textarea>
+        </div>
+        <button class="hidden group-hover:inline-block text-white px-4 py-2 rounded" @click="toggleDescriptionEdit">✏️</button>
+      </div>
+
+      <div :class="['inline-block px-6 py-3 rounded-lg text-sm font-semibold', isDeadlineNear ? 'bg-red-500 text-white animate-pulse' : 'bg-white text-black']" style="margin-left: 0;">Deadline: {{ deadline }}</div>
+      <br>
+      <br>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Files Submitted Section -->
@@ -29,17 +48,10 @@
           <h2 class="text-black text-lg font-bold mb-3">Files Submitted</h2>
           <ul>
             <li class="flex justify-between mb-2">
-              <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">User Stories</span>
+              <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">Submission Status</span>
               <span class="text-green-600">Submitted</span>
             </li>
-            <li class="flex justify-between mb-2">
-              <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">User Stories - Team</span>
-              <span class="text-green-600">Submitted</span>
-            </li>
-            <li class="flex justify-between mb-2">
-              <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full">User Requirements</span>
-              <span class="text-red-600">Not Submitted</span>
-            </li>
+           
           </ul>
 
           <!-- Buttons: Upload, Download, Delete -->
@@ -107,33 +119,110 @@
         </div>
       </div>
 
-      <!-- TA Feedback Section -->
-      <div class="bg-white shadow-md rounded-lg p-5 mt-8">
-        <h2 class="text-black text-lg font-bold mb-3">TA Feedback</h2>
-        <p class="text-gray-700">
-          It is a long established fact that a reader will be distracted by the readable content of a page...
-        </p>
+       <!-- Feedback Section -->
+       <div class="bg-white shadow-md rounded-lg p-5 mt-8">
+        <h2 class="text-black text-lg font-bold mb-3">Feedback</h2>
+        <ul>
+          <li v-for="(feedback, index) in feedbackList" :key="index" class="mb-4 bg-gray-100 p-3 rounded shadow-sm">
+            <div v-if="!feedback.editing">
+              <p class="text-gray-700"><strong>{{ feedback.username }}:</strong> {{ feedback.text }}</p>
+              <button class="text-blue-500 text-sm mt-2 underline" @click="editFeedback(index)">✏️ Edit</button>
+            </div>
+            <div v-else>
+              <textarea v-model="feedback.editedText" class="w-full p-2 border rounded focus:outline-none focus:ring"></textarea>
+              <button class="bg-green-500 text-white px-3 py-1 rounded mt-2" @click="saveFeedback(index)">Save</button>
+              <button class="bg-red-500 text-white px-3 py-1 rounded mt-2" @click="cancelFeedbackEdit(index)">Cancel</button>
+            </div>
+          </li>
+        </ul>
+        <div class="mt-4">
+          <textarea v-model="newFeedback" class="w-full p-2 border rounded focus:outline-none focus:ring bg-white text-black" placeholder="Add new feedback..."></textarea>
+          <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-700" @click="addFeedback">Add Feedback</button>
+        </div>
       </div>
     </main>
-    
   </div>
 </template>
 
 <script>
+import { getProjectMilestones, getMilestone, createMilestone, updateMilestone, deleteMilestone, getMilestonesByUser } from '../api/milestone';
+
 export default {
+  
   name: "MilestoneSubmission",
   data(){
     return{
+      editingHeading: false,
+      editingDescription: false,
+      editedHeading: "",
+      editedDescription: "",
+      feedbackList: [
+        { text: "Ensure all required files are uploaded before the deadline.", username: "TA John", editing: false, editedText: "" },
+        { text: "Contact your TA for further clarifications.", username: "TA Jane", editing: false, editedText: "" },
+      ],
+      newFeedback: "",
       isMilestoneSubmitted: true, // Example state
       showPDF: false, // Controls the visibility of the PDF modal
       pdfURL: null, // URL for the fetched PDF
+      deadline: "2024-12-08",
+      isDeadlineNear: false,
+      milestones: ["Milestone 1", "Milestone 2", "Milestone 3"],
+      teams: ["Team 1", "Team 2", "Team 3"],
+      selectedMilestone: "Milestone 1",
+      selectedTeam: "Team 1",
     }
   },
   created() {
-    // write the logic here to fetch the milestone details from project ID
-    // get project ID like so $route.params.id
-  },
+    this.fetchMilestones();
+ },
   methods: {
+    async fetchMilestones() {
+      try {
+        const projectId = "${projectId}"; // Replace with the actual project ID
+        this.milestones = await getProjectMilestones(projectId);
+      } catch (error) {
+        console.error("Error fetching milestones:", error);
+      }
+    },
+    async fetchMilestone() {
+      try {
+        const milestoneId = "yourMilestoneId"; // Replace with the actual milestone ID
+        const milestone = await getMilestone(milestoneId);
+        console.log("Fetched Milestone:", milestone);
+      } catch (error) {
+        console.error("Error fetching milestone:", error);
+      }
+    },
+
+    toggleHeadingEdit() {
+      this.editingHeading = !this.editingHeading;
+      if (this.editingHeading) {
+        this.editedHeading = this.selectedMilestoneTitle;
+      }
+    },
+    saveHeading() {
+      this.selectedMilestoneTitle = this.editedHeading.trim();
+      this.editingHeading = false;
+    },
+    toggleDescriptionEdit() {
+      this.editingDescription = !this.editingDescription;
+      if (this.editingDescription) {
+        this.editedDescription = `Use the options below to manage files and review feedback for ${this.selectedMilestoneTitle}.`;
+      }
+    },
+    saveDescription() {
+      // Save description logic
+      this.editingDescription = false;
+    },
+    editFeedback(index) {
+      this.$set(this.feedbackList[index], "editing", true);
+      this.$set(this.feedbackList[index], "editedText", this.feedbackList[index].text);
+    },
+    saveFeedback(index) {
+      const feedback = this.feedbackList[index];
+      feedback.text = feedback.editedText.trim();
+      feedback.editing = false;
+    },
     handleFileUpload(event) {
       const files = event.target.files;
       if (files.length) {
@@ -168,11 +257,35 @@ export default {
       this.showPDF = false; // Hide the PDF viewer
       this.pdfURL = null; // Clean up the URL
     },
-   
-    }
-  };
+    navigateToCreateMilestone() {
+      this.$router.push({ name: "CreateMilestone" });
+    },
+    deleteFeedback(index) {
+      this.feedbackList.splice(index, 1);
+    },
+    addFeedback() {
+      if (this.newFeedback.trim()) {
+        this.feedbackList.push({ text: this.newFeedback.trim(), username: this.username });
+        this.newFeedback = "";
+      } else {
+        alert("Feedback cannot be empty.");
+      }
+    },
+    checkDeadline() {
+      const today = new Date();
+      const deadlineDate = new Date(this.deadline);
+      const diffInDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+      this.isDeadlineNear = diffInDays <= 3;
+      },
+    },
+    mounted(){
+      this.checkDeadline();
+
+  }
+};
 
 </script>
+
 
 <style scoped>
 .overlay {

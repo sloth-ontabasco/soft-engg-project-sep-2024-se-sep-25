@@ -107,19 +107,20 @@
       </div>
 
       <!-- TA Feedback Section -->
-      <div class="bg-white shadow-md rounded-lg p-5 mt-8">
-        <h2 class="text-black text-lg font-bold mb-3">TA Feedback</h2>
-        <p class="text-gray-700">
-          It is a long established fact that a reader will be distracted by the readable content of a page...
-        </p>
-      </div>
+      <Feedbacks :projectId="$route.params.projectId" :user="user" />
     </main>
   </div>
 </template>
 
 <script>
+import Feedbacks from './Feedbacks.vue';
+import { mapState } from 'vuex';
+
 export default {
   name: "MilestoneSubmission",
+  components: {
+    Feedbacks
+  },
   data(){
     return{
       isMilestoneSubmitted: true, // Example state
@@ -127,9 +128,16 @@ export default {
       pdfURL: null, // URL for the fetched PDF
     }
   },
-  created() {
+  computed: {
+    ...mapState(['user']),
+    canEdit() {
+      return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role);
+    }
+  },
+  async created() {
     // write the logic here to fetch the milestone details from project ID
     // get project ID like so $route.params.id
+    await this.fetchFeedbacks();
   },
   methods: {
     handleFileUpload(event) {

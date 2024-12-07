@@ -5,6 +5,7 @@ from src.models.feedback import Feedback
 from src.models.milestone_submission import MilestoneSubmission
 from src.lib.auth import check_any_role
 from src.models.response import Response
+from datetime import datetime
 
 """
 API for handling CRUD operations for Feedbacks
@@ -70,8 +71,18 @@ class FeedbackAPI(Resource):
         feedback = Feedback.objects(id=id, milestone_submission=milestone_submission).first()
         if not feedback:
             return Response.error(404, message="Feedback not found")
-        feedback.update(**data)
-        return Response.success(200, feedback=feedback.to_dict())
+        
+        modified = False
+        if 'content' in data and data['content'] != feedback.content:
+            feedback.content = data['content']
+            modified = True
+        
+        if modified:
+            feedback.updated_at = datetime.utcnow()
+            feedback.save()
+            return Response.success(200, feedback=feedback.to_dict())
+        
+        return Response.success(200, feedback=feedback.to_dict(), message="No changes detected")
 
     """
     Route: /api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>

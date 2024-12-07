@@ -2,3 +2,6 @@ iitm25/
 ../se_env/
 .env
 *.pyc
+__pycache__/
+.pytest_cache/
+.venv/

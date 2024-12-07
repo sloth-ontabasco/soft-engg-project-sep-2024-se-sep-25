@@ -10,6 +10,7 @@ import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
 import ProjectView from '@/views/ProjectView.vue'
 import Annoucements from '@/components/Annoucements.vue'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

@@ -70,4 +70,3 @@ class Config:
 class LocalDevConfig(Config):
     DEBUG = True
     WTF_CSRF_ENABLED = False
-    

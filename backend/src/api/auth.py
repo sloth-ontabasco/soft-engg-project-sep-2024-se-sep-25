@@ -93,8 +93,6 @@ class CallbackAPI(Resource):
         oauth2_token = response.json().get('access_token')
         if not oauth2_token:
             return Response.error(401)
-        
-        # print(response.json())
 
         
         # use the access token to get the user's email address
@@ -166,11 +164,13 @@ class CallbackAPI(Resource):
             return redirect(FRONTEND_URI + '?' + rqs)
         
         email = provider_data['userinfo']['email'](response.json())
-        picture = provider_data['userinfo']['picture'](response.json())
+        if provider == 'google':
+            picture = provider_data['userinfo']['picture'](response.json())
 
         # find or create the user in the database
         user = User.objects(email=email).first()
         if user is None:
+            user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
             user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
             user.save()
 

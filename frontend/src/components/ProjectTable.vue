@@ -57,10 +57,8 @@
             >Project Deadline</label>
           <DatePicker id="deadline" dateFormat="yy-mm-dd" showTime hourFormat="24" fluid v-model="project.deadline"></DatePicker>
         </div>
-        <template #footer>
           <Button label="Cancel" icon="pi pi-times" text @click="() => newProjectVisible=false" />
           <Button label="Save" icon="pi pi-check" @click="saveProject" />
-        </template>
       </div>
     </Dialog>
 
@@ -166,8 +164,8 @@ import IconField from 'primevue/iconfield'
 import { Toolbar } from 'primevue'
 import { Dialog } from 'primevue'
 import Button from 'primevue/button'
-import { getProjects, updateProject } from '../api/project'
-import { DatePicker } from 'primevue'
+import { getProjects, updateProject, createProject } from '../api/project'
+import { DatePicker, Textarea } from 'primevue'
 
 const dt = ref();
 
@@ -178,6 +176,7 @@ export default {
     Column,
     InputIcon,
     InputText,
+    Textarea,
     IconField,
     Button,
     DatePicker,
@@ -231,6 +230,21 @@ export default {
     }
   },
   methods: {
+    openNew() {
+      this.submitted = false
+      this.newProjectVisible = true
+    },
+    saveProject() {
+
+      this.newProjectVisible = false
+      this.$toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Project created successfully',
+        life: 3000,
+      })
+      this.submitted = true
+    },
     onRowEditSave(event) {
       console.log('row edit save', event)
       const project = event.data

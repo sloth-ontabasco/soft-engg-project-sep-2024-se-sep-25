@@ -5,7 +5,7 @@
     <main class="flex-1 p-10">
       <!-- Breadcrumb Navigation -->
       <nav class="text-sm text-gray-600 mb-5">
-        <a href="#" class="hover:underline">All Projects</a> / 
+        <router-link :to="'/projects'" class="hover:underline">All Projects</router-link> / 
         <a href="#" class="hover:underline">SE Sept 2024</a> / 
         <span>Milestone 1</span>
       </nav>
@@ -128,6 +128,10 @@ export default {
       showPDF: false, // Controls the visibility of the PDF modal
       pdfURL: null, // URL for the fetched PDF
     }
+  },
+  created() {
+    // write the logic here to fetch the milestone details from project ID
+    // get project ID like so $route.params.id
   },
   methods: {
     handleFileUpload(event) {

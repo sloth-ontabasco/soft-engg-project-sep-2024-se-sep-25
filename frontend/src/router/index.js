@@ -7,11 +7,37 @@ import ProjectTable from '@/components/ProjectTable.vue'
 import UserTable from '@/components/UserTable.vue'
 import TeamTable from '@/components/TeamTable.vue'
 import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
+import ProjectView from '@/views/ProjectView.vue'
 import Annoucements from '@/components/Annoucements.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/project/:projectId',
+      component: ProjectView,
+      children: [
+        { path: '', component: Annoucements, name: 'project' },
+        {
+          path: 'team',
+          component: TeamTable,
+          name: 'Teams',
+          meta: { project: true, ta: true, student: true, instructor: true },
+        },
+        {
+          path: 'milestonesubmission',
+          component: MilestoneSubmission,
+          meta: { project: true, ta: true, student: true, instructor: true },
+          name: 'Milestones',
+        },
+        {
+          path: 'announcements',
+          component: Annoucements,
+          meta: { project: true, ta: true, student: true, instructor: true },
+          name: 'Announcements',
+        },
+      ],
+    },
     {
       path: '/',
       name: 'home',
@@ -21,39 +47,21 @@ const router = createRouter({
         {
           path: 'profile',
           component: Profile,
-          meta: { home: true },
+          meta: { home: true, student: true, ta: true, instructor: true },
           name: 'Profile',
         },
         {
           path: 'projects',
           component: ProjectTable,
-          meta: { home: true },
+          meta: { home: true, student: true, ta: true, instructor: true, admin: true },
           name: 'Projects',
         },
         {
           path: 'users',
           component: UserTable,
-          meta: { home: true },
+          meta: { home: true, admin: true },
           name: 'Users',
         },
-        {
-          path: 'teams',
-          component: TeamTable,
-          meta: { home: true },
-          name: 'Teams',
-        },
-        {
-          path: 'milestonesubmission',
-          component: MilestoneSubmission,
-          meta: { home: true },
-          name: 'Milestones',
-        },
-        {
-          path: 'announcements',
-          component: Annoucements,
-          meta: { home: true },
-          name: 'Announcements',
-        }
       ],
     },
     {

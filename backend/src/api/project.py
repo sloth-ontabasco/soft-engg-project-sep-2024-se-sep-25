@@ -16,7 +16,7 @@ class ProjectAPI(Resource):
     - Requires JWT authentication for access.
     """
 
-    @check_any_role(roles=['instructor', 'admin','student'])
+    @jwt_required()
     def get(self):
         """
         Route: GET /api/project
@@ -119,6 +119,7 @@ class ProjectByIdAPI(Resource):
         project.save()
         return Response.success(data=project.to_dict(), message="Project updated successfully")
     
+    @check_any_role(roles=['instructor', 'admin'])
     def delete(self, project_id):
         """
         Route: DELETE /api/project/<project_id>

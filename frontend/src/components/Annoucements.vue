@@ -168,11 +168,7 @@ export default {
       };
     },
   },
-  mounted:{
-    getAnnoucements(){
-      //send project id to backend
-    }
-  }
+
 };
 </script>
 

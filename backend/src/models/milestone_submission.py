@@ -8,7 +8,7 @@ class MilestoneSubmission(db.Document):
     team = db.ReferenceField('Team', reverse_delete_rule=db.CASCADE)  # Delete submission if team is deleted
     status = db.IntField(choices=[(0, 'Not Yet Started'), (1, 'In Progress'), (2, 'Complete'), (3, 'Late Submission')])
     submission = db.FileField()
-    grade = db.StringField()
+    grade = db.StringField(choices=['A', 'B', 'C', 'D', 'F'])
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 

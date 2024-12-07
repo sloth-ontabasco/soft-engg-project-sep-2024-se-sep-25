@@ -64,11 +64,12 @@
 
     <DataTable
       ref="dt"
+    <DataTable
       :value="projects"
       v-model:editingRows="editingRows"
       v-model:filters="filters"
       filterDisplay="row"
-      :loading="loading"
+      :loding="loading"
       editMode="row"
       @row-edit-save="onRowEditSave"
       stripedRows
@@ -170,6 +171,7 @@ import { DatePicker, Textarea } from 'primevue'
 
 const dt = ref();
 
+
 export default {
   name: 'ProjectTable',
   components: {
@@ -183,6 +185,7 @@ export default {
     DatePicker,
     Toolbar,
     Dialog,
+
   },
   data() {
     return {

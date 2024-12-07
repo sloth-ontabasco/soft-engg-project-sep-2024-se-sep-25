@@ -31,8 +31,9 @@ class FeedbackAPI(Resource):
                 return Response.error(404, message="Feedback not found")
             return Response.success(200, feedback=feedback.to_dict())
         
-        print(f"Fetching all feedbacks for team with id: {team_id}")
-        feedbacks = Feedback.objects(team=team)
+        print(f"Fetching all feedbacks for team with id: {team_id} and milestone with id: {milestone_id}")
+        milestone_submissions = MilestoneSubmission.objects(team=team, milestone=milestone_id)
+        feedbacks = Feedback.objects(milestone_submission__in=milestone_submissions)
         print(f"Found {len(feedbacks)} feedbacks")
         response = Response.success(200, feedbacks=[feedback.to_dict() for feedback in feedbacks])
         return response

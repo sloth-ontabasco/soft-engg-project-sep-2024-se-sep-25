@@ -20,7 +20,6 @@ class UserAPI(Resource):
     """
     @check_any_role(['admin', 'student', 'instructor', 'ta'])
     def get(self, user_id=None):
-
         try:
             # If user_id is provided and matches the current user's ID
             if user_id:
@@ -58,23 +57,48 @@ class UserAPI(Resource):
     @check_any_role(['admin', 'student', 'instructor', 'ta'])
     def put(self, user_id):
         try:
-            # Check if the user is modifying their own data
-            if str(current_user.id) != user_id:
-                print(f"Unauthorized access attempt by user: {current_user.username}")
-                return Response.error(403, message="Unauthorized access")
+            # Fetch the user data to be updated
+            user_to_update = User.objects(id=user_id).first()
+            if not user_to_update:
+                print(f"User with id {user_id} not found")
+                return Response.error(404, message="User not found")
 
-            # Update the user data
+            # Get request data
             data = request.get_json()
-            current_user.update(
-                username=data.get('username', current_user.username),
-                github_id=data.get('github_id', current_user.github_id),
-            )
-            print(f"User with id {user_id} updated successfully")
-            return Response.success(200, user=current_user.reload().to_dict(), message="User updated successfully")
 
+            # Check if the current user is an admin
+            if current_user.role == 'admin':
+                # Admin can update any user, including their role
+                user_to_update.update(
+                    role=data.get('role', user_to_update.role),  # Admin updates the role
+                )
+                print(f"Admin {current_user.username} updated user with id {user_id}")
+                return Response.success(
+                    200,
+                    user=user_to_update.reload().to_dict(),
+                    message="User updated successfully by admin"
+                )
+            else:
+                # Non-admin users can only update their own data
+                if str(current_user.id) != user_id:
+                    print(f"Unauthorized access attempt by user: {current_user.username}")
+                    return Response.error(403, message="Unauthorized access")
+
+                # Update user data (excluding role)
+                user_to_update.update(
+                    username=data.get('username', current_user.username),
+                    github_id=data.get('github_id', current_user.github_id),
+                )
+                print(f"User with id {user_id} updated their data successfully")
+                return Response.success(
+                    200,
+                    user=current_user.reload().to_dict(),
+                    message="User updated successfully"
+                )
         except Exception as e:
             print(f"Error occurred: {e}")
             return Response.error(500, message="Internal Server Error")
+
         
     """
     Route: DELETE /api/users/<string:user_id>

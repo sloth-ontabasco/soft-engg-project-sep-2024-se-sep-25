@@ -46,6 +46,7 @@ OAUTH2_PROVIDERS = {
         'token_url': 'https://github.com/login/oauth/access_token',
         'userinfo':{
             'url': 'https://api.github.com/user',
+            # 'url': 'https://api.github.com/user/emails',
             'email': lambda json: json['login'],
             'repos_url': lambda json: json['reops_url']
         },

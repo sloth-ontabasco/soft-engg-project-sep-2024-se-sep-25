@@ -1,41 +1,62 @@
 <template>
-  <div class="flex flex-col">
+  <div class="flex flex-col mr-5">
     <!-- Add Announcement Button -->
     <div><br>
       <div class="flex justify-between mb-4">
-        <h2 class="text-2xl text-black font-bold mb-1">Announcements</h2>
+        <h2 class="text-2xl text-white font-bold mb-1">Announcements</h2>
         <button
+          v-if="canEdit"
           @click="showModal = true"
-          class="bg-transparent text-blue-500 py-2 px-4 rounded hover:bg-blue-600 hover:text-white border border-blue-500 focus:outline-none"
+          class="bg-transparent text-green-500 py-2 px-4 rounded hover:bg-green-600 hover:text-white border border-green-500 focus:outline-none"
         >
-          Add Announcement
+          <i class="fa fa-bullhorn"></i> Announce
         </button>
       </div>
     </div>
 
     <!-- Main Content -->
     <main>
-      <div
-        v-for="(announcement, index) in announcements"
-        :key="announcement.id"
-        @click="toggleExpand(index)"
-        class="flex flex-col p-5 bg-gray-100 rounded-lg mb-4 shadow-md cursor-pointer"
-      >
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl text-black font-bold mb-2">
-            {{ announcement.title }}
-          </h2>
-          <button class="text-gray-500 hover:text-black focus:outline-none">
-            <span v-if="expandedIndex === index">-</span>
-            <span v-else>+</span>
-          </button>
+      <div v-if="loading" class="text-center text-gray-500">Loading announcements...</div>
+      <div v-else-if="announcements.length === 0" class="text-center text-gray-500">No announcements were made</div>
+      <div v-else>
+        <div
+          v-for="(announcement, index) in announcements"
+          :key="announcement.id"
+          @click="toggleExpand(index)"
+          class="flex flex-col p-5 bg-gray-100 rounded-lg mb-4 shadow-md cursor-pointer bg-opacity-90"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl text-black font-bold mb-2">
+              {{ announcement.title }}
+            </h2>
+            <div class="flex items-center">
+              <button class="text-gray-500 hover:text-black focus:outline-none">
+                <i :class="expandedIndex === index ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+              </button>
+              <button
+                v-if="canEdit"
+                @click.stop="editAnnouncement(index)"
+                class="text-blue-500 hover:text-blue-700 focus:outline-none ml-2"
+              >
+                <i class="fa fa-edit"></i>
+              </button>
+              <button
+                v-if="canEdit"
+                @click.stop="confirmDeleteAnnouncement(index)"
+                class="text-red-500 hover:text-red-700 focus:outline-none ml-2"
+              >
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="text-sm text-gray-600 mb-2">
+            Posted by {{ announcement.posted_by }} on {{ formatDate(announcement.created_at) }}
+            <span v-if="announcement.updated_at && announcement.updated_at !== announcement.created_at">(Updated on {{ formatDate(announcement.updated_at) }})</span>
+          </div>
+          <p v-if="expandedIndex === index" class="text-gray-700">
+            {{ announcement.content }}
+          </p>
         </div>
-        <div class="text-sm text-gray-600 mb-2">
-          Posted by {{ announcement.postedBy }} on {{ announcement.timestamp }}
-        </div>
-        <p v-if="expandedIndex === index" class="text-gray-700">
-          {{ announcement.message }}
-        </p>
       </div>
     </main>
 
@@ -44,26 +65,26 @@
       v-if="showModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
-      <div class="bg-white p-6 rounded-lg w-1/3 shadow-lg">
-        <h3 class="text-lg font-bold mb-4">Add New Announcement</h3>
-        <form @submit.prevent="submitAnnouncement">
+      <div class="bg-black bg-opacity-90 p-6 rounded-lg w-1/3 shadow-lg">
+        <h3 class="text-lg font-bold mb-4 text-white">{{ isEditing ? 'Edit Announcement' : 'Add New Announcement' }}</h3>
+        <form @submit.prevent="isEditing ? updateAnnouncement() : submitAnnouncement()">
           <div class="mb-4">
-            <label for="title" class="block font-medium text-gray-700">Title</label>
+            <label for="title" class="block font-medium text-white">Title</label>
             <input
               v-model="newAnnouncement.title"
               id="title"
               type="text"
               required
-              class="w-full border border-gray-300 rounded p-2"
+              class="w-full border border-gray-300 rounded p-2 bg-gray-800 text-white"
             />
           </div>
           <div class="mb-4">
-            <label for="message" class="block font-medium text-gray-700">Message</label>
+            <label for="message" class="block font-medium text-white">Message</label>
             <textarea
               v-model="newAnnouncement.message"
               id="message"
               required
-              class="w-full border border-gray-300 rounded p-2"
+              class="w-full border border-gray-300 rounded p-2 bg-gray-800 text-white"
             ></textarea>
           </div>
 
@@ -71,7 +92,7 @@
           <div class="flex justify-end">
             <button
               type="button"
-              @click="showModal = false"
+              @click="closeModal"
               class="bg-gray-300 text-gray-700 py-2 px-4 rounded mr-2 hover:bg-gray-400 focus:outline-none"
             >
               Cancel
@@ -80,85 +101,116 @@
               type="submit"
               class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none"
             >
-              Add
+              {{ isEditing ? 'Update' : 'Add' }}
             </button>
           </div>
         </form>
       </div>
     </div>
+    <div v-if="notification.message" :class="`fixed bottom-4 right-4 p-4 rounded shadow-lg ${notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white flex items-center`">
+      <i class="fa fa-info-circle mr-2"></i>
+      {{ notification.message }}
+    </div>
   </div>
 </template>
 
 <script>
+import { getAnnouncements, deleteAnnouncement, createAnnouncement, updateAnnouncement } from '../api/announcements'
+import { mapState } from 'vuex'
+
 export default {
   data() {
     return {
-      showModal: false, // Controls modal visibility
-      expandedIndex: null, // Tracks which announcement is expanded
-      announcements: [
-        {
-          id: 1,
-          title: "Scheduled Maintenance",
-          message:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-          postedBy: "Admin",
-          timestamp: "2024-11-19 10:00 AM",
-        },
-        {
-          id: 2,
-          title: "New Features Released",
-          message:
-            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-          postedBy: "Nidhish",
-          timestamp: "2024-11-18 3:45 PM",
-        },
-        {
-          id: 3,
-          title: "Holiday Announcement",
-          message:
-            "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-          postedBy: "Arun",
-          timestamp: "2024-11-17 8:20 AM",
-        },
-        {
-          id: 4,
-          title: "Policy Update",
-          message:
-            "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-          postedBy: "TA",
-          timestamp: "2024-11-16 5:30 PM",
-        },
-      ],
+      showModal: false,
+      expandedIndex: null,
+      loading: true,
+      announcements: [],
       newAnnouncement: {
         title: "",
         message: "",
-        
+        postedBy: "",
       },
+      notification: {
+        message: "",
+        type: "success"
+      },
+      isEditing: false,
+      editingIndex: null
     };
+  },
+  computed: {
+    ...mapState(['user']),
+    canEdit() {
+      return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role);
+    }
+  },
+  async created() {
+    try {
+      const projectId = this.$route.params.projectId;
+      const announcements = await getAnnouncements(projectId)
+      this.announcements = announcements || [];
+      this.announcements.forEach(announcement => {
+        console.log(announcement.title);
+      });
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      this.loading = false;
+    }
   },
   methods: {
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index;
     },
-    submitAnnouncement() {
-      const timestamp = new Date().toLocaleString("en-IN", {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "Asia/Kolkata",
-      });
-      const newId = this.announcements.length + 1;
-
-      const announcement = {
-        id: newId,
+    async submitAnnouncement() {
+      const projectId = this.$route.params.projectId;
+      const newAnnouncement = {
         title: this.newAnnouncement.title,
-        message: this.newAnnouncement.message,
-        postedBy: this.newAnnouncement.postedBy,
-        timestamp,
+        content: this.newAnnouncement.message, // Ensure 'content' is used instead of 'message'
+        posted_by: this.user.name // Ensure 'posted_by' is included
       };
 
-      this.announcements.unshift(announcement); // Add new announcement to the top
-      this.resetForm();
-      this.showModal = false; // Close the modal
+      try {
+        await createAnnouncement(projectId, newAnnouncement);
+        await this.refreshAnnouncements(); // Refresh announcements after creating a new one
+        this.resetForm();
+        this.showModal = false;
+        this.showNotification("Announcement posted", "success");
+      } catch (error) {
+        console.error('Failed to create announcement:', error);
+        this.showNotification("Failed to post announcement", "error");
+      }
+    },
+    async updateAnnouncement() {
+      const projectId = this.$route.params.projectId;
+      const announcementId = this.announcements[this.editingIndex].id;
+      const updatedAnnouncement = {
+        title: this.newAnnouncement.title,
+        content: this.newAnnouncement.message,
+      };
+
+      try {
+        await updateAnnouncement(projectId, announcementId, updatedAnnouncement);
+        await this.refreshAnnouncements(); // Refresh announcements after updating
+        this.resetForm();
+        this.showModal = false;
+        this.showNotification("Announcement updated", "info");
+      } catch (error) {
+        console.error('Failed to update announcement:', error);
+        this.showNotification("Failed to update announcement", "error");
+      }
+    },
+    async refreshAnnouncements() {
+      const projectId = this.$route.params.projectId;
+      this.loading = true;
+      try {
+        const announcements = await getAnnouncements(projectId);
+        this.announcements = announcements || [];
+      } catch (error) {
+        console.error('Error fetching announcements:', error);
+      } finally {
+        this.loading = false;
+      }
     },
     resetForm() {
       this.newAnnouncement = {
@@ -166,18 +218,59 @@ export default {
         message: "",
         postedBy: "",
       };
+      this.isEditing = false;
+      this.editingIndex = null;
+    },
+    closeModal() {
+      this.showModal = false;
+      this.resetForm();
+    },
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      const options = { day: 'numeric', month: 'long', year: 'numeric' };
+      return date.toLocaleDateString('en-IN', options).replace(/(\d+)(th|st|nd|rd)/, '$1$2');
+    },
+    async confirmDeleteAnnouncement(index) {
+      const projectId = this.$route.params.projectId;
+      if (confirm(`Are you sure you wish to delete "${this.announcements[index].title}"?`)) {
+        this.deleteAnnouncement(index);
+      }
+    },
+    async deleteAnnouncement(index) {
+      const projectId = this.$route.params.projectId;
+      const announcementId = this.announcements[index].id;
+      try {
+        await deleteAnnouncement(projectId, announcementId);
+        this.announcements.splice(index, 1);
+        this.showNotification("Announcement deleted", "error");
+      } catch (error) {
+        console.error('Failed to delete announcement:', error);
+        this.showNotification("Failed to delete announcement", "error");
+      }
+    },
+    editAnnouncement(index) {
+      this.isEditing = true;
+      this.editingIndex = index;
+      const announcement = this.announcements[index];
+      this.newAnnouncement = {
+        title: announcement.title,
+        message: announcement.content,
+        postedBy: announcement.posted_by,
+      };
+      this.showModal = true;
+    },
+    showNotification(message, type) {
+      this.notification.message = message;
+      this.notification.type = type;
+      setTimeout(() => {
+        this.notification.message = "";
+      }, 3000);
     },
   },
-  mounted:{
-    getAnnoucements(){
-      //send project id to backend
-    }
-  }
 };
 </script>
 
 <style>
-/* Optional: Modal Animation */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.2s;

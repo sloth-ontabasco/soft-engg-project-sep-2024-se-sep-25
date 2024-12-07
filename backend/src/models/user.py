@@ -1,6 +1,5 @@
 from ..db import db
 import datetime
-from ..models.role import Role
 from flask_login import UserMixin
 
 # User model

@@ -7,21 +7,18 @@
       <nav class="text-sm text-gray-600 mb-5">
         <router-link :to="'/projects'" class="hover:underline">All Projects</router-link> / 
         <a href="#" class="hover:underline">SE Sept 2024</a> / 
-        <select v-model="selectedMilestone" @change="handleMilestoneChange" class="border rounded px-3 py-1 text-gray-600 bg-gray-100 focus:outline-none focus:ring">
-            <option v-for="milestone in milestones" :key="milestone.id" :value="milestone.id">{{ milestone.title }}</option>
-            <option value="add-milestone">➕ Add a Milestone</option>
-          </select>
           
-          <select v-model="selectedTeam" @change="handleTeamChange" class="border rounded px-3 py-1 text-black bg-gray-100 focus:outline-none focus:ring">
-          <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
-        </select>
+          <Select v-model="selectedMilestone" :options="milestones" optionLabel="title" optionValue="id" :defaultValue="selectedMilestone.id" @update:modelValue="handleMilestoneChange" class="w-full md:w-56 custom-select" /> 
+          <template v-if="canEdit">
+            / <Select v-model="selectedTeam" :options="teams" optionLabel="team_name" optionValue="id" :defaultValue="selectedTeam.id" @update:modelValue="handleTeamChange" class="w-full md:w-56 custom-select" />
+          </template>
       </nav>
 
       <!-- Header -->
       <div class="group flex items-center justify-between">
         <div>
           <h1 v-if="!editingHeading" class="text-black text-3xl font-bold mb-5">
-            {{ selectedMilestoneTitle }} - User Stories Submission
+            {{ selectedMilestone.title }} - User Stories Submission
           </h1>
           <input v-else type="text" v-model="editedHeading" class="border p-2 rounded text-3xl font-bold mb-5" @keyup.enter="saveHeading" />
         </div>
@@ -31,7 +28,7 @@
       <div class="group flex items-center justify-between">
         <div>
           <p v-if="!editingDescription" class="text-gray-700 mb-5">
-            Use the options below to manage files and review feedback for {{ selectedMilestoneTitle }}.
+            Use the options below to manage files and review feedback for {{ selectedMilestone.title }} for {{ selectedTeam.team_name }}.
           </p>
           <textarea v-else v-model="editedDescription" class="w-full p-2 border rounded focus:outline-none focus:ring mb-5" @keyup.enter="saveDescription"></textarea>
         </div>
@@ -145,7 +142,10 @@
 </template>
 
 <script>
-import { getProjectMilestones, getMilestone, createMilestone, updateMilestone, deleteMilestone, getMilestonesByUser } from '../api/milestone';
+import { getProjectMilestones } from '../api/milestone';
+import { getProjectTeams } from '../api/team';
+import Select from 'primevue/select';
+import { mapState } from 'vuex';
 
 export default {
   
@@ -166,48 +166,88 @@ export default {
       pdfURL: null, // URL for the fetched PDF
       deadline: "2024-12-08",
       isDeadlineNear: false,
-      milestones: ["Milestone 1", "Milestone 2", "Milestone 3"],
-      teams: ["Team 1", "Team 2", "Team 3"],
-      selectedMilestone: "Milestone 1",
-      selectedTeam: "Team 1",
+      milestones: [],
+      teams: [],
+      selectedMilestone: { id: "", title: "Loading..." },
+      selectedTeam: { id: "", team_name: "Loading..." }
     }
   },
   created() {
     this.fetchMilestones();
+    this.fetchTeams();
  },
+  components: {
+    Select
+  },
+  computed: {
+    ...mapState(['user']),
+    canEdit() {
+      return ['admin', 'instructor', 'ta'].includes(this.user.role);
+    }
+  },
   methods: {
     async fetchMilestones() {
       try {
-        const projectId = "${projectId}"; // Replace with the actual project ID
-        this.milestones = await getProjectMilestones(projectId);
+        const milestones = await getProjectMilestones(this.$route.params.projectId);
+        this.milestones = Array.isArray(milestones) ? milestones : [];
+        if (this.milestones.length > 0) {
+          this.selectedMilestone = this.milestones[0]; // Select the first milestone by default
+          console.log(this.selectedMilestone.title)
+        }
       } catch (error) {
         console.error("Error fetching milestones:", error);
       }
     },
-    async fetchMilestone() {
+    async fetchTeams() {
       try {
-        const milestoneId = "yourMilestoneId"; // Replace with the actual milestone ID
-        const milestone = await getMilestone(milestoneId);
-        console.log("Fetched Milestone:", milestone);
+        const response = await getProjectTeams(this.$route.params.projectId);
+        if (Array.isArray(response)) {
+          this.teams = response;
+        } else if (response && response.team) {
+          this.teams = [response.team];
+        } else {
+          this.teams = [];
+        }
+        if (this.teams.length > 0) {
+          this.selectedTeam = this.teams[0];
+        }
       } catch (error) {
-        console.error("Error fetching milestone:", error);
+        console.error("Error fetching teams:", error);
       }
+    },
+
+    handleMilestoneChange(value) {
+      this.selectedMilestone = this.milestones.find(milestone => milestone.id === value);
+      console.log("Selected Milestone:", {
+        id: this.selectedMilestone.id,
+        title: this.selectedMilestone.title,
+        description: this.selectedMilestone.description,
+        due_date: this.selectedMilestone.due_date
+      });
+    },
+
+    handleTeamChange(value) {
+      this.selectedTeam = this.teams.find(team => team.id === value);
+      console.log("Selected Team:", {
+        id: this.selectedTeam.id,
+        team_name: this.selectedTeam.team_name
+      });
     },
 
     toggleHeadingEdit() {
       this.editingHeading = !this.editingHeading;
       if (this.editingHeading) {
-        this.editedHeading = this.selectedMilestoneTitle;
+        this.editedHeading = this.selectedMilestone.title;
       }
     },
     saveHeading() {
-      this.selectedMilestoneTitle = this.editedHeading.trim();
+      this.selectedMilestone.title = this.editedHeading.trim();
       this.editingHeading = false;
     },
     toggleDescriptionEdit() {
       this.editingDescription = !this.editingDescription;
       if (this.editingDescription) {
-        this.editedDescription = `Use the options below to manage files and review feedback for ${this.selectedMilestoneTitle}.`;
+        this.editedDescription = `Use the options below to manage files and review feedback for ${this.selectedMilestone.title}.`;
       }
     },
     saveDescription() {
@@ -315,4 +355,8 @@ export default {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.custom-select {
+  background-color: rgba(0, 0, 0, 0.443);
+}
+
 </style>

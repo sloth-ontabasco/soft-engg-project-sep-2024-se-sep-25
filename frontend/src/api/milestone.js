@@ -8,13 +8,15 @@ const BASE_URL = import.meta.env.VITE_SERVER_BASE_URL;
  * @returns {Promise<Object[]>} A promise that resolves to an array of milestones.
  */
 export async function getProjectMilestones(projectId) {
-    const res = await fetch(`${BASE_URL}/api/project/milestones/${projectId}`, {
+    const res = await fetch(`${BASE_URL}/project/milestones/${projectId}`, {
         method: "GET",
         headers: header(),
     });
 
     if (res.status === 200) {
-        return res.json();
+        const data = await res.json();
+        console.log(data);
+        return data.data;
     }
 
     throw new Error("Failed to fetch project milestones");
@@ -26,7 +28,7 @@ export async function getProjectMilestones(projectId) {
  * @returns {Promise<Object>} A promise that resolves to the milestone object.
  */
 export async function getMilestone(milestoneId) {
-    const res = await fetch(`${BASE_URL}/api/milestones/${milestoneId}`, {
+    const res = await fetch(`${BASE_URL}/milestones/${milestoneId}`, {
         method: "GET",
         headers: header(),
     });
@@ -45,7 +47,7 @@ export async function getMilestone(milestoneId) {
  * @returns {Promise<Object>} A promise that resolves to the newly created milestone object.
  */
 export async function createMilestone(projectId, milestoneData) {
-    const res = await fetch(`${BASE_URL}/api/project/milestones/${projectId}`, {
+    const res = await fetch(`${BASE_URL}/project/milestones/${projectId}`, {
         method: "POST",
         headers: {
             ...header(),
@@ -69,7 +71,7 @@ export async function createMilestone(projectId, milestoneData) {
  * @returns {Promise<Object>} A promise that resolves to the updated milestone object.
  */
 export async function updateMilestone(projectId, milestoneId, milestoneData) {
-    const res = await fetch(`${BASE_URL}/api/milestones/${projectId}/${milestoneId}`, {
+    const res = await fetch(`${BASE_URL}/milestones/${projectId}/${milestoneId}`, {
         method: "PUT",
         headers: {
             ...header(),
@@ -92,7 +94,7 @@ export async function updateMilestone(projectId, milestoneId, milestoneData) {
  * @returns {Promise<void>} A promise that resolves when the milestone is deleted.
  */
 export async function deleteMilestone(projectId, milestoneId) {
-    const res = await fetch(`${BASE_URL}/api/milestones/${projectId}/${milestoneId}`, {
+    const res = await fetch(`${BASE_URL}/milestones/${projectId}/${milestoneId}`, {
         method: "DELETE",
         headers: header(),
     });
@@ -110,7 +112,7 @@ export async function deleteMilestone(projectId, milestoneId) {
  * @returns {Promise<Object[]>} A promise that resolves to an array of milestones.
  */
 export async function getMilestonesByUser(userId) {
-    const res = await fetch(`${BASE_URL}/api/milestones/user/${userId}`, {
+    const res = await fetch(`${BASE_URL}/milestones/user/${userId}`, {
         method: "GET",
         headers: header(),
     });

@@ -64,7 +64,6 @@
 
     <DataTable
       ref="dt"
-    <DataTable
       :value="projects"
       v-model:editingRows="editingRows"
       v-model:filters="filters"

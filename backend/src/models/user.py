@@ -24,4 +24,5 @@ class User(db.Document, UserMixin):
             "github_id": self.github_id,
             "role": self.role,
             "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

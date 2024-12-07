@@ -114,8 +114,8 @@
           </ul>
         </div>
       </div>
-      <!-- TA Feedback Section -->
-      <Feedbacks :projectId="$route.params.projectId" :user="user" />
+      <!-- Feedback Section -->
+      <Feedbacks v-if="selectedMilestone.id && selectedTeam.id" :projectId="$route.params.projectId" :user="user" :selectedMilestone="selectedMilestone" :selectedTeam="selectedTeam" ref="feedbacksComponent" />
     </main>
   </div>
 </template>
@@ -128,10 +128,10 @@ import Select from 'primevue/select';
 import { mapState } from 'vuex';
 
 export default {
-  
   name: "MilestoneSubmission",
   components: {
-    Feedbacks
+    Feedbacks,
+    Select
   },
   data(){
     return{
@@ -162,14 +162,11 @@ export default {
     }
   },
   async created() {
-    // write the logic here to fetch the milestone details from project ID
-    // get project ID like so $route.params.id
-    await this.fetchFeedbacks();
     await this.fetchMilestones();
     await this.fetchTeams();
-  },
-  components: {
-    Select
+    if (this.selectedMilestone.id && this.selectedTeam.id) {
+      this.$refs.feedbacksComponent.fetchFeedbacks();
+    }
   },
   methods: {
     async fetchMilestones() {
@@ -210,6 +207,9 @@ export default {
         description: this.selectedMilestone.description,
         due_date: this.selectedMilestone.due_date
       });
+      this.$nextTick(() => {
+        this.refreshFeedbacks();
+      });
     },
 
     handleTeamChange(value) {
@@ -218,6 +218,13 @@ export default {
         id: this.selectedTeam.id,
         team_name: this.selectedTeam.team_name
       });
+      this.$nextTick(() => {
+        this.refreshFeedbacks();
+      });
+    },
+
+    refreshFeedbacks() {
+      this.$refs.feedbacksComponent.fetchFeedbacks();
     },
 
     toggleHeadingEdit() {

@@ -77,8 +77,8 @@ def setup_api(app, api):
 
     # Feedback Routes
     api.add_resource(FeedbackAPI, 
-                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks",
-                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>")
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/teams/<string:team_id>/feedbacks",
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/teams/<string:team_id>/feedbacks/<string:id>")
 
     # Project Routes
     api.add_resource(ProjectAPI,"/api/project")

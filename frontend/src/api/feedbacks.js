@@ -2,9 +2,9 @@ import { header } from './auth';
 
 const BASE_URL = import.meta.env.VITE_SERVER_BASE_URL;
 
-export async function getFeedbacks(projectId, milestoneId, milestoneSubmissionId) {
-    console.log("Fetching from URL: ", `${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/submissions/${milestoneSubmissionId}/feedbacks`);
-    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/submissions/${milestoneSubmissionId}/feedbacks`, {
+export async function getFeedbacks(projectId, milestoneId, teamId) {
+    console.log("Fetching from URL: ", `${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/teams/${teamId}/feedbacks`);
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/teams/${teamId}/feedbacks`, {
         method: "GET",
         headers: header(),
     });
@@ -18,8 +18,8 @@ export async function getFeedbacks(projectId, milestoneId, milestoneSubmissionId
     throw new Error("Failed to fetch feedbacks");
 }
 
-export async function deleteFeedback(projectId, milestoneId, milestoneSubmissionId, feedbackId) {
-    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/submissions/${milestoneSubmissionId}/feedbacks/${feedbackId}`, {
+export async function deleteFeedback(projectId, milestoneId, teamId, feedbackId) {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/teams/${teamId}/feedbacks/${feedbackId}`, {
         method: "DELETE",
         headers: header(),
     });
@@ -29,8 +29,8 @@ export async function deleteFeedback(projectId, milestoneId, milestoneSubmission
     }
 }
 
-export async function createFeedback(projectId, milestoneId, milestoneSubmissionId, feedback) {
-    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/submissions/${milestoneSubmissionId}/feedbacks`, {
+export async function createFeedback(projectId, milestoneId, teamId, feedback) {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/teams/${teamId}/feedbacks`, {
         method: "POST",
         headers: {
             ...header(),
@@ -46,8 +46,8 @@ export async function createFeedback(projectId, milestoneId, milestoneSubmission
     throw new Error("Failed to create feedback");
 }
 
-export async function updateFeedback(projectId, milestoneId, milestoneSubmissionId, feedbackId, feedback) {
-    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/submissions/${milestoneSubmissionId}/feedbacks/${feedbackId}`, {
+export async function updateFeedback(projectId, milestoneId, teamId, feedbackId, feedback) {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/milestones/${milestoneId}/teams/${teamId}/feedbacks/${feedbackId}`, {
         method: "PUT",
         headers: {
             ...header(),

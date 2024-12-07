@@ -103,6 +103,14 @@ export default {
     user: {
       type: Object,
       required: true
+    },
+    selectedMilestone: {
+      type: Object,
+      required: true
+    },
+    selectedTeam: {
+      type: Object,
+      required: true
     }
   },
   data() {
@@ -116,8 +124,6 @@ export default {
       },
       isEditing: false,
       editingIndex: null,
-      milestoneId: "6739c50a5658280e7567203f", // replace with active milestone acc to MilestoneSubmission.vue
-      milestoneSubmissionId: "6753e728fdf6475c47c89f01", // replace with active submission acc to MilestoneSubmission.vue
       notification: {
         message: "",
         type: "success"
@@ -135,7 +141,8 @@ export default {
   methods: {
     async fetchFeedbacks() {
       try {
-        const feedbacks = await getFeedbacks(this.projectId, this.milestoneId, this.milestoneSubmissionId);
+        console.log("Fetching feedbacks for", this.selectedMilestone.title, this.selectedTeam.team_name);
+        const feedbacks = await getFeedbacks(this.projectId, this.selectedMilestone.id, this.selectedTeam.id);
         this.feedbacks = feedbacks || [];
       } catch (error) {
         console.error('Error fetching feedbacks:', error);
@@ -150,7 +157,7 @@ export default {
       };
 
       try {
-        await createFeedback(this.projectId, this.milestoneId, this.milestoneSubmissionId, newFeedback);
+        await createFeedback(this.projectId, this.selectedMilestone.id, this.selectedTeam.id, newFeedback);
         await this.fetchFeedbacks();
         this.resetForm();
         this.showModal = false;
@@ -167,7 +174,7 @@ export default {
       };
 
       try {
-        await updateFeedback(this.projectId, this.milestoneId, this.milestoneSubmissionId, feedbackId, updatedFeedback);
+        await updateFeedback(this.projectId, this.selectedMilestone.id, this.selectedTeam.id, feedbackId, updatedFeedback);
         await this.fetchFeedbacks();
         this.resetForm();
         this.showModal = false;
@@ -185,7 +192,7 @@ export default {
     async deleteFeedback(index) {
       const feedbackId = this.feedbacks[index].id;
       try {
-        await deleteFeedback(this.projectId, this.milestoneId, this.milestoneSubmissionId, feedbackId);
+        await deleteFeedback(this.projectId, this.selectedMilestone.id, this.selectedTeam.id, feedbackId);
         this.feedbacks.splice(index, 1);
         this.showNotification("Feedback deleted", "error");
       } catch (error) {

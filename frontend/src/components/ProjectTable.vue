@@ -1,12 +1,76 @@
 <template>
   <div class="p-4">
     <h1 class="text-2xl font-bold mb-4">Projects</h1>
+    <Toolbar class="mb-6">
+      <template #start>
+        <Button label="New" icon="pi pi-plus" class="mr-2" @click="openNew" />
+      </template>
+
+      <template #end>
+        <Button
+          label="Export"
+          icon="pi pi-upload"
+          severity="secondary"
+          @click="exportCSV($event)"
+        />
+      </template>
+    </Toolbar>
+
+    <Dialog
+      v-model:visible="newProjectVisible"
+      :style="{ width: '450px' }"
+      header="Project Details"
+      :modal="true"
+    >
+      <div class="flex flex-col gap-6">
+        <div>
+          <label for="Title" class="block font-bold mb-3">Name</label>
+          <InputText
+            id="name"
+            v-model.trim="project.title"
+            required="true"
+            autofocus
+            :invalid="submitted && !project.title"
+            fluid
+          />
+          <small v-if="submitted && !project.title" class="text-red-500"
+            >Title is required.</small
+          >
+        </div>
+        <div>
+          <label for="description" class="block font-bold mb-3">Description</label>
+          <Textarea
+            id="description"
+            v-model="project.description"
+                        :invalid="submitted && !project.description"
+            required="true"
+            rows="3"
+            cols="20"
+            fluid
+          />
+          <small v-if="submitted && !project.title" class="text-red-500"
+            >description is required.</small
+          >
+        </div>
+        <div>
+          <label for="deadline" class="block font-bold mb-3"
+            >Project Deadline</label>
+          <DatePicker id="deadline" dateFormat="yy-mm-dd" showTime hourFormat="24" fluid v-model="project.deadline"></DatePicker>
+        </div>
+        <template #footer>
+          <Button label="Cancel" icon="pi pi-times" text @click="() => newProjectVisible=false" />
+          <Button label="Save" icon="pi pi-check" @click="saveProject" />
+        </template>
+      </div>
+    </Dialog>
+
     <DataTable
+      ref="dt"
       :value="projects"
       v-model:editingRows="editingRows"
       v-model:filters="filters"
       filterDisplay="row"
-      :loding="loading"
+      :loading="loading"
       editMode="row"
       @row-edit-save="onRowEditSave"
       stripedRows
@@ -28,14 +92,6 @@
               placeholder="Keyword Search"
             />
           </IconField>
-          <div class="text-end pb-4">
-            <Button
-              icon="pi pi-external-link"
-              label="Export"
-              class="p-button-secondary"
-              @click="exportCSV($event)"
-            />
-          </div>
         </div>
       </template>
       <template #empty> No data found. </template>
@@ -86,7 +142,9 @@
       <Column v-if="allowView" class="w-24 !text-end">
         <template #body="{ data }">
           <Button
-            @click="() => $router.push(`/project/${data.id}/milestonesubmission`)"
+            @click="
+              () => $router.push(`/project/${data.id}/milestonesubmission`)
+            "
             icon="pi pi-search"
             class="p-button-secondary"
             rounded
@@ -98,15 +156,20 @@
 </template>
 
 <script>
+import { ref } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
+import { Toolbar } from 'primevue'
+import { Dialog } from 'primevue'
 import Button from 'primevue/button'
 import { getProjects, updateProject } from '../api/project'
 import { DatePicker } from 'primevue'
+
+const dt = ref();
 
 export default {
   name: 'ProjectTable',
@@ -118,10 +181,17 @@ export default {
     IconField,
     Button,
     DatePicker,
+    Toolbar,
+    Dialog,
   },
   data() {
     return {
       projects: [],
+      project: {
+        title: '',
+        description: '',
+        deadline: null,
+      },
       columns: [
         { field: 'title', header: 'Title' },
         { field: 'description', header: 'Description' },
@@ -140,6 +210,8 @@ export default {
       editingRows: [],
       editable: true,
       allowView: true,
+      newProjectVisible: false,
+      submitted: false
     }
   },
   async created() {

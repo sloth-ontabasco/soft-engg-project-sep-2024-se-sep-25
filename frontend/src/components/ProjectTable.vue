@@ -69,8 +69,16 @@
         </div>
         <div>
           <label for="mentors" class="block font-bold mb-3">Mentors</label>
-          <MultiSelect id="mentors" v-model="project.mentors" :options="allMentors" filter optionLabel="email" optionValue="id" placeholder="Select Mentors"
-             class="w-full md:w-20rem" />
+          <MultiSelect
+            id="mentors"
+            v-model="project.mentors"
+            :options="allMentors"
+            filter
+            optionLabel="email"
+            optionValue="id"
+            placeholder="Select Mentors"
+            class="w-full md:w-20rem"
+          />
         </div>
         <Button
           label="Cancel"
@@ -78,14 +86,21 @@
           text
           @click="() => (newProjectVisible = false)"
         />
-        <Button label="Save" icon="pi pi-check" @click="saveProject" />
+        <Button
+          label="Save"
+          icon="pi pi-check"
+          @click="
+            () => {
+              project.id ? editProject() : saveProject()
+            }
+          "
+        />
       </div>
     </Dialog>
 
     <DataTable
       ref="dt"
       :value="projects"
-      v-model:editingRows="editingRows"
       v-model:filters="filters"
       filterDisplay="row"
       :loding="loading"
@@ -136,7 +151,7 @@
             showTime
             hourFormat="24"
             fluid
-            dateFormat="yy-mm-dd'T'HH:mm:ss"
+            dateFormat="dd/mm/yy HH:mm:ss"
           />
         </template>
         <template #body="{ data, field }">
@@ -150,11 +165,16 @@
           />
         </template>
       </Column>
-      <Column
-        :rowEditor="editable"
-        style="width: 10%; min-width: 8rem"
-        bodyStyle="text-align:center"
-      ></Column>
+      <Column>
+        <template #body="{ data }">
+          <Button
+            icon="pi pi-pencil"
+            class="p-button-secondary"
+            rounded
+            @click="openEdit(data)"
+          ></Button>
+        </template>
+      </Column>
       <Column v-if="allowView" class="w-24 !text-end">
         <template #body="{ data }">
           <Button
@@ -184,7 +204,7 @@ import { Dialog } from 'primevue'
 import Button from 'primevue/button'
 import { getProjects, updateProject, createProject } from '../api/project'
 import { DatePicker, Textarea } from 'primevue'
-import { error, success } from '../utils/toast'
+import { error, success, info } from '../utils/toast'
 import { mapGetters } from 'vuex'
 import { formatDate } from '../utils/dateUtils'
 // eslint-disable-next-line no-unused-vars
@@ -201,13 +221,12 @@ export default {
     // eslint-disable-next-line vue/no-reserved-component-names
     Textarea,
     IconField,
-        // eslint-disable-next-line vue/no-reserved-component-names
+    // eslint-disable-next-line vue/no-reserved-component-names
     Button,
     DatePicker,
     Toolbar,
-        // eslint-disable-next-line vue/no-reserved-component-names
+    // eslint-disable-next-line vue/no-reserved-component-names
     Dialog,
-
   },
   data() {
     return {
@@ -239,44 +258,49 @@ export default {
       submitted: false,
     }
   },
-  computed:{
-    ...mapGetters(['allTAs','allInstructors']),
+  computed: {
+    ...mapGetters(['allTAs', 'allInstructors']),
     allMentors() {
       return [...this.allTAs, ...this.allInstructors]
-    }
+    },
   },
   created() {
-      this.loading = true
-      getProjects().then((response) => {
-      if (response.success) {
-        this.projects = response.data
-        success('Success', 'Projects fetched successfully')
-        this.loading = false
-      } else {
-        console.error('Failed to fetch projects:', response.message)
+    this.loading = true
+    getProjects()
+      .then(response => {
+        if (response.success) {
+          this.projects = response.data
+          info('Success', 'Projects fetched successfully')
+          this.loading = false
+        } else {
+          console.error('Failed to fetch projects:', response.message)
+          error('Error', 'Failed to fetch projects')
+          this.loading = false
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch projects:', error)
         error('Error', 'Failed to fetch projects')
         this.loading = false
-      }
-    })
-    .catch(error => {
-      console.error('Failed to fetch projects:', error)
-      error('Error', 'Failed to fetch projects')
-      this.loading = false
-    })
-
-     
+      })
   },
   methods: {
     openNew() {
       this.submitted = false
       this.newProjectVisible = true
     },
+    openEdit(project) {
+      this.project = { ...project }
+      this.submitted - false
+      this.newProjectVisible = true
+    },
     async saveProject() {
       this.newProjectVisible = false
-    this.project.deadline =formatDate(this.project.deadline)
+      this.project.deadline = formatDate(this.project.deadline)
       const res = await createProject(this.project)
       if (res.success) {
         success('Success', 'Project created successfully')
+        console.log(res.data)
         this.projects.push(res.data)
       } else {
         error('Error', res.message)
@@ -284,17 +308,30 @@ export default {
       this.submitted = true
     },
     async editProject() {
-      updateProject(this.project.id, this.project.data)
+      this.project.deadline = formatDate(this.project.deadline)
+      updateProject(this.project.id, this.project)
         .then(response => {
           if (response.success) {
+            this.projects = this.projects.map(project => {
+              if (project.id === this.project.id) {
+                return this.project
+              }
+              return project
+            })
             success('Success', 'Project updated successfully')
+
+            this.newProjectVisible = false
           } else {
             error('Error', response.message)
+
+            this.newProjectVisible = false
           }
         })
         .catch(error => {
           console.error('Error updating project:', error)
           error('Error', 'Failed to update project')
+
+          this.newProjectVisible = false
         })
     },
     exportCSV() {

@@ -107,16 +107,14 @@
         </form>
       </div>
     </div>
-    <div v-if="notification.message" :class="`fixed bottom-4 right-4 p-4 rounded shadow-lg ${notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white flex items-center`">
-      <i class="fa fa-info-circle mr-2"></i>
-      {{ notification.message }}
-    </div>
+    
   </div>
 </template>
 
 <script>
 import { getAnnouncements, deleteAnnouncement, createAnnouncement, updateAnnouncement } from '../api/announcements'
 import { mapState } from 'vuex'
+import {error, info, success} from '../utils/toast';
 
 export default {
   data() {
@@ -175,10 +173,10 @@ export default {
         await this.refreshAnnouncements(); // Refresh announcements after creating a new one
         this.resetForm();
         this.showModal = false;
-        this.showNotification("Announcement posted", "success");
+        success("Success","Announcement posted");
       } catch (error) {
         console.error('Failed to create announcement:', error);
-        this.showNotification("Failed to post announcement", "error");
+        error("Error","Failed to post announcement");
       }
     },
     async updateAnnouncement() {
@@ -194,10 +192,10 @@ export default {
         await this.refreshAnnouncements(); // Refresh announcements after updating
         this.resetForm();
         this.showModal = false;
-        this.showNotification("Announcement updated", "info");
+        info("Info","Announcement updated");
       } catch (error) {
         console.error('Failed to update announcement:', error);
-        this.showNotification("Failed to update announcement", "error");
+        error("Error","Failed to update announcement");
       }
     },
     async refreshAnnouncements() {
@@ -242,10 +240,10 @@ export default {
       try {
         await deleteAnnouncement(projectId, announcementId);
         this.announcements.splice(index, 1);
-        this.showNotification("Announcement deleted", "error");
+        error("Error","Announcement deleted");
       } catch (error) {
         console.error('Failed to delete announcement:', error);
-        this.showNotification("Failed to delete announcement", "error");
+        error("Error","Failed to delete announcement");
       }
     },
     editAnnouncement(index) {
@@ -258,14 +256,8 @@ export default {
         postedBy: announcement.posted_by,
       };
       this.showModal = true;
-    },
-    showNotification(message, type) {
-      this.notification.message = message;
-      this.notification.type = type;
-      setTimeout(() => {
-        this.notification.message = "";
-      }, 3000);
-    },
+    }
+    
   },
 };
 </script>

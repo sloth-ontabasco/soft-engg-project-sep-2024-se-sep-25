@@ -14,7 +14,9 @@
     </div>
 
     <!-- Show a message if there are no milestones -->
-    
+    <div v-if="!loading && milestones.length === 0" class="text-gray-500 text-center py-4">
+      No milestones available.
+    </div>
 
     <!-- Render a list of milestones -->
     <div
@@ -31,7 +33,7 @@
 </template>
 
 <script>
-import { getMilestonesByUser } from '../api/milestone';
+import { getMilestone } from '../api/milestone';
 
 export default {
   data() {
@@ -53,7 +55,7 @@ export default {
       this.error = false;
       try {
         const userId = this.$store.state.user.id; // Assuming user ID is stored in Vuex store
-        this.milestones = await getMilestonesByUser(userId);
+        this.milestones = await getMilestone(userId);
       } catch (error) {
         console.error("Failed to fetch upcoming milestones:", error);
         this.error = true;

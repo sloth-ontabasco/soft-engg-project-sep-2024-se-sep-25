@@ -11,8 +11,8 @@
     <!-- User Information -->
     <div class="flex-1">
       <h1 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
-        <span>User Name</span>
-        <span>{{ user.name }}</span>
+        <span>User Id:</span>
+        <span>{{ user.username }}</span>
         
       </h1>
       <p class="text-gray-500">{{ user.email }}</p>

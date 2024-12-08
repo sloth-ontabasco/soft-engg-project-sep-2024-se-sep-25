@@ -13,11 +13,34 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv, find_dotenv
+import requests
 
 load_dotenv(find_dotenv(), override=True)
 if 'GOOGLE_API_KEY' not in os.environ:
     os.environ['GOOGLE_API_KEY'] = getpass.getpass('Provide your Google API Key: ')
 
+if ('USE_POPPLER' not in os.environ or os.environ['USE_POPPLER'] == 'y') and 'POPPLER_PATH' not in os.environ:
+    os.environ['USE_POPPLER'] = input('Do you want to use Poppler for PDF conversion? (y/n): ')
+    if os.environ['USE_POPPLER'].lower() == 'y':
+        if 'POPPLER_PATH' not in os.environ:
+            os.environ['POPPLER_DOWNLOAD'] = input('Do you want to download Poppler? (y/n): ')
+        
+        if os.environ['POPPLER_DOWNLOAD'].lower() == 'y':
+            url = 'https://github.com/oschwartz10612/poppler-windows/releases/download/v24.08.0-0/Release-24.08.0-0.zip'
+            local_filename = url.split('/')[-1]
+            print(f'Downloading {local_filename}...')
+            response = requests.get(url, stream=True)
+            with open(local_filename, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            print(f'Download completed: {local_filename}')
+
+if 'POPPLER_PATH' not in os.environ and os.environ['USE_POPPLER'] == 'y':
+    os.environ['POPPLER_PATH'] = input('Enter the path to the Poppler bin directory here or provide it in the .env file: ')
+    
+poppler_path = os.environ.get('POPPLER_PATH', None)
+ 
 class ResponseFormatter(BaseModel):
     answer: str = Field(description="A high level summary of the submission. This is a mandatory field.")
     summary: str = Field(description="A brief summary of the submission. This is a mandatory field.")
@@ -124,7 +147,10 @@ def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_de
     os.makedirs(images_folder, exist_ok=True)
     
     start_time = time.time()
-    images = convert_from_path(file_path)
+    if('USE_POPPLER' in os.environ and os.environ['USE_POPPLER'] == 'y' and 'POPPLER_PATH' != None):
+        images = convert_from_path(file_path, poppler_path=poppler_path)
+    else:
+        images = convert_from_path(file_path)
     end_time = time.time()
     print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
     
@@ -199,7 +225,10 @@ if __name__ == "__main__":
     os.makedirs(images_folder, exist_ok=True)
     
     start_time = time.time()
-    images = convert_from_path(file_path)
+    if('USE_POPPLER' in os.environ and os.environ['USE_POPPLER'] == 'y' and 'POPPLER_PATH' != None):
+        images = convert_from_path(file_path, poppler_path=poppler_path)
+    else:
+        images = convert_from_path(file_path)
     end_time = time.time()
     print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
     

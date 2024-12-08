@@ -38,11 +38,13 @@
           >
         </div>
         <div>
-          <label for="description" class="block font-bold mb-3">Description</label>
+          <label for="description" class="block font-bold mb-3"
+            >Description</label
+          >
           <Textarea
             id="description"
             v-model="project.description"
-                        :invalid="submitted && !project.description"
+            :invalid="submitted && !project.description"
             required="true"
             rows="3"
             cols="20"
@@ -54,11 +56,29 @@
         </div>
         <div>
           <label for="deadline" class="block font-bold mb-3"
-            >Project Deadline</label>
-          <DatePicker id="deadline" dateFormat="yy-mm-dd" showTime hourFormat="24" fluid v-model="project.deadline"></DatePicker>
+            >Project Deadline</label
+          >
+          <DatePicker
+            id="deadline"
+            dateFormat="yy-mm-dd"
+            showTime
+            hourFormat="24"
+            fluid
+            v-model="project.deadline"
+          ></DatePicker>
         </div>
-          <Button label="Cancel" icon="pi pi-times" text @click="() => newProjectVisible=false" />
-          <Button label="Save" icon="pi pi-check" @click="saveProject" />
+        <div>
+          <label for="mentors" class="block font-bold mb-3">Mentors</label>
+          <MultiSelect id="mentors" v-model="project.mentors" :options="allMentors" filter optionLabel="email" optionValue="id" placeholder="Select Mentors"
+             class="w-full md:w-20rem" />
+        </div>
+        <Button
+          label="Cancel"
+          icon="pi pi-times"
+          text
+          @click="() => (newProjectVisible = false)"
+        />
+        <Button label="Save" icon="pi pi-check" @click="saveProject" />
       </div>
     </Dialog>
 
@@ -69,8 +89,6 @@
       v-model:filters="filters"
       filterDisplay="row"
       :loding="loading"
-      editMode="row"
-      @row-edit-save="onRowEditSave"
       stripedRows
       paginator
       :rows="10"
@@ -161,28 +179,33 @@ import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
-import { Toolbar } from 'primevue'
+import { Toolbar, MultiSelect } from 'primevue'
 import { Dialog } from 'primevue'
 import Button from 'primevue/button'
 import { getProjects, updateProject, createProject } from '../api/project'
-import { getUsers } from '../api/user'
 import { DatePicker, Textarea } from 'primevue'
-
-const dt = ref();
-
+import { error, success } from '../utils/toast'
+import { mapGetters } from 'vuex'
+import { formatDate } from '../utils/dateUtils'
+// eslint-disable-next-line no-unused-vars
+const dt = ref()
 
 export default {
   name: 'ProjectTable',
   components: {
     DataTable,
     Column,
+    MultiSelect,
     InputIcon,
     InputText,
+    // eslint-disable-next-line vue/no-reserved-component-names
     Textarea,
     IconField,
+        // eslint-disable-next-line vue/no-reserved-component-names
     Button,
     DatePicker,
     Toolbar,
+        // eslint-disable-next-line vue/no-reserved-component-names
     Dialog,
 
   },
@@ -213,79 +236,72 @@ export default {
       editable: true,
       allowView: true,
       newProjectVisible: false,
-      submitted: false
+      submitted: false,
     }
   },
-  async created() {
-    try {
+  computed:{
+    ...mapGetters(['allTAs','allInstructors']),
+    allMentors() {
+      return [...this.allTAs, ...this.allInstructors]
+    }
+  },
+  created() {
       this.loading = true
-      const response = await getProjects()
+      getProjects().then((response) => {
       if (response.success) {
         this.projects = response.data
+        success('Success', 'Projects fetched successfully')
         this.loading = false
       } else {
         console.error('Failed to fetch projects:', response.message)
+        error('Error', 'Failed to fetch projects')
         this.loading = false
       }
-    } catch (error) {
-      console.error('Error fetching projects:', error)
+    })
+    .catch(error => {
+      console.error('Failed to fetch projects:', error)
+      error('Error', 'Failed to fetch projects')
       this.loading = false
-    }
+    })
+
+     
   },
   methods: {
     openNew() {
       this.submitted = false
       this.newProjectVisible = true
     },
-    saveProject() {
-
+    async saveProject() {
       this.newProjectVisible = false
-      this.$toast.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Project created successfully',
-        life: 3000,
-      })
+    this.project.deadline =formatDate(this.project.deadline)
+      const res = await createProject(this.project)
+      if (res.success) {
+        success('Success', 'Project created successfully')
+        this.projects.push(res.data)
+      } else {
+        error('Error', res.message)
+      }
       this.submitted = true
     },
-    onRowEditSave(event) {
-      console.log('row edit save', event)
-      const project = event.data
-      updateProject(project.id, project.data)
+    async editProject() {
+      updateProject(this.project.id, this.project.data)
         .then(response => {
           if (response.success) {
-            this.$toast.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Project updated successfully',
-              life: 3000,
-            })
+            success('Success', 'Project updated successfully')
           } else {
-            this.$toast.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: response.message,
-              life: 3000,
-            })
+            error('Error', response.message)
           }
         })
         .catch(error => {
           console.error('Error updating project:', error)
-          this.$toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to update project',
-            life: 3000,
-          })
+          error('Error', 'Failed to update project')
         })
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
     formatDate(date) {
-      if (!date) return ''
-      const d = new Date(date)
-      return d.toISOString().slice(0, 19)
+      return formatDate(date)
     },
   },
 }

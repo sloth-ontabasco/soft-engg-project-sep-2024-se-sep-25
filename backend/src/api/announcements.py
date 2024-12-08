@@ -5,6 +5,7 @@ from src.models.announcement import Announcement
 from src.models.project import Project
 from src.lib.auth import check_any_role
 from src.models.response import Response
+from datetime import datetime
 
 """
 API for handling CRUD operations for Announcements
@@ -16,7 +17,7 @@ class AnnouncementAPI(Resource):
            /api/<string:project_id>/announcements/<string:id>
     Description: Get all (or a specific) announcement(s) under a project
     """
-    @check_any_role(['instructor', 'student', 'admin'])
+    @check_any_role(['instructor', 'student', 'admin', 'ta'])
     def get(self, project_id, id=None):
         try:
             project = Project.objects(id=project_id).first()
@@ -46,7 +47,7 @@ class AnnouncementAPI(Resource):
     Description: Post a new announcement under a project
     Body: title(required), content(required)
     """
-    @check_any_role(['instructor', 'admin'])
+    @check_any_role(['instructor', 'admin', 'ta'])
     def post(self, project_id):
         project = Project.objects(id=project_id).first()
         if not project:
@@ -67,7 +68,7 @@ class AnnouncementAPI(Resource):
     Description: Update an announcement
     Body: title(optional), content(optional)
     """
-    @check_any_role(['instructor','admin'])
+    @check_any_role(['instructor','admin', 'ta'])
     def put(self, project_id, id):
         project = Project.objects(id=project_id).first()
         if not project:
@@ -76,15 +77,28 @@ class AnnouncementAPI(Resource):
         announcement = Announcement.objects(id=id, project=project).first()
         if not announcement:
             return Response.error(404, message="Announcement not found")
-        announcement.update(**data)
-        print(f"Announcement with id: {announcement.id} updated")
-        return Response.success(200, announcement=announcement.to_dict())
+        
+        modified = False
+        if 'title' in data and data['title'] != announcement.title:
+            announcement.title = data['title']
+            modified = True
+        if 'content' in data and data['content'] != announcement.content:
+            announcement.content = data['content']
+            modified = True
+        
+        if modified:
+            announcement.updated_at = datetime.utcnow()
+            announcement.save()
+            print(f"Announcement with id: {announcement.id} updated")
+            return Response.success(200, announcement=announcement.to_dict())
+        
+        return Response.success(200, announcement=announcement.to_dict(), message="No changes detected")
 
     """
     Route: /api/<string:project_id>/announcements/<string:id>
     Description: Delete an announcement
     """
-    @check_any_role(['instructor', 'admin'])
+    @check_any_role(['instructor', 'admin', 'ta'])
     def delete(self, project_id, id):
         project = Project.objects(id=project_id).first()
         if not project:

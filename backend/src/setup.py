@@ -4,6 +4,7 @@ from urllib.parse import unquote
 from flask import Flask, request
 from flask_limiter import RateLimitExceeded
 from flask_jwt_extended import JWTManager
+from src.api.gen_ai import GenAISummaryAPI
 from src.api.auth import *
 from src.api.users import *
 from src.api.teams import *
@@ -76,8 +77,8 @@ def setup_api(app, api):
 
     # Feedback Routes
     api.add_resource(FeedbackAPI, 
-                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks",
-                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/submissions/<string:milestone_submission_id>/feedbacks/<string:id>")
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/teams/<string:team_id>/feedbacks",
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/teams/<string:team_id>/feedbacks/<string:id>")
 
     # Project Routes
     api.add_resource(ProjectAPI,"/api/project")
@@ -92,6 +93,9 @@ def setup_api(app, api):
 
     # Milestone Submission Routes
     api.add_resource(MilestoneSubmissionAPI, "/api/submission", "/api/submission/<string:submission_id>")
+    
+    # Milestone Submission Routes
+    api.add_resource(GenAISummaryAPI, "/api/genai/summary/<string:submission_id>")
     
     # Resource Routes
     api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resource/<string:project_id>/<string:resource_id>')

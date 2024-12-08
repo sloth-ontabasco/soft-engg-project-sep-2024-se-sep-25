@@ -37,7 +37,7 @@ if ('USE_POPPLER' not in os.environ or os.environ['USE_POPPLER'] == 'y') and 'PO
             print(f'Download completed: {local_filename}')
 
 if 'POPPLER_PATH' not in os.environ and os.environ['USE_POPPLER'] == 'y':
-    os.environ['POPPLER_PATH'] = input('Enter the path to the Poppler bin directory here or provide it in the .env file: ')
+    os.environ['POPPLER_PATH'] = input('Enter the path to the Poppler bin directory here or provide it in the .env file with key POPPLER_PATH: ')
     
 poppler_path = os.environ.get('POPPLER_PATH', None)
  

@@ -28,9 +28,6 @@ class ResponseFormatter(BaseModel):
     rubrix_provided: bool = Field(description="Whether a rubrix was provided. This is a mandatory field.")
     grade: str = Field(description="The grade of the submission in percentage evaluated out of 100. This is a mandatory field.") #convert the rubrix evaluation to a % and then into a grade
 
-
-poppler_path = r"C:\\Users\\Balakumaran S\\poppler-24.08.0\\Library\bin"
-
 def convert_pdf_page_to_png(image, page_number, images_folder):
     image_path = os.path.join(images_folder, f"page_{page_number + 1}.png")
     image.save(image_path, "PNG")
@@ -127,7 +124,7 @@ def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_de
     os.makedirs(images_folder, exist_ok=True)
     
     start_time = time.time()
-    images = convert_from_path(file_path, poppler_path=poppler_path)
+    images = convert_from_path(file_path)
     end_time = time.time()
     print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
     
@@ -202,7 +199,7 @@ if __name__ == "__main__":
     os.makedirs(images_folder, exist_ok=True)
     
     start_time = time.time()
-    images = convert_from_path(file_path, poppler_path=poppler_path)
+    images = convert_from_path(file_path)
     end_time = time.time()
     print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
     

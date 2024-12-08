@@ -1,24 +1,26 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="rounded-xl shadow-lg p-6">
-    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4">Upcoming Milestones</h2>
+    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4">
+      Upcoming Milestones for User: {{ user.id }}
+    </h2>
 
-    <!-- Show loading message -->
+    <!-- Loading state -->
     <div v-if="loading" class="text-gray-500 text-center py-4">
       Loading milestones...
     </div>
 
-    <!-- Show an error message if fetching fails -->
+    <!-- Error state -->
     <div v-if="error" class="text-red-500 text-center py-4">
       Failed to load milestones. Please try again later.
     </div>
 
-    <!-- Show a message if there are no milestones -->
+    <!-- Empty milestones -->
     <div v-if="!loading && milestones.length === 0" class="text-gray-500 text-center py-4">
       No milestones available.
     </div>
 
-    <!-- Render a list of milestones -->
+    <!-- Render milestones -->
     <div
       v-for="milestone in milestones"
       :key="milestone.id"
@@ -33,34 +35,33 @@
 </template>
 
 <script>
-import { getMilestone } from '../api/milestone';
+import { getProjectsByUser } from '../api/project';
+import { mapState } from 'vuex';
 
 export default {
   data() {
     return {
-      milestones: [], // Store fetched milestones
-      loading: true, // Track loading state
-      error: false,  // Track error state
+      loading: false,
+      error: false,
+      milestones: [],
     };
   },
-  created() {
-    this.fetchMilestones();
+  computed: {
+    ...mapState(['user']),
+  },
+  async created(){
+    await this.fetchMilestones();
   },
   methods: {
-    /**
-     * Fetch upcoming milestones for the logged-in user.
-     */
     async fetchMilestones() {
-      this.loading = true;
-      this.error = false;
-      try {
-        const userId = this.$store.state.user.id; // Assuming user ID is stored in Vuex store
-        this.milestones = await getMilestone(userId);
+      const userId = this.user?.id;
+      console.log(userId);
+      try{
+      const milestones = await getProjectsByUser(userId);
+      this.milestones = Array.isArray(milestones) ? milestones : [];
+      console.log(milestones);
       } catch (error) {
-        console.error("Failed to fetch upcoming milestones:", error);
-        this.error = true;
-      } finally {
-        this.loading = false;
+        console.error("Error fetching Milestones:", error);
       }
     },
   },

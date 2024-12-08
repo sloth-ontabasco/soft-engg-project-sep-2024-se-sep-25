@@ -76,8 +76,8 @@ export async function deleteProject(projectId) {
 }
 
 export async function getProjectsByUser(userId) {
-    const res = await fetch(`${BASE_URL}/projects/user/${userId}`, {
-        method: "GET",
+    const res = await fetch(`${BASE_URL}/project/user/${userId}`, {
+        method: 'GET',
         headers: header(),
     });
 

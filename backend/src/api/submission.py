@@ -13,14 +13,15 @@ from ..lib.auth import check_any_role
 from .ai_summary_gemini_final import process_files
 class MilestoneSubmissionAPI(Resource):
 
-    @check_any_role(roles=['instructor', 'ta', 'admin'])
+    @check_any_role(roles=['instructor', 'ta', 'admin', 'student'])
     def post(self):
         """
         Route: POST /api/submission
         Description: Creates a new milestone submission.
         Requires JWT authentication.
         """
-        data = request.json
+        data = request.form
+        file = request.files.get('submission')
 
         # Validate required fields
         required_fields = ['milestone_id', 'team_id']
@@ -45,32 +46,42 @@ class MilestoneSubmissionAPI(Resource):
             status=0  # Set status to 0 (Not Yet Started) by default
         )
 
+        if file:
+            try:
+                milestone_submission.submission.put(file, content_type="application/x-rar-compressed")
+                milestone_submission.file_name = file.filename
+                print("File stored successfully in MongoDB")
+            except Exception as e:
+                print(f"Error storing file: {e}")
+                return Response.error(code=500, message="Error storing file")
+            if milestone.due_date > datetime.datetime.utcnow():
+                milestone_submission.status = 2  # Complete
+            else:
+                milestone_submission.status = 3  # Late Submission
+
         milestone_submission.save()
 
         return Response.success(data=milestone_submission.to_dict(), message="Milestone submission created successfully")
 
-    def get(self, submission_id):
+    @check_any_role(roles=['instructor', 'ta', 'admin', 'student'])
+    def get(self):
         """
-        Route: GET /api/submission/<submission_id>
-        Description: Retrieves a milestone submission by its ID.
+        Route: GET /api/submission
+        Description: Retrieves a milestone submission by team_id and milestone_id from query params.
         Requires JWT authentication.
         """
-        milestone_submission = MilestoneSubmission.objects(id=submission_id).first()
+        team_id = request.args.get('team_id')
+        milestone_id = request.args.get('milestone_id')
+
+        if not team_id or not milestone_id:
+            return Response.error(code=400, message="Missing required query parameters: team_id and milestone_id")
+
+        milestone_submission = MilestoneSubmission.objects(team=team_id, milestone=milestone_id).first()
         if not milestone_submission:
             return Response.error(code=404, message="Milestone submission not found")
 
         submission_data = milestone_submission.to_dict()
-        if milestone_submission.submission:
-            file_data = milestone_submission.submission.read()
-            submission_data['submission_file'] = file_data.decode('latin1')  # Convert binary to string for JSON
-            
-            # Wrap the file_data in a BytesIO object
-            file_stream = BytesIO(file_data)
-        else:
-            return Response.error(code=404, message="Milestone submission file not found")
-
-        # Return the milestone submission file
-        return send_file(file_stream, as_attachment=True, download_name="submission.zip")
+        return Response.success(data=submission_data)
 
     @check_any_role(roles=['instructor', 'ta', 'admin'])
     def delete(self, submission_id):
@@ -90,14 +101,20 @@ class MilestoneSubmissionAPI(Resource):
         return Response.success(message="Milestone submission deleted successfully")
 
     @check_any_role(roles=['student', 'instructor', 'admin', 'ta'])
-    def put(self, submission_id):
+    def put(self):
         """
-        Route: PUT /api/submission/<submission_id>
+        Route: PUT /api/submission
         Description: Updates a milestone submission.
         Students can upload a file, and instructors or TAs can update the grade field.
         Requires JWT authentication.
         """
-        milestone_submission = MilestoneSubmission.objects(id=submission_id).first()
+        team_id = request.args.get('team_id')
+        milestone_id = request.args.get('milestone_id')
+
+        if not team_id or not milestone_id:
+            return Response.error(code=400, message="Missing required query parameters: team_id and milestone_id")
+
+        milestone_submission = MilestoneSubmission.objects(team=team_id, milestone=milestone_id).first()
         if not milestone_submission:
             return Response.error(code=404, message="Milestone submission not found")
 
@@ -106,12 +123,13 @@ class MilestoneSubmissionAPI(Resource):
         grade = data.get('grade')
 
         current_user = get_current_user()
-        
+
         # Student may upload or delete a file from current MilestoneSubmission
-        #but, may not update the grade field
+        # but, may not update the grade field
         if 'student' in current_user.role or 'admin' in current_user.role:
             if file:
                 milestone_submission.submission.put(file, content_type="application/zip")
+                milestone_submission.file_name = file.filename
                 if milestone_submission.milestone.due_date > datetime.datetime.utcnow():
                     milestone_submission.status = 2  # Complete
                 else:

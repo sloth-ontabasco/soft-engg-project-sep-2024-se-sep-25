@@ -28,12 +28,12 @@ class GenAISummaryAPI(Resource):
             submission_data['submission_file'] = file_data.decode('latin1')  # Convert binary to string for JSON
             
             zip_file_data = file_data
-            rubrix_file_path = ""; # No rubrix file provided
-            milestone_title = milestone_submission.milestone.title
+            rubrics_text = milestone_submission.milestone.rubrics if milestone_submission.milestone.rubrics else ""
+            milestone_title = milestone_submission.milestone.title.replace(" ", "_")
             milestone_description = milestone_submission.milestone.description
-            # output_pdf_path = os.path.join(os.getcwd(), "src", "api", "reports", "summary_report.pdf")
+            team_name = milestone_submission.team.team_name.replace(" ", "_")
 
-            process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description)
+            process_files(zip_file_data, rubrics_text, milestone_title, milestone_description)
         else:
             return Response.error(code=404, message="Milestone submission file not found")
 

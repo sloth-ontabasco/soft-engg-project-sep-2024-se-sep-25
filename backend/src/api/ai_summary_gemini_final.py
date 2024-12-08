@@ -58,7 +58,7 @@ def generate_html(output):
         <title>Submission Evaluation</title>
     </head>
     <body>
-        <h1>Submission Evaluation for: {{ team }}</h1>
+        <h1>Submission Evaluation</h1>
         <p><strong>Summary:</strong> {{ summary }}</p>
         <p><strong>Completed:</strong> {{ completed }}</p>
         <p><strong>Not or Partially Completed:</strong> {{ not_or_partially_completed }}</p>
@@ -101,7 +101,7 @@ milestone_description = "Identify users of the application - primary, secondary 
 # milestone_title = "Scheduling and Design"
 # milestone_description = "Project Schedule - come up with a schedule of your overall project based on the user stories created in the previous milestones. Create a schedule for your sprints and iterations, timings of your scrum meetings etc. Trello board, Gantt chart - specifying your tasks and contributions. Project Scheduling Tools - which tools are you using? E.g. Pivotal Tracker, Jira. Design of Components - Describe different components of your system based on the user stories created in the previous milestones. Software Design - Basic class diagrams of your proposed system. Details/Minutes of a few scrum meetings. Most of the pages in the UI."
 
-def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description):
+def process_files(zip_file_data, rubrics_text, milestone_title, milestone_description):
     
     total_start_time = time.time()
     
@@ -147,27 +147,35 @@ def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_de
     # Combine all responses into a single text
     combined_responses = "\n".join(responses)
     
+    print("Rubrics provided: ", rubrics_text)
+    rubrix_provided = bool(rubrics_text.strip())
+
     full_template = """
     
     {setting}
 
-    The submssion is as follows : {submission}
+    The submission is as follows : {submission}
     
     The milestone title is : {milestone_title} and the milestone description is : {milestone_description}.
+    
+    The rubrics provided are : {rubrics_text}
     
     Ensure all outputs use HTML tags for formatting.
     """
     
     full_prompt = (PromptTemplate.from_template(full_template))
     
-    full_prompt = full_prompt.format(setting = "You are an instructor evaluting the submission of a student project! Your task is to guide me in providing a comprehensive evaluation of the provided submission. Write in an informative and instructional style. Ensure clarity and coherence, catering to an audience keen on enhancing their overall submission that are inline with the requirements.", 
+    full_prompt = full_prompt.format(setting = "You are an instructor evaluating the submission of a student project! Your task is to guide me in providing a comprehensive evaluation of the provided submission. Write in an informative and instructional style. Ensure clarity and coherence, catering to an audience keen on enhancing their overall submission that are inline with the requirements.", 
                        submission = combined_responses, 
                        milestone_title = milestone_title, 
-                       milestone_description = milestone_description
-                );
+                       milestone_description = milestone_description,
+                       rubrics_text = rubrics_text
+                )
     
     model_with_structure = llm.with_structured_output(ResponseFormatter)
     output = model_with_structure.invoke(full_prompt)
+    
+    output.rubrix_provided = rubrix_provided
     
     html_output = generate_html(output.model_dump())
     

@@ -268,6 +268,7 @@ import {
 } from '../api/submissions'
 import Select from 'primevue/select'
 import { mapState } from 'vuex'
+import { success, error } from '../utils/toast'
 
 export default {
   name: 'MilestoneSubmission',
@@ -469,15 +470,16 @@ export default {
               this.selectedMilestone.id,
               formData,
             )
-            console.log('File updated successfully')
+            success("Success", "File updated successfully")
           } else {
             await createSubmission(formData)
-            console.log('File uploaded successfully')
+            success("Success", "File uploaded successfully")
           }
           await this.fetchSubmissionStatus()
           event.target.value = '' // Reset the file input
-        } catch (error) {
-          console.error('Error uploading file:', error)
+        } catch (err) {
+          error("Error", "Error uploading file")
+          console.error('Error uploading file:', err)
         }
       }
     },
@@ -520,11 +522,12 @@ export default {
           this.selectedMilestone.id,
           formData,
         )
-        console.log('Submission deleted successfully')
+        success("Success", "Submission deleted successfully")
         await this.fetchSubmissionStatus()
         document.querySelector('input[type="file"]').value = '' // Reset the file input
-      } catch (error) {
-        console.error('Error deleting submission:', error)
+      } catch (err) {
+        error("Error", "Error deleting submission")
+        console.error('Error deleting submission:', err)
       }
     },
     async fetchReport() {
@@ -584,11 +587,14 @@ export default {
         this.selectedMilestone.rubrics = this.editedRubrics
         this.showRubricsModal = false
         this.isEditingRubrics = false
-      } catch (error) {
-        console.error('Error saving rubrics:', error)
+        success("Success", "Rubrics saved successfully")
+      } catch (err) {
+        error("Error", "Error saving rubrics")
+        console.error('Error saving rubrics:', err)
       }
     },
     closeRubricsModal() {
+      this.editedRubrics = this.selectedMilestone.rubrics; // Reset editedRubrics to current rubrics
       this.showRubricsModal = false
       this.isEditingRubrics = false
     },
@@ -629,6 +635,6 @@ export default {
   }
 }
 .custom-select {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgb(82, 88, 126);
 }
 </style>

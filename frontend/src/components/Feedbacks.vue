@@ -83,15 +83,12 @@
         </form>
       </div>
     </div>
-    <div v-if="notification.message" :class="`fixed bottom-4 right-4 p-4 rounded shadow-lg ${notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white flex items-center`">
-      <i class="fa fa-info-circle mr-2"></i>
-      {{ notification.message }}
-    </div>
   </div>
 </template>
 
 <script>
 import { getFeedbacks, createFeedback, updateFeedback, deleteFeedback } from '../api/feedbacks.js';
+import {error, info, success} from '../utils/toast'
 
 export default {
   name: "Feedbacks",
@@ -161,10 +158,10 @@ export default {
         await this.fetchFeedbacks();
         this.resetForm();
         this.showModal = false;
-        this.showNotification("Feedback posted", "success");
+        success("Success","Feedback posted");
       } catch (error) {
         console.error('Failed to create feedback:', error);
-        this.showNotification("Failed to post feedback", "error");
+        error("Error","Failed to post feedback");
       }
     },
     async updateFeedback() {
@@ -178,10 +175,10 @@ export default {
         await this.fetchFeedbacks();
         this.resetForm();
         this.showModal = false;
-        this.showNotification("Feedback updated", "info");
+        info("Info","Feedback updated");
       } catch (error) {
         console.error('Failed to update feedback:', error);
-        this.showNotification("Failed to update feedback", "error");
+        error("Error","Failed to update feedback");
       }
     },
     async confirmDeleteFeedback(index) {
@@ -194,10 +191,10 @@ export default {
       try {
         await deleteFeedback(this.projectId, this.selectedMilestone.id, this.selectedTeam.id, feedbackId);
         this.feedbacks.splice(index, 1);
-        this.showNotification("Feedback deleted", "error");
+        success("Success","Feedback deleted");
       } catch (error) {
         console.error('Failed to delete feedback:', error);
-        this.showNotification("Failed to delete feedback", "error");
+        error("Error","Failed to delete feedback");
       }
     },
     editFeedback(index) {
@@ -221,13 +218,6 @@ export default {
     closeModal() {
       this.showModal = false;
       this.resetForm();
-    },
-    showNotification(message, type) {
-      this.notification.message = message;
-      this.notification.type = type;
-      setTimeout(() => {
-        this.notification.message = "";
-      }, 3000);
     },
     formatDate(dateString) {
       const date = new Date(dateString);

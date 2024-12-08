@@ -275,7 +275,8 @@ export default {
       return [...this.allTAs, ...this.allInstructors]
     },
   },
-  created() {
+  mounted() {
+
     this.loading = true
     getProjects()
       .then(response => {

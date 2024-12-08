@@ -155,6 +155,14 @@ export default {
       selectedTeam: { id: "", team_name: "Loading..." }
     }
   },
+  created() {
+    this.fetchMilestones();
+    this.fetchTeams();
+ },
+  components: {
+    // eslint-disable-next-line vue/no-reserved-component-names
+    Select
+  },
   computed: {
     ...mapState(['user']),
     canEdit() {

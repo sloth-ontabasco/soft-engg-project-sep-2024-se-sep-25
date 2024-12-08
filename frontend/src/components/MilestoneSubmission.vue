@@ -101,7 +101,7 @@
 
         <!-- GitHub Tracker Section -->
         <div class="bg-white shadow-md rounded-lg p-5">
-          <h2 class="text-black text-lg font-bold mb-3">GitHub Tracker - Milestone 1</h2>
+          <h2 class="text-black text-lg font-bold mb-3">GitHub Tracker - {{selectedMilestone.title}}</h2>
           <ul>
             <li class="mb-3">
               <span class="text-blue-500">JIRA-5677 Google OAuth</span>
@@ -131,6 +131,7 @@ export default {
   name: "MilestoneSubmission",
   components: {
     Feedbacks,
+    // eslint-disable-next-line vue/no-reserved-component-names
     Select
   },
   data(){
@@ -159,8 +160,9 @@ export default {
     this.fetchMilestones();
     this.fetchTeams();
  },
+  // eslint-disable-next-line no-dupe-keys
   components: {
-    // eslint-disable-next-line vue/no-reserved-component-names
+    
     Select
   },
   computed: {
@@ -169,6 +171,7 @@ export default {
       return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role);
     }
   },
+  // eslint-disable-next-line no-dupe-keys
   async created() {
     await this.fetchMilestones();
     await this.fetchTeams();
@@ -357,7 +360,7 @@ export default {
   100% { transform: rotate(360deg); }
 }
 .custom-select {
-  background-color: rgba(0, 0, 0, 0.443);
+  background-color: rgba(0, 0, 0, 0.050);
 }
 
 </style>

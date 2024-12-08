@@ -237,6 +237,7 @@ export default {
     Toolbar,
     // eslint-disable-next-line vue/no-reserved-component-names
     Dialog,
+
   },
   data() {
     return {

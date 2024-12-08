@@ -83,13 +83,13 @@
         </form>
       </div>
     </div>
-    
   </div>
 </template>
 
 <script>
 import { getFeedbacks, createFeedback, updateFeedback, deleteFeedback } from '../api/feedbacks.js';
 import {error, info, success} from '../utils/toast'
+
 export default {
   name: "Feedbacks",
   props: {

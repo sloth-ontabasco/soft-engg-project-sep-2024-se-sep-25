@@ -175,6 +175,16 @@
           ></Button>
         </template>
       </Column>
+      <Column>
+        <template #body="{ data }">
+          <Button
+            icon="pi pi-trash"
+            class="p-button-warning"
+            rounded
+            @click.stop="confirmDelete(data)"
+          ></Button>
+        </template>
+      </Column>
       <Column v-if="allowView" class="w-24 !text-end">
         <template #body="{ data }">
           <Button
@@ -202,7 +212,7 @@ import IconField from 'primevue/iconfield'
 import { Toolbar, MultiSelect } from 'primevue'
 import { Dialog } from 'primevue'
 import Button from 'primevue/button'
-import { getProjects, updateProject, createProject } from '../api/project'
+import { getProjects, updateProject, createProject,deleteProject } from '../api/project'
 import { DatePicker, Textarea } from 'primevue'
 import { error, success, info } from '../utils/toast'
 import { mapGetters } from 'vuex'
@@ -285,6 +295,25 @@ export default {
       })
   },
   methods: {
+    confirmDelete(project) {
+      if (confirm('Are you sure you wish to delete this Project?')) {
+        this.deleteProject(project.id);
+      }
+    },
+    async deleteProject(projectId) {
+      try {
+        const response = await deleteProject(projectId)
+        if (response.success) {
+          this.projects = this.projects.filter(project => project.id !== projectId)
+          success('Success', 'Project deleted successfully')
+        } else {
+          error('Error', response.message)
+        }
+      } catch (error) {
+        console.error('Error deleting project:', error)
+        error('Error', 'Failed to delete project')
+      }
+    },
     openNew() {
       this.submitted = false
       this.newProjectVisible = true

@@ -49,6 +49,7 @@ import { Button } from 'primevue'
 
     <div>
       <RouterLink v-for="r in routes" :key="r.path" :to="{name: r.name, params: {projectId: projectId}}">
+
         <div
           :class="[
             'font-family:\'Poppins-SemiBold\',Helvetica',

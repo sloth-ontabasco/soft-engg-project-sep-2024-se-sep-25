@@ -19,7 +19,6 @@ import { mapState } from 'vuex'
 export default {
   name: 'HomeView',
   computed: { ...mapState(['loggedIn', 'loading']) },
-
   mounted() {
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has('jwt')) {

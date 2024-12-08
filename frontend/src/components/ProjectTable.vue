@@ -276,6 +276,7 @@ export default {
     },
   },
   mounted() {
+
     this.loading = true
     getProjects()
       .then(response => {

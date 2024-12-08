@@ -315,10 +315,6 @@ export default {
       canEdit: true,
     }
   },
-  created() {
-    this.fetchMilestones()
-    this.fetchTeams()
-  },
   // eslint-disable-next-line no-dupe-keys
   computed: {
     ...mapState(['user']),
@@ -597,7 +593,6 @@ export default {
       this.isEditingRubrics = false
     },
   },
-  mounted() {},
 }
 </script>
 

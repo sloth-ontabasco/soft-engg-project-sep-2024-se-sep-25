@@ -7,13 +7,11 @@
       class="w-16 h-16 rounded-full object-cover border border-gray-200"
     />
 
-
     <!-- User Information -->
     <div class="flex-1">
       <h1 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
         <span>User Id:</span>
         <span>{{ user.username }}</span>
-        
       </h1>
       <p class="text-gray-500">{{ user.email }}</p>
       
@@ -25,13 +23,14 @@
           rel="noopener noreferrer" 
           class="text-blue-500 hover:underline flex items-center space-x-1"
         >
-          
+          <!-- Optional Social Link Content -->
         </a>
       </div>
     </div>
 
     <!-- Github Button -->
     <button 
+      @click="loginWithGithub"
       class="bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200"
     >
       Github
@@ -40,24 +39,31 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import profileImage from '@/assets/profile.png'
+import { mapState } from 'vuex';
+import profileImage from '@/assets/profile.png';
+
 export default {
-  
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Profile',
-  data(){
-    return{
+  data() {
+    return {
       profileImage
-    }
+    };
   },
   computed: {
     ...mapState(['user']),
   },
   methods: {
+    // Method to handle GitHub login redirect
+    loginWithGithub() {
+      // Redirect to the backend GitHub login route to initiate OAuth flow
+      window.location.href =import.meta.env.VITE_SERVER_BASE_URL + '/github/login'; // Adjust if needed
+    },
+
+    // Optionally handle profile editing (not used here)
     editProfile() {
       console.log("Edit profile clicked");
-    },
+    }
   },
 };
 </script>

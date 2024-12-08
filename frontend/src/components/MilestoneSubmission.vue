@@ -114,41 +114,25 @@
           </ul>
         </div>
       </div>
-
-       <!-- Feedback Section -->
-       <div class="bg-white shadow-md rounded-lg p-5 mt-8">
-        <h2 class="text-black text-lg font-bold mb-3">Feedback</h2>
-        <ul>
-          <li v-for="(feedback, index) in feedbackList" :key="index" class="mb-4 bg-gray-100 p-3 rounded shadow-sm">
-            <div v-if="!feedback.editing">
-              <p class="text-gray-700"><strong>{{ feedback.username }}:</strong> {{ feedback.text }}</p>
-              <button class="text-blue-500 text-sm mt-2 underline" @click="editFeedback(index)">✏️ Edit</button>
-            </div>
-            <div v-else>
-              <textarea v-model="feedback.editedText" class="w-full p-2 border rounded focus:outline-none focus:ring"></textarea>
-              <button class="bg-green-500 text-white px-3 py-1 rounded mt-2" @click="saveFeedback(index)">Save</button>
-              <button class="bg-red-500 text-white px-3 py-1 rounded mt-2" @click="cancelFeedbackEdit(index)">Cancel</button>
-            </div>
-          </li>
-        </ul>
-        <div class="mt-4">
-          <textarea v-model="newFeedback" class="w-full p-2 border rounded focus:outline-none focus:ring bg-white text-black" placeholder="Add new feedback..."></textarea>
-          <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-700" @click="addFeedback">Add Feedback</button>
-        </div>
-      </div>
+      <!-- Feedback Section -->
+      <Feedbacks v-if="selectedMilestone.id && selectedTeam.id" :projectId="$route.params.projectId" :user="user" :selectedMilestone="selectedMilestone" :selectedTeam="selectedTeam" ref="feedbacksComponent" />
     </main>
   </div>
 </template>
 
 <script>
+import Feedbacks from './Feedbacks.vue';
 import { getProjectMilestones } from '../api/milestone';
 import { getProjectTeams } from '../api/team';
 import Select from 'primevue/select';
 import { mapState } from 'vuex';
 
 export default {
-  
   name: "MilestoneSubmission",
+  components: {
+    Feedbacks,
+    Select
+  },
   data(){
     return{
       editingHeading: false,
@@ -182,7 +166,14 @@ export default {
   computed: {
     ...mapState(['user']),
     canEdit() {
-      return ['admin', 'instructor', 'ta'].includes(this.user.role);
+      return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role);
+    }
+  },
+  async created() {
+    await this.fetchMilestones();
+    await this.fetchTeams();
+    if (this.selectedMilestone.id && this.selectedTeam.id) {
+      this.$refs.feedbacksComponent.fetchFeedbacks();
     }
   },
   methods: {
@@ -224,6 +215,9 @@ export default {
         description: this.selectedMilestone.description,
         due_date: this.selectedMilestone.due_date
       });
+      this.$nextTick(() => {
+        this.refreshFeedbacks();
+      });
     },
 
     handleTeamChange(value) {
@@ -232,6 +226,13 @@ export default {
         id: this.selectedTeam.id,
         team_name: this.selectedTeam.team_name
       });
+      this.$nextTick(() => {
+        this.refreshFeedbacks();
+      });
+    },
+
+    refreshFeedbacks() {
+      this.$refs.feedbacksComponent.fetchFeedbacks();
     },
 
     toggleHeadingEdit() {

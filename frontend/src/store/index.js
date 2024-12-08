@@ -1,6 +1,6 @@
 import { createStore } from 'vuex'
 import { login } from '../api/auth'
-import { getUsers } from '../api/user'
+import { getUsers, updateUser } from '../api/user'
 import * as jose from 'jose'
 
 const user = JSON.parse(localStorage.getItem('user'))
@@ -57,6 +57,19 @@ export default createStore({
         commit('hideLoader')
       }
     },
+    async updateUserAction({ commit }, { id, details }) {
+      try {
+        const response = await updateUser(id, details);
+        if (response.success) {
+          console.log(response.message);
+          commit('updateUser', { id, details });
+        } else {
+          console.error(response.message);
+        }
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
+    },
   },
   getters: {
     allStudents: state => {
@@ -94,16 +107,16 @@ export default createStore({
     storeUsers(state, users) {
       state.users = users
     },
-    updateUser(state, id, details) {
-      state.users = state.users.map(user => {
+    updateUser(state, { id, details }) {
+      state.users = state.users.map((user) => {
         if (user.id === id) {
           return {
             ...user,
             ...details,
-          }
+          };
         }
-        return user
-      })
+        return user;
+      });
     },
   },
   modules: {

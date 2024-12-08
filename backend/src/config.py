@@ -17,6 +17,9 @@ MONGO_URI = os.getenv("MONGO_URI")
 # FRONTEND
 FRONTEND_URI = os.getenv("FRONTEND_URI")
 
+#GEMINI API
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 OAUTH2_PROVIDERS = {
     # Google OAuth 2.0 documentation:
     # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
@@ -31,6 +34,24 @@ OAUTH2_PROVIDERS = {
             'picture': lambda json: json['picture']
         },
         'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
+    },
+
+    # github oauth documentation:
+    # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app
+
+    'github' : {
+        'client_id': os.environ.get('GITHUB_CLIENT_ID'),
+        'client_secret': os.environ.get('GITHUB_CLIENT_SECRET'),
+        'authorize_url': 'https://github.com/login/oauth/authorize',
+        'token_url': 'https://github.com/login/oauth/access_token',
+        'userinfo':{
+            'url': 'https://api.github.com/user',
+            # 'url': 'https://api.github.com/user/emails',
+            'email': lambda json: json['login'],
+            'repos_url': lambda json: json['reops_url']
+        },
+        # 'scopes': ['user:email','repo','user']
+        'scopes': ['user','repo','user:email']
     }
 }
 

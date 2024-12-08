@@ -1,0 +1,294 @@
+import time
+import zipfile
+import os
+import shutil
+import os
+import getpass
+import base64
+
+from pydantic import BaseModel, Field
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pdf2image import convert_from_path
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage
+from langchain_core.prompts import PromptTemplate
+from dotenv import load_dotenv, find_dotenv
+import requests
+
+load_dotenv(find_dotenv(), override=True)
+if 'GOOGLE_API_KEY' not in os.environ:
+    os.environ['GOOGLE_API_KEY'] = getpass.getpass('Provide your Google API Key: ')
+
+if ('USE_POPPLER' not in os.environ or os.environ['USE_POPPLER'] == 'y') and 'POPPLER_PATH' not in os.environ:
+    os.environ['USE_POPPLER'] = input('Do you want to use Poppler for PDF conversion? (y/n): ')
+    if os.environ['USE_POPPLER'].lower() == 'y':
+        if 'POPPLER_PATH' not in os.environ:
+            os.environ['POPPLER_DOWNLOAD'] = input('Do you want to download Poppler? (y/n): ')
+        
+        if os.environ['POPPLER_DOWNLOAD'].lower() == 'y':
+            url = 'https://github.com/oschwartz10612/poppler-windows/releases/download/v24.08.0-0/Release-24.08.0-0.zip'
+            local_filename = url.split('/')[-1]
+            print(f'Downloading {local_filename}...')
+            response = requests.get(url, stream=True)
+            with open(local_filename, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            print(f'Download completed: {local_filename}')
+
+if 'POPPLER_PATH' not in os.environ and os.environ['USE_POPPLER'] == 'y':
+    os.environ['POPPLER_PATH'] = input('Enter the path to the Poppler bin directory here or provide it in the .env file with key POPPLER_PATH: ')
+    
+poppler_path = os.environ.get('POPPLER_PATH', None)
+ 
+class ResponseFormatter(BaseModel):
+    answer: str = Field(description="A high level summary of the submission. This is a mandatory field.")
+    summary: str = Field(description="A brief summary of the submission. This is a mandatory field.")
+    team: str = Field(description="The team that submitted the project. This is a mandatory field. ") # pull this directly from the APIs
+    completed: str = Field(description="The tasks that were completed by the team in HTML compatible list format. This is a mandatory field.")
+    not_or_partially_completed: str = Field(description="The tasks that were not or partially completed by the team in HTML compatible list format. This is a mandatory field.")
+    suggestions: str = Field(description="Suggestions for improvement (if any) in HTML compatible list format. This is a mandatory field.")
+    rubrix_provided: bool = Field(description="Whether a rubrix was provided. This is a mandatory field.")
+    grade: str = Field(description="The grade of the submission in percentage evaluated out of 100. This is a mandatory field.") #convert the rubrix evaluation to a % and then into a grade
+
+def convert_pdf_page_to_png(image, page_number, images_folder):
+    image_path = os.path.join(images_folder, f"page_{page_number + 1}.png")
+    image.save(image_path, "PNG")
+    return image_path
+
+def process_image(image_path, prompt, llm):
+    with open(image_path, "rb") as img_file:
+        img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+        image_url = {'type': 'image_url', 'image_url': f"data:image/png;base64,{img_base64}"}
+    
+    message = HumanMessage(
+        content=[
+            {'type': 'text', 'text': prompt},
+            image_url
+        ]
+    )
+    
+    start_time = time.time()
+    response = llm.invoke([message])
+    end_time = time.time()
+    print(f"Time taken for {image_path}: {end_time - start_time} seconds")
+    return response.content
+
+def generate_html(output):
+    html_template = """
+    <html>
+    <head>
+        <title>Submission Evaluation</title>
+    </head>
+    <body>
+        <h1>Submission Evaluation</h1>
+        <p><strong>Summary:</strong> {{ summary }}</p>
+        <p><strong>Completed:</strong> {{ completed }}</p>
+        <p><strong>Not or Partially Completed:</strong> {{ not_or_partially_completed }}</p>
+        <p><strong>Suggestions:</strong> {{ suggestions }}</p>
+        <p><strong>Rubrix Provided:</strong> {{ rubrix_provided }}</p>
+        <p><strong>Grade:</strong> {{ grade }}</p>
+    </body>
+    </html>
+    """
+    for key, value in output.items():
+        html_template = html_template.replace(f"{{{{ {key} }}}}", str(value))
+    return html_template
+
+def clean_directory(directory_path):
+    if os.path.exists(directory_path):
+        shutil.rmtree(directory_path)
+    os.makedirs(directory_path)
+
+def extract_zip(file_path):
+    clean_directory("extracted_files")
+    with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        zip_ref.extractall("extracted_files")
+    files = []
+    for root, _, filenames in os.walk("extracted_files"):
+        for filename in filenames:
+            files.append(os.path.relpath(os.path.join(root, filename), "extracted_files"))
+    return files
+
+# Example usage
+zip_file_path = os.path.join(os.getcwd(), "backend\\src\\api\\submissions", "milestone_1.zip")
+# rubrix_file_path = ""; # No rubrix file provided
+rubrix_file_path = os.path.join(os.getcwd(), "backend\\src\\api\\submissions", "milestone_1_rubrix.png")
+
+milestone_title = "Identify User Requirements"
+milestone_description = "Identify users of the application - primary, secondary and tertiary users. Write user stories for the requirements, based on the SMART guidelines discussed in the lectures.";
+
+# milestone_title = "User Interfaces"
+# milestone_description = "Create storyboards and low-fidelity wireframes.";
+
+# milestone_title = "Scheduling and Design"
+# milestone_description = "Project Schedule - come up with a schedule of your overall project based on the user stories created in the previous milestones. Create a schedule for your sprints and iterations, timings of your scrum meetings etc. Trello board, Gantt chart - specifying your tasks and contributions. Project Scheduling Tools - which tools are you using? E.g. Pivotal Tracker, Jira. Design of Components - Describe different components of your system based on the user stories created in the previous milestones. Software Design - Basic class diagrams of your proposed system. Details/Minutes of a few scrum meetings. Most of the pages in the UI."
+
+def process_files(zip_file_data, rubrics_text, milestone_title, milestone_description):
+    
+    total_start_time = time.time()
+    
+    temp_zip_path = "temp_milestone.zip"
+    zip_file_path = os.path.join(os.getcwd(), temp_zip_path)
+    
+    with open(temp_zip_path, "wb") as temp_zip_file:
+        temp_zip_file.write(zip_file_data)
+        
+    extracted_files = extract_zip(zip_file_path)
+    file_path = os.path.join(os.getcwd(), "extracted_files", extracted_files[0]) #by default take the first file in the extracted files. 
+    
+    os.remove(zip_file_path)
+    
+    llm = ChatGoogleGenerativeAI(model='gemini-1.5-flash', temperature=1)
+    prompt = "Briefly describe the image."
+    
+    # Convert PDF to images
+    images_folder = os.path.join(os.getcwd(), "images")
+    os.makedirs(images_folder, exist_ok=True)
+    
+    start_time = time.time()
+    if('USE_POPPLER' in os.environ and os.environ['USE_POPPLER'] == 'y' and 'POPPLER_PATH' != None):
+        images = convert_from_path(file_path, poppler_path=poppler_path)
+    else:
+        images = convert_from_path(file_path)
+    end_time = time.time()
+    print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
+    
+    # Convert images to PNG and process them concurrently
+    responses = []
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        # Submit tasks to convert PDF pages to PNG images
+        convert_futures = [executor.submit(convert_pdf_page_to_png, image, i, images_folder) for i, image in enumerate(images)]
+        
+        # Process each image as soon as it is converted
+        process_futures = []
+        for future in as_completed(convert_futures):
+            image_path = future.result()
+            process_futures.append(executor.submit(process_image, image_path, prompt, llm))
+        
+        # Collect responses
+        for future in as_completed(process_futures):
+            responses.append(future.result())
+
+    # Combine all responses into a single text
+    combined_responses = "\n".join(responses)
+    
+    print("Rubrics provided: ", rubrics_text)
+    rubrix_provided = bool(rubrics_text.strip())
+
+    full_template = """
+    
+    {setting}
+
+    The submission is as follows : {submission}
+    
+    The milestone title is : {milestone_title} and the milestone description is : {milestone_description}.
+    
+    The rubrics provided are : {rubrics_text}
+    
+    Ensure all outputs use HTML tags for formatting.
+    """
+    
+    full_prompt = (PromptTemplate.from_template(full_template))
+    
+    full_prompt = full_prompt.format(setting = "You are an instructor evaluating the submission of a student project! Your task is to guide me in providing a comprehensive evaluation of the provided submission. Write in an informative and instructional style. Ensure clarity and coherence, catering to an audience keen on enhancing their overall submission that are inline with the requirements.", 
+                       submission = combined_responses, 
+                       milestone_title = milestone_title, 
+                       milestone_description = milestone_description,
+                       rubrics_text = rubrics_text
+                )
+    
+    model_with_structure = llm.with_structured_output(ResponseFormatter)
+    output = model_with_structure.invoke(full_prompt)
+    
+    output.rubrix_provided = rubrix_provided
+    
+    html_output = generate_html(output.model_dump())
+    
+    # Save HTML to file
+    html_file_path = os.path.join(os.getcwd(), "submission_evaluation.html")
+    with open(html_file_path, "w") as html_file:
+        html_file.write(html_output)
+    print(f"HTML file saved to {html_file_path}")
+    
+    total_end_time = time.time()
+    print(f"Total time taken: {total_end_time - total_start_time} seconds")
+    
+############################################################################################################
+##################################START OF THE MAIN METHOD FOR TESTING######################################
+############################################################################################################
+
+if __name__ == "__main__":
+    
+    total_start_time = time.time()
+    
+    milestone_title = "Identify User Requirements"
+    milestone_description = "Identify users of the application - primary, secondary and tertiary users. Write user stories for the requirements, based on the SMART guidelines discussed in the lectures."
+    llm = ChatGoogleGenerativeAI(model='gemini-1.5-flash', temperature=1)
+    prompt = "Briefly describe the image."
+    file_path = os.path.join("extracted_files", "Milestone 1 - Team 25.pdf")
+
+    # Convert PDF to images
+    images_folder = os.path.join(os.getcwd(), "images")
+    os.makedirs(images_folder, exist_ok=True)
+    
+    start_time = time.time()
+    if('USE_POPPLER' in os.environ and os.environ['USE_POPPLER'] == 'y' and 'POPPLER_PATH' != None):
+        images = convert_from_path(file_path, poppler_path=poppler_path)
+    else:
+        images = convert_from_path(file_path)
+    end_time = time.time()
+    print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
+    
+    # Convert images to PNG and process them concurrently
+    responses = []
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        # Submit tasks to convert PDF pages to PNG images
+        convert_futures = [executor.submit(convert_pdf_page_to_png, image, i, images_folder) for i, image in enumerate(images)]
+        
+        # Process each image as soon as it is converted
+        process_futures = []
+        for future in as_completed(convert_futures):
+            image_path = future.result()
+            process_futures.append(executor.submit(process_image, image_path, prompt, llm))
+        
+        # Collect responses
+        for future in as_completed(process_futures):
+            responses.append(future.result())
+    
+    # Combine all responses into a single text
+    combined_responses = "\n".join(responses)
+    # print(combined_responses)
+    
+    full_template = """
+    
+    {setting}
+
+    The submssion is as follows : {submission}
+    
+    The milestone title is : {milestone_title} and the milestone description is : {milestone_description}.
+    
+    Ensure all outputs use HTML tags for formatting.
+    """
+    full_prompt = (PromptTemplate.from_template(full_template))
+    
+    full_prompt = full_prompt.format(setting = "You are an instructor evaluting the submission of a student project!", 
+                       submission = combined_responses, 
+                       milestone_title = milestone_title, 
+                       milestone_description = milestone_description
+                );
+    
+    model_with_structure = llm.with_structured_output(ResponseFormatter)
+    output = model_with_structure.invoke(full_prompt)
+    print(output.dict()) #implement model_dump()
+    
+    html_output = generate_html(output.dict())
+    
+    # Save HTML to file
+    html_file_path = os.path.join(os.getcwd(), "submission_evaluation.html")
+    with open(html_file_path, "w") as html_file:
+        html_file.write(html_output)
+    print(f"HTML file saved to {html_file_path}")
+    
+    total_end_time = time.time()
+    print(f"Total time taken: {total_end_time - total_start_time} seconds")

@@ -4,7 +4,19 @@ from urllib.parse import unquote
 from flask import Flask, request
 from flask_limiter import RateLimitExceeded
 from flask_jwt_extended import JWTManager
+from src.api.gen_ai import *
 from src.api.auth import *
+from src.api.users import *
+from src.api.teams import *
+from src.api.announcements import *
+from src.api.feedbacks import *
+from src.api.project import *
+from src.api.milestone import *
+from src.api.resource import *
+from src.api.submission import *
+from src.api.analytics import *
+from src.api.github import *
+from src.api.file import *
 
 
 def setup_auth(app: Flask):
@@ -48,6 +60,55 @@ def setup_api(app, api):
     api.add_resource(LoginAPI, "/api/<string:provider>/login")
     api.add_resource(CallbackAPI, "/api/<string:provider>/callback",endpoint='oauth2_callback')
     api.add_resource(TokenAPI,"/api/token")
+
+    # User Routes
+    api.add_resource(UserAPI,
+                     "/api/users",
+                     "/api/users/<string:user_id>")
+    
+    # Team Routes
+    api.add_resource(TeamAPI, 
+                     "/api/<string:project_id>/teams",
+                     "/api/<string:project_id>/teams/<string:team_id>")
+
+    # Announcement Routes
+    api.add_resource(AnnouncementAPI, 
+                     "/api/projects/<string:project_id>/announcements", 
+                     "/api/projects/<string:project_id>/announcements/<string:id>")
+
+    # Feedback Routes
+    api.add_resource(FeedbackAPI, 
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/teams/<string:team_id>/feedbacks",
+                     "/api/projects/<string:project_id>/milestones/<string:milestone_id>/teams/<string:team_id>/feedbacks/<string:id>")
+
+    # Project Routes
+    api.add_resource(ProjectAPI,"/api/project")
+    api.add_resource(ProjectsByUserAPI, '/api/project/user/<string:user_id>')
+    api.add_resource(ProjectByIdAPI, '/api/project/<string:project_id>')
+
+
+    # Milestone Routes 
+    api.add_resource(MilestoneAPI, '/api/milestones/<string:milestone_id>')
+    api.add_resource(ProjectMilestonesAPI,"/api/project/milestones/<project_id>")
+    api.add_resource(EditDeleteMilestoneAPI, '/api/milestones/<string:project_id>/<string:milestone_id>')
+
+    # Milestone Submission Routes
+    api.add_resource(MilestoneSubmissionAPI, "/api/submission")
+    api.add_resource(FileAPI, "/api/file", endpoint="submission_file")
+    
+    # Milestone Submission Routes
+    api.add_resource(GenAISummaryAPI, "/api/genai/summary/<string:submission_id>")
+    
+    # Resource Routes
+    api.add_resource(ProjectResourcesAPI, '/api/resource/<string:project_id>','/api/resource/<string:project_id>/<string:resource_id>')
+
+    # Analytics Routes
+    api.add_resource(ProjectAnalyticsAPI, '/api/<string:project_id>/analytics')
+
+    api.add_resource(CreateGithubIntegrationAPI, '/api/github/integration')
+    api.add_resource(GetRepoCommitsAPI, '/api/github/commits/<string:team_id>')
+    api.add_resource(GetAllGithubIntegrationsAPI, '/api/github/integration','/api/github/integration/<string:team_id>')
+    
 
 def list_routes(app: Flask):
 

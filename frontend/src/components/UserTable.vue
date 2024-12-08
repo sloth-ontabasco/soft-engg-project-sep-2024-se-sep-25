@@ -128,7 +128,7 @@ export default {
       return this.$store.state.users;
     },
   },
-  async created() {
+  async mounted() {
     // Dispatch an action to fetch users from the API
     try {
       this.loading = true;

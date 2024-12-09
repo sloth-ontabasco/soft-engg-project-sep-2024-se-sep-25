@@ -75,13 +75,10 @@ class TeamAPI(Resource):
             if Team.objects(project=project, team_name=team_name).first():
                 return Response.error(400, message="Team name already exists for this project")
             
-            # Fetch the users associated with the provided emails
-            team_members = []
-            for email in members:
-                user = User.objects(email=email).first()
-                if not user:
-                    return Response.error(404, message=f"User with email {email} not found")
-                team_members.append(user)
+            # Fetch the users associated with the provided ids
+            team_members = [User.objects(id=member_id).first() for member_id in members]
+            if None in team_members:
+                return Response.error(code=400, message="One or more mentors not found")
             
             # Create the new team
             team = Team(
@@ -119,15 +116,12 @@ class TeamAPI(Resource):
             if not data:
                 return Response.error(400, message="Request body is missing")
             team_name = data.get('team_name', team.team_name)
-            members = data.get('members', [member.email for member in team.members])
+            members = data.get('members', [member.id for member in team.members])
             
-            # Fetch the users associated with the provided emails
-            team_members = []
-            for email in members:
-                user = User.objects(email=email).first()
-                if not user:
-                    return Response.error(404, message=f"User with email {email} not found")
-                team_members.append(user)
+            # Fetch the users associated with the provided ids
+            team_members = [User.objects(id=member_id).first() for member_id in members]
+            if None in team_members:
+                return Response.error(code=400, message="One or more mentors not found")
             
             # Update the team data
             team.update(

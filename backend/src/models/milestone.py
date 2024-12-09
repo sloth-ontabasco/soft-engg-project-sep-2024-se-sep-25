@@ -9,6 +9,7 @@ class Milestone(db.Document):
     project = db.ReferenceField("Project", required=True)  # Delete milestone if project is deleted
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
+    rubrics = db.StringField()
 
     def __repr__(self):
         return f"<Milestone {self.title}>"
@@ -21,5 +22,6 @@ class Milestone(db.Document):
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "project": str(self.project.id) if self.project else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "rubrics": self.rubrics
         }

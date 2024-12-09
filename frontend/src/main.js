@@ -17,7 +17,6 @@ const axiosInstance = axios.create({
 
 });
 
-
 const app = createApp(App)
 router.app = app
 app.config.globalProperties.$axios = axiosInstance

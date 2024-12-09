@@ -4,7 +4,7 @@ from urllib.parse import unquote
 from flask import Flask, request
 from flask_limiter import RateLimitExceeded
 from flask_jwt_extended import JWTManager
-from src.api.gen_ai import GenAISummaryAPI
+from src.api.gen_ai import *
 from src.api.auth import *
 from src.api.users import *
 from src.api.teams import *
@@ -13,9 +13,10 @@ from src.api.feedbacks import *
 from src.api.project import *
 from src.api.milestone import *
 from src.api.resource import *
-from src.api.submission import MilestoneSubmissionAPI  # Import the API resource
+from src.api.submission import *
 from src.api.analytics import *
 from src.api.github import *
+from src.api.file import *
 
 
 def setup_auth(app: Flask):
@@ -92,7 +93,8 @@ def setup_api(app, api):
     api.add_resource(EditDeleteMilestoneAPI, '/api/milestones/<string:project_id>/<string:milestone_id>')
 
     # Milestone Submission Routes
-    api.add_resource(MilestoneSubmissionAPI, "/api/submission", "/api/submission/<string:submission_id>")
+    api.add_resource(MilestoneSubmissionAPI, "/api/submission")
+    api.add_resource(FileAPI, "/api/file", endpoint="submission_file")
     
     # Milestone Submission Routes
     api.add_resource(GenAISummaryAPI, "/api/genai/summary/<string:submission_id>")

@@ -32,11 +32,10 @@ export default {
   background-color: #171a19;
   color: white;
   border: 2px solid #13a56d;
-  border-radius: 50px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin-top: 3em;
-  margin-left: 5em;
+ 
 }
 
 .google-login-button:hover {

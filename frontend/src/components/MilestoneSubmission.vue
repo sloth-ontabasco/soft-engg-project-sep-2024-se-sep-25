@@ -1,7 +1,9 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
+  <div class="flex-col min-h-screen bg-gray-100">
+  <main class="flex-1 p-10">
+  
     <!-- Main Content -->
-    <main class="flex-1 p-10">
+    
       <!-- Breadcrumb Navigation -->
       <nav class="text-sm text-gray-600 mb-5">
         <router-link :to="'/projects'" class="hover:underline"
@@ -30,6 +32,7 @@
             class="w-full md:w-56 custom-select"
           />
         </template>
+        <button>Add a MIlestons</button>
       </nav>
 
       <!-- Header -->
@@ -42,12 +45,12 @@
             v-else
             type="text"
             v-model="editedHeading"
-            class="border p-2 rounded text-3xl font-bold mb-5"
+            class="border p-2 rounded text-3xl bg-gray-100 text-black font-bold mb-5"
             @keyup.enter="saveHeading"
           />
         </div>
         <button
-          class="hidden group-hover:inline-block text-white px-4 py-2 rounded"
+          class="hidden group-hover:inline-block text-black px-4 py-2 rounded"
           @click="toggleHeadingEdit"
         >
           ✏️
@@ -59,11 +62,13 @@
           <p v-if="!editingDescription" class="text-gray-700 mb-5">
             Use the options below to manage files and review feedback for
             {{ selectedMilestone.title }} for {{ selectedTeam.team_name }}.
+            <br>
+            {{ selectedMilestone.description }}
           </p>
           <textarea
             v-else
             v-model="editedDescription"
-            class="w-full p-2 border rounded focus:outline-none focus:ring mb-5"
+            class="p-2 border rounded focus:outline-none focus:ring mb-5 bg-gray-100 text-black"
             @keyup.enter="saveDescription"
           ></textarea>
         </div>
@@ -84,11 +89,17 @@
         ]"
         style="margin-left: 0"
       >
-        Deadline: {{ formattedDeadline }}
+        Deadline: {{ formattedDeadline }} 
       </div>
+      <button
+          class="hidden group-hover:inline-block text-white px-4 py-2 rounded"
+          @click="toggleDeadlineEdit"
+        >
+          ✏️
+        </button>
       <br />
       <br />
-
+      
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Files Submitted Section -->
         <div class="bg-white shadow-md rounded-lg p-5">
@@ -257,7 +268,7 @@
 
 <script>
 import Feedbacks from './Feedbacks.vue'
-import { getProjectMilestones, updateMilestone } from '../api/milestone'
+import { getProjectMilestones, createMilestone,updateMilestone } from '../api/milestone'
 import { getProjectTeams } from '../api/team'
 import {
   getSubmission,
@@ -283,27 +294,16 @@ export default {
       editingDescription: false,
       editedHeading: '',
       editedDescription: '',
-      feedbackList: [
-        {
-          text: 'Ensure all required files are uploaded before the deadline.',
-          username: 'TA John',
-          editing: false,
-          editedText: '',
-        },
-        {
-          text: 'Contact your TA for further clarifications.',
-          username: 'TA Jane',
-          editing: false,
-          editedText: '',
-        },
-      ],
       newFeedback: '',
       isMilestoneSubmitted: true, // Example state
       showPDF: false, // Controls the visibility of the PDF modal
       pdfURL: null, // URL for the fetched PDF
       deadline: '2024-12-07T07:22:04.216+00:00',
       isDeadlineNear: false,
-      milestones: [],
+      milestones: [
+        
+        { id: null, title: 'Add a milestone' },
+      ],
       teams: [],
       selectedMilestone: { id: '', title: 'Loading...' },
       selectedTeam: { id: '', team_name: 'Loading...' },
@@ -316,9 +316,9 @@ export default {
       canEdit: true,
     }
   },
-  // eslint-disable-next-line no-dupe-keys
   computed: {
     ...mapState(['user']),
+    // eslint-disable-next-line vue/no-dupe-keys
     canEdit() {
       return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role)
     },
@@ -330,7 +330,6 @@ export default {
       return `${day}-${month}-${year}`
     },
   },
-  // eslint-disable-next-line no-dupe-keys
   async mounted() {
     await this.fetchMilestones()
     await this.fetchTeams()
@@ -387,6 +386,7 @@ export default {
       } catch (error) {
         this.hasSubmission = false
         this.hasFile = false
+        console.log(error);
       }
     },
 
@@ -394,6 +394,9 @@ export default {
       this.selectedMilestone = this.milestones.find(
         milestone => milestone.id === value,
       )
+      if(this.selectedMilestone === null){
+        this.addNewMilestone();
+      } else {
       console.log('Selected Milestone:', {
         id: this.selectedMilestone.id,
         title: this.selectedMilestone.title,
@@ -404,8 +407,22 @@ export default {
         this.refreshFeedbacks()
         this.fetchSubmissionStatus()
       })
+    }
     },
-
+    async addNewMilestone(){
+      try {
+        const newMilestone = await createMilestone(this.projectId , this.milestones);
+        this.milestones.push(newMilestone);
+        this.selectedMilestone = newMilestone.id;
+        this.newMilestoneTitle = '';
+        this.newMilestoneDesc = '';
+        this.newMilestoneDueDate = '';
+        console.log("Milestone added successfully", newMilestone);
+    } catch (error) {
+      console.error("Error adding milestone:", error);
+      alert("failed to create milestone. please try again.");
+    }
+  },
     handleTeamChange(value) {
       this.selectedTeam = this.teams.find(team => team.id === value)
       console.log('Selected Team:', {
@@ -428,19 +445,74 @@ export default {
         this.editedHeading = this.selectedMilestone.title
       }
     },
-    saveHeading() {
-      this.selectedMilestone.title = this.editedHeading.trim()
-      this.editingHeading = false
+    async saveHeading() {
+      try{
+        const updatedMilestone = {
+          ...this.selectedMilestone,
+          title: this.editedHeading.trim(),
+        };
+        await updateMilestone(
+          this.$route.params.projectId,
+          this.selectedMilestone.id,
+          updatedMilestone
+        );
+        this.selectedMilestone.title = this.editedHeading.trim();
+        this.editedHeading = false;
+        success("Success","Heading updated successfully");
+      } catch (error) {
+        console.error("Error updating heading:", error);
+        alert("Failed to update heading. Please try again.");
+      }
+    },
+    toggleDeadlineEdit() {
+      this.editingHeading = !this.editingHeading
+      if (this.editingHeading) {
+        this.editedHeading = this.selectedMilestone.title
+      }
+    },
+    async saveHeading() {
+      try{
+        const updatedMilestone = {
+          ...this.selectedMilestone,
+          title: this.editedHeading.trim(),
+        };
+        await updateMilestone(
+          this.$route.params.projectId,
+          this.selectedMilestone.id,
+          updatedMilestone
+        );
+        this.selectedMilestone.title = this.editedHeading.trim();
+        this.editedHeading = false;
+        success("Success","Heading updated successfully");
+      } catch (error) {
+        console.error("Error updating heading:", error);
+        alert("Failed to update heading. Please try again.");
+      }
     },
     toggleDescriptionEdit() {
       this.editingDescription = !this.editingDescription
       if (this.editingDescription) {
-        this.editedDescription = `Use the options below to manage files and review feedback for ${this.selectedMilestone.title}.`
+        this.editedDescription = this.selectedMilestone.description;
       }
     },
-    saveDescription() {
-      // Save description logic
-      this.editingDescription = false
+    async saveDescription() {
+      try{
+        const updatedMilestone = {
+          ...this.selectedMilestone,
+          description: this.editedDescription.trim(),
+        };
+        await updateMilestone(
+          this.$route.params.projectId,
+          this.selectedMilestone.id,
+          updatedMilestone
+        );
+        this.selectedMilestone.description = this.editedDescription.trim();
+        this.editingDescription = false;
+        success("Success","Description updated Successfully");
+      } catch (error) {
+        console.error("Error updating description:", error);
+        alert("Failed to update description. Please try again");
+      }
     },
     editFeedback(index) {
       this.$set(this.feedbackList[index], 'editing', true)

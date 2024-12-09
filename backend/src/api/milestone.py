@@ -87,7 +87,7 @@ class ProjectMilestonesAPI(Resource):
 class EditDeleteMilestoneAPI(Resource):
     
     
-    @check_any_role(roles=['instructor', 'admin', 'ta'])
+    @check_any_role(roles=['instructor', 'admin','student', 'ta'])
     def put(self, project_id, milestone_id):
         """
         Route: PUT /api/milestones/<project_id>/<milestone_id>

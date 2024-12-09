@@ -2,7 +2,7 @@
 import HelloWorld from '@/components/HelloWorld.vue'
 </script>
 <template>
-  <div class="flex flex-row justify-around w-full">
+  <div class="flex items-center justify-center min-h-screen">
     <div class="wrapper flex flex-col">
       <img
         alt="IITM Logo"
@@ -13,12 +13,9 @@ import HelloWorld from '@/components/HelloWorld.vue'
       />
 
       <HelloWorld msg="Made by IITM Team 25" />
-      <nav>
-        <!-- <RouterLink to="/">Home</RouterLink> -->
-        <!-- <RouterLink to="/about">About</RouterLink> -->
-        <RouterLink to="/profile">Profile</RouterLink>
-      </nav>
     </div>
+    
+    <div class="vertical-line"></div>
     <button @click="loginWithGoogle" class="google-login-button">
       <img
         src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png"
@@ -55,7 +52,7 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin-top: 3em;
-  margin-left: 5em;
+  margin-left: 20em;
 }
 
 .google-login-button:hover {
@@ -70,5 +67,11 @@ export default {
 
 .google-text {
   font-size: 1.2em;
+}
+.vertical-line {
+  width: 2px;
+  margin-left: 250px;
+  height: 300px;
+  background-color: #ccc;
 }
 </style>

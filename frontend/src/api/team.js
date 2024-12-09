@@ -16,7 +16,7 @@ export async function getProjectTeams(projectId) {
   if (res.status === 200) {
     const data = await res.json();
     console.log(data);
-    return data.teams || { team: data.team };
+    return data.teams || { team: data.teams };
   }
 
   throw new Error("Failed to fetch project teams");
@@ -29,15 +29,17 @@ export async function getProjectTeams(projectId) {
  * @returns {Promise<Object>} A promise that resolves to the created team object.
  */
 export async function createTeam(projectId, teamData) {
-  const res = await fetch(`${BASE_URL}/api/${projectId}/teams`, {
-    method: 'POST',
-    headers: header(),
+  const res = await fetch(`${BASE_URL}/${projectId}/teams`, {
+    method: "POST",
+        headers: {
+            ...header(),
+            "Content-Type": "application/json",
+        },
     body: JSON.stringify(teamData),
   });
 
   if (res.status === 201) {
-    const data = await res.json();
-    return data.team;
+    return res.json();
   }
 
   const errorData = await res.json();
@@ -52,15 +54,17 @@ export async function createTeam(projectId, teamData) {
  * @returns {Promise<Object>} A promise that resolves to the updated team object.
  */
 export async function updateTeam(projectId, teamId, teamData) {
-  const res = await fetch(`${BASE_URL}/api/${projectId}/teams/${teamId}`, {
-    method: 'PUT',
-    headers: header(),
+  const res = await fetch(`${BASE_URL}/${projectId}/teams/${teamId}`, {
+    method: "PUT",
+        headers: {
+            ...header(),
+            "Content-Type": "application/json",
+        },
     body: JSON.stringify(teamData),
   });
 
   if (res.status === 200) {
-    const data = await res.json();
-    return data.team;
+    return res.json();
   }
 
   const errorData = await res.json();
@@ -74,13 +78,13 @@ export async function updateTeam(projectId, teamId, teamData) {
  * @returns {Promise<void>} A promise that resolves when the team is deleted.
  */
 export async function deleteTeam(projectId, teamId) {
-  const res = await fetch(`${BASE_URL}/api/${projectId}/teams/${teamId}`, {
+  const res = await fetch(`${BASE_URL}/${projectId}/teams/${teamId}`, {
     method: 'DELETE',
     headers: header(),
   });
 
   if (res.status === 200) {
-    return;
+    return res.json();
   }
 
   const errorData = await res.json();

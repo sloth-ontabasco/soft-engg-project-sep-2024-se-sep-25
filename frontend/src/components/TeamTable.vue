@@ -42,7 +42,15 @@
         </div>
         <div class="flex justify-end gap-2">
           <Button label="Cancel" icon="pi pi-times" text @click="() => (newTeamVisible = false)" />
-          <Button label="Save" icon="pi pi-check" @click="saveTeam" />
+          <Button 
+            label="Save" 
+            icon="pi pi-check" 
+            @click="
+            () => {
+              team.id ? editTeam() : saveTeam()
+            }
+          " 
+          />
         </div>
       </div>
     </Dialog>
@@ -97,7 +105,7 @@
       </Column>
       <Column :field="'project_status'" :header="'Status'" sortable>
         <template #body="{ data }">
-          <span>{{ data.project_status }}</span>
+          <span>{{ projectStatusMap[data.project_status] }}</span>
         </template>
         <template #editor="{ data, field }">
           <InputText v-model="data[field]" />
@@ -139,7 +147,7 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import { getProjectTeams, createTeam, updateTeam, deleteTeam } from '../api/team'
 import { mapGetters } from 'vuex'
-import { success, error } from '../utils/toast'
+import { error, success, info } from '../utils/toast'
 import { formatDate } from '../utils/dateUtils'
 
 const dt = ref()
@@ -178,12 +186,15 @@ export default {
           constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
         },
       },
+      projectStatusMap: {
+        0: 'Not Yet Started',
+        1: 'In Progress',
+        2: 'Complete',
+        3: 'Late Submission',
+      },
       loading: true,
       newTeamVisible: false,
       submitted: false,
-      filters: {
-        global: { value: null },
-      },
     }
   },
   computed: {
@@ -200,10 +211,9 @@ export default {
       this.loading = true
       try {
         const response = await getProjectTeams(this.$route.params.projectId)
-        if (response) {
+        if (Array.isArray(response)) {
           this.teams = response
-          console.log(this.teams)
-          success('Success', 'Teams fetched successfully')
+          info('Success', 'Teams fetched successfully')
         }
       } catch (err) {
         error('Error', 'Failed to fetch teams')
@@ -214,60 +224,64 @@ export default {
     },
     openNew() {
       this.submitted = false
-      this.team = { team_name: '', members: '' }
       this.newTeamVisible = true
     },
     async saveTeam() {
-      this.submitted = true
-      if (!this.team.team_name || !this.team.members) return
+      this.newTeamVisible = false
       try {
-        const members = this.team.members.split(',').map((email) => email.trim())
-        const response = await createTeam({
-          team_name: this.team.team_name,
-          members,
-        })
-        if (response.success) {
-          this.teams.push(response.data)
+        const res = await createTeam(
+          this.$route.params.projectId,
+          this.team
+        )
+        if (res.success) {
+          this.teams.push(res.team)
           success('Success', 'Team created successfully')
-          this.newTeamVisible = false
         }
       } catch (err) {
         error('Error', 'Failed to create team')
         console.error(err)
       }
+      this.submitted = true
     },
-    openEdit(data) {
-      this.team = { ...data, members: data.members.join(', ') }
+    openEdit(team) {
+      this.team = { ...team }
+      this.submitted = false
       this.newTeamVisible = true
     },
     async editTeam() {
-      this.team.members = this.team.members.split(',').map(member => member.trim());
-      updateTeam(this.team.id, this.team)
-        .then(response => {
-          if (response.success) {
-            this.teams = this.teams.map(team => {
-              if (team.id === this.team.id) {
-                return this.team;
-              }
-              return team;
-            });
-            success('Success', 'Team updated successfully');
-            this.newTeamVisible = false;
-          } else {
-            error('Error', response.message);
-            this.newTeamVisible = false;
-          }
-        })
-        .catch(error => {
-          console.error('Error updating team:', error);
-          error('Error', 'Failed to update team');
-          this.newTeamVisible = false;
-        });
+      updateTeam(
+        this.$route.params.projectId,
+        this.team.id, 
+        this.team
+      ).then(res => {
+        console.log(res)
+        if (res.success) {
+          this.teams = this.teams.map(team => {
+            if (team.id === this.team.id) {
+              return this.team;
+            }
+            return team;
+          });
+          success('Success', 'Team updated successfully');
+          this.newTeamVisible = false
+          this.submitted = true
+        } else {
+          error('Error', response.message);
+          this.newTeamVisible = false
+        }
+      })
+      .catch(err => {
+        console.error('Error updating team:', err);
+        error('Error', 'Failed to update team');
+        this.newTeamVisible = false;
+      });
     },
     async confirmDelete(team) {
       if (confirm(`Are you sure you want to delete team "${team.team_name}"?`)) {
         try {
-          const response = await deleteTeam(team.id)
+          const response = await deleteTeam(
+            this.$route.params.projectId,
+            team.id)
           if (response.success) {
             this.teams = this.teams.filter((t) => t.id !== team.id)
             success('Success', 'Team deleted successfully')

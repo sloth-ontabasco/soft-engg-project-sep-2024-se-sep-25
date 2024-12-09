@@ -32,11 +32,21 @@
         </template>
       </nav>
 
+      <!-- Add Milestone Button -->
+      <div v-if="canEdit" class="mb-5">
+        <button
+          @click="navigateToCreateMilestone"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add Milestone
+        </button>
+      </div>
+
       <!-- Header -->
       <div class="group flex items-center justify-between">
         <div>
           <h1 v-if="!editingHeading" class="text-black text-3xl font-bold mb-5">
-            {{ selectedMilestone.title }} - User Stories Submission
+            {{ selectedMilestone.title }}
           </h1>
           <input
             v-else
@@ -46,45 +56,58 @@
             @keyup.enter="saveHeading"
           />
         </div>
-        <button
-          class="hidden group-hover:inline-block text-white px-4 py-2 rounded"
+        <i
+          v-if="canEdit"
           @click="toggleHeadingEdit"
-        >
-          ✏️
-        </button>
+          class="fa fa-edit text-blue-500 hover:text-blue-700 cursor-pointer"
+        ></i>
       </div>
 
       <div class="group flex items-center justify-between">
         <div>
           <p v-if="!editingDescription" class="text-gray-700 mb-5">
-            Use the options below to manage files and review feedback for
-            {{ selectedMilestone.title }} for {{ selectedTeam.team_name }}.
+            {{ selectedMilestone.description || 'No description' }}
           </p>
           <textarea
             v-else
             v-model="editedDescription"
-            class="w-full p-2 border rounded focus:outline-none focus:ring mb-5"
+            class="w-full max-w-full p-2 border rounded focus:outline-none focus:ring mb-5"
             @keyup.enter="saveDescription"
           ></textarea>
         </div>
-        <button
-          class="hidden group-hover:inline-block text-white px-4 py-2 rounded"
+        <i
+          v-if="canEdit"
           @click="toggleDescriptionEdit"
-        >
-          ✏️
-        </button>
+          class="fa fa-edit text-blue-500 hover:text-blue-700 cursor-pointer"
+        ></i>
       </div>
 
-      <div
-        :class="[
-          'inline-block px-6 py-3 rounded-lg text-sm font-semibold',
-          isDeadlineNear
-            ? 'bg-red-500 text-white animate-pulse'
-            : 'bg-white text-black',
-        ]"
-        style="margin-left: 0"
-      >
-        Deadline: {{ formattedDeadline }}
+      <div class="group flex items-center justify-between">
+        <div>
+          <div
+            :class="[
+              'inline-block px-6 py-3 rounded-lg text-sm font-semibold',
+              isDeadlineNear
+                ? 'bg-red-500 text-white animate-pulse'
+                : 'bg-white text-black',
+            ]"
+            style="margin-left: 0"
+          >
+            Deadline: {{ formattedDeadline }}
+          </div>
+          <input
+            v-if="editingDeadline"
+            type="date"
+            v-model="editedDeadline"
+            class="border p-2 rounded text-sm font-semibold mb-5"
+            @change="saveDeadline"
+          />
+        </div>
+        <i
+          v-if="canEdit"
+          @click="toggleDeadlineEdit"
+          class="fa fa-edit text-blue-500 hover:text-blue-700 cursor-pointer"
+        ></i>
       </div>
       <br />
       <br />
@@ -314,6 +337,8 @@ export default {
       editedRubrics: '',
       isEditingRubrics: false,
       canEdit: true,
+      editingDeadline: false,
+      editedDeadline: '',
     }
   },
   // eslint-disable-next-line no-dupe-keys
@@ -323,11 +348,12 @@ export default {
       return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role)
     },
     formattedDeadline() {
-      const date = new Date(this.deadline)
-      const day = String(date.getDate()).padStart(2, '0')
-      const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
-      const year = date.getFullYear()
-      return `${day}-${month}-${year}`
+      if (!this.selectedMilestone.due_date) return 'No deadline';
+      const date = new Date(this.selectedMilestone.due_date);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
     },
   },
   // eslint-disable-next-line no-dupe-keys
@@ -428,19 +454,49 @@ export default {
         this.editedHeading = this.selectedMilestone.title
       }
     },
-    saveHeading() {
-      this.selectedMilestone.title = this.editedHeading.trim()
-      this.editingHeading = false
+    async saveHeading() {
+      try {
+        const updatedMilestone = {
+          ...this.selectedMilestone,
+          title: this.editedHeading.trim(),
+        }
+        await updateMilestone(
+          this.selectedMilestone.project,
+          this.selectedMilestone.id,
+          updatedMilestone,
+        )
+        this.selectedMilestone.title = this.editedHeading.trim()
+        this.editingHeading = false
+        success("Success", "Milestone title updated successfully")
+      } catch (err) {
+        error("Error", "Error updating milestone title")
+        console.error('Error updating milestone title:', err)
+      }
     },
     toggleDescriptionEdit() {
       this.editingDescription = !this.editingDescription
       if (this.editingDescription) {
-        this.editedDescription = `Use the options below to manage files and review feedback for ${this.selectedMilestone.title}.`
+        this.editedDescription = this.selectedMilestone.description
       }
     },
-    saveDescription() {
-      // Save description logic
-      this.editingDescription = false
+    async saveDescription() {
+      try {
+        const updatedMilestone = {
+          ...this.selectedMilestone,
+          description: this.editedDescription.trim(),
+        }
+        await updateMilestone(
+          this.selectedMilestone.project,
+          this.selectedMilestone.id,
+          updatedMilestone,
+        )
+        this.selectedMilestone.description = this.editedDescription.trim()
+        this.editingDescription = false
+        success("Success", "Milestone description updated successfully")
+      } catch (err) {
+        error("Error", "Error updating milestone description")
+        console.error('Error updating milestone description:', err)
+      }
     },
     editFeedback(index) {
       this.$set(this.feedbackList[index], 'editing', true)
@@ -567,11 +623,11 @@ export default {
     },
     checkDeadline() {
       const today = new Date()
-      const deadlineDate = new Date(this.deadline)
+      const deadlineDate = new Date(this.selectedMilestone.due_date)
       const diffInDays = Math.ceil(
         (deadlineDate - today) / (1000 * 60 * 60 * 24),
       )
-      this.isDeadlineNear = diffInDays <= 3
+      this.isDeadlineNear = diffInDays > 0 && diffInDays <= 3
     },
     async saveRubrics() {
       try {
@@ -597,6 +653,31 @@ export default {
       this.editedRubrics = this.selectedMilestone.rubrics; // Reset editedRubrics to current rubrics
       this.showRubricsModal = false
       this.isEditingRubrics = false
+    },
+    toggleDeadlineEdit() {
+      this.editingDeadline = !this.editingDeadline
+      if (this.editingDeadline) {
+        this.editedDeadline = this.selectedMilestone.due_date.split('T')[0]
+      }
+    },
+    async saveDeadline() {
+      try {
+        const updatedMilestone = {
+          ...this.selectedMilestone,
+          due_date: new Date(this.editedDeadline).toISOString().split('.')[0] + 'Z', // Remove milliseconds and add 'Z'
+        }
+        await updateMilestone(
+          this.selectedMilestone.project,
+          this.selectedMilestone.id,
+          updatedMilestone,
+        )
+        this.selectedMilestone.due_date = updatedMilestone.due_date
+        this.editingDeadline = false
+        success("Success", "Milestone deadline updated successfully")
+      } catch (err) {
+        error("Error", "Error updating milestone deadline")
+        console.error('Error updating milestone deadline:', err)
+      }
     },
   },
 }

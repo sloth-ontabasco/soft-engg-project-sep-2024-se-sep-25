@@ -21,3 +21,68 @@ export async function getProjectTeams(projectId) {
 
   throw new Error("Failed to fetch project teams");
 }
+
+/**
+ * Create a new team for a specific project.
+ * @param {string} projectId - The ID of the project.
+ * @param {Object} teamData - Team data containing `team_name` and `members`.
+ * @returns {Promise<Object>} A promise that resolves to the created team object.
+ */
+export async function createTeam(projectId, teamData) {
+  const res = await fetch(`${BASE_URL}/api/${projectId}/teams`, {
+    method: 'POST',
+    headers: header(),
+    body: JSON.stringify(teamData),
+  });
+
+  if (res.status === 201) {
+    const data = await res.json();
+    return data.team;
+  }
+
+  const errorData = await res.json();
+  throw new Error(errorData.message || 'Failed to create team');
+}
+
+/**
+ * Update a team's details.
+ * @param {string} projectId - The ID of the project.
+ * @param {string} teamId - The ID of the team to update.
+ * @param {Object} teamData - Updated team data containing `team_name` and `members`.
+ * @returns {Promise<Object>} A promise that resolves to the updated team object.
+ */
+export async function updateTeam(projectId, teamId, teamData) {
+  const res = await fetch(`${BASE_URL}/api/${projectId}/teams/${teamId}`, {
+    method: 'PUT',
+    headers: header(),
+    body: JSON.stringify(teamData),
+  });
+
+  if (res.status === 200) {
+    const data = await res.json();
+    return data.team;
+  }
+
+  const errorData = await res.json();
+  throw new Error(errorData.message || 'Failed to update team');
+}
+
+/**
+ * Delete a team.
+ * @param {string} projectId - The ID of the project.
+ * @param {string} teamId - The ID of the team to delete.
+ * @returns {Promise<void>} A promise that resolves when the team is deleted.
+ */
+export async function deleteTeam(projectId, teamId) {
+  const res = await fetch(`${BASE_URL}/api/${projectId}/teams/${teamId}`, {
+    method: 'DELETE',
+    headers: header(),
+  });
+
+  if (res.status === 200) {
+    return;
+  }
+
+  const errorData = await res.json();
+  throw new Error(errorData.message || 'Failed to delete team');
+}

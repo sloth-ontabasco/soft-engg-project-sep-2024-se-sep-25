@@ -46,7 +46,7 @@
       <div class="group flex items-center justify-between">
         <div>
           <h1 v-if="!editingHeading" class="text-black text-3xl font-bold mb-5">
-            {{ selectedMilestone.title }}
+            Milestone - {{ selectedMilestone.title }} 
           </h1>
           <input
             v-else
@@ -66,6 +66,9 @@
       <div class="group flex items-center justify-between">
         <div>
           <p v-if="!editingDescription" class="text-gray-700 mb-5">
+            Use the options below to manage files and review feedback for
+            {{ selectedMilestone.title }} for {{ selectedTeam.team_name }}.
+            <br/>
             {{ selectedMilestone.description || 'No description' }}
           </p>
           <textarea
@@ -384,14 +387,18 @@ export default {
     async fetchTeams() {
       try {
         const response = await getProjectTeams(this.$route.params.projectId)
+        console.log(response)
         if (Array.isArray(response)) {
+          console.log('!!!! dewgwe')
           this.teams = response
         } else if (response && response.team) {
+        console.log('here!!!!!')
           this.teams = [response.team]
         } else {
           this.teams = []
         }
         if (this.teams.length > 0) {
+          console.log("kdjwcksdjch")
           this.selectedTeam = this.teams[0]
         }
       } catch (error) {

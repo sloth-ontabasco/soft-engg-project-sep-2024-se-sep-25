@@ -464,31 +464,7 @@ export default {
         alert("Failed to update heading. Please try again.");
       }
     },
-    toggleDeadlineEdit() {
-      this.editingHeading = !this.editingHeading
-      if (this.editingHeading) {
-        this.editedHeading = this.selectedMilestone.title
-      }
-    },
-    async saveHeading() {
-      try{
-        const updatedMilestone = {
-          ...this.selectedMilestone,
-          title: this.editedHeading.trim(),
-        };
-        await updateMilestone(
-          this.$route.params.projectId,
-          this.selectedMilestone.id,
-          updatedMilestone
-        );
-        this.selectedMilestone.title = this.editedHeading.trim();
-        this.editedHeading = false;
-        success("Success","Heading updated successfully");
-      } catch (error) {
-        console.error("Error updating heading:", error);
-        alert("Failed to update heading. Please try again.");
-      }
-    },
+    
     toggleDescriptionEdit() {
       this.editingDescription = !this.editingDescription
       if (this.editingDescription) {

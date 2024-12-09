@@ -71,6 +71,9 @@ export async function createMilestone(projectId, milestoneData) {
  * @returns {Promise<Object>} A promise that resolves to the updated milestone object.
  */
 export async function updateMilestone(projectId, milestoneId, milestoneData) {
+    if (milestoneData.due_date) {
+        milestoneData.due_date = new Date(milestoneData.due_date).toISOString().split('.')[0] + 'Z'; // Remove milliseconds and add 'Z'
+    }
     const res = await fetch(`${BASE_URL}/milestones/${projectId}/${milestoneId}`, {
         method: "PUT",
         headers: {

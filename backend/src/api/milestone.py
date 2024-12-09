@@ -106,7 +106,7 @@ class EditDeleteMilestoneAPI(Resource):
 
          # Parse due_date string to datetime object
         due_date_str = str(data['due_date'])
-        due_date = datetime.strptime(due_date_str, '%Y-%m-%dT%H:%M:%S')
+        due_date = datetime.strptime(due_date_str, '%Y-%m-%dT%H:%M:%SZ')  # Adjust format to include 'Z'
 
         # Update milestone fields
         milestone.title = data.get('title', milestone.title)

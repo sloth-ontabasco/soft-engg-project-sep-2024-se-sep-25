@@ -16,7 +16,7 @@ export async function getProjectTeams(projectId) {
   if (res.status === 200) {
     const data = await res.json();
     console.log(data);
-    return data.teams || { team: data.teams };
+    return data.teams || { team: data.team };
   }
 
   throw new Error("Failed to fetch project teams");

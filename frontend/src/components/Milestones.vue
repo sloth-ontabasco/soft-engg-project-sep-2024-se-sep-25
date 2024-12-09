@@ -2,7 +2,7 @@
 <template>
   <div class="rounded-xl shadow-lg p-6">
     <h2 class="text-2xl font-bold text-gray-800 border-b pb-4">
-      Upcoming Milestones for User: {{ user.id }}
+      Upcoming Milestones for User Id: {{ user.id }}
     </h2>
 
     <!-- Loading state -->

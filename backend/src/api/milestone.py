@@ -6,7 +6,6 @@ from datetime import datetime
 from ..models.response import Response
 from ..models.project import Project
 from ..models.user import User
-from ..models.role import Role
 from ..models.milestone import Milestone
 from ..models.milestone_submission import MilestoneSubmission
 from ..models.team import Team
@@ -32,7 +31,7 @@ class MilestoneAPI(Resource):
     
 class ProjectMilestonesAPI(Resource):
     
-    @check_any_role(roles=['instructor', 'admin','student'])
+    @check_any_role(roles=['instructor', 'admin','student', 'ta'])
     def get(self, project_id):
         """
         Route: GET /api/project/milestones/<project_id>
@@ -68,14 +67,15 @@ class ProjectMilestonesAPI(Resource):
             
         # Parse due_date string to datetime object
         due_date_str = str(data['due_date'])
-        due_date = datetime.strptime(due_date_str, '%m/%d/%y %H:%M:%S')
+        due_date = datetime.strptime(due_date_str, '%Y-%m-%dT%H:%M:%S')
 
         # Create new milestone
         milestone = Milestone(
             title=data['title'],
             description=data['description'],
             due_date=due_date,
-            project=project
+            project=project,
+            rubrics=data.get('rubrics', '')
         )
         milestone.save()
 
@@ -87,7 +87,7 @@ class ProjectMilestonesAPI(Resource):
 class EditDeleteMilestoneAPI(Resource):
     
     
-    @check_any_role(roles=['instructor', 'admin'])
+    @check_any_role(roles=['instructor', 'admin', 'ta'])
     def put(self, project_id, milestone_id):
         """
         Route: PUT /api/milestones/<project_id>/<milestone_id>
@@ -106,18 +106,19 @@ class EditDeleteMilestoneAPI(Resource):
 
          # Parse due_date string to datetime object
         due_date_str = str(data['due_date'])
-        due_date = datetime.strptime(due_date_str, '%m/%d/%y %H:%M:%S')
+        due_date = datetime.strptime(due_date_str, '%Y-%m-%dT%H:%M:%S')
 
         # Update milestone fields
         milestone.title = data.get('title', milestone.title)
         milestone.description = data.get('description', milestone.description)
         milestone.due_date = due_date
+        milestone.rubrics = data.get('rubrics', milestone.rubrics)
         milestone.updated_at = datetime.utcnow()
 
         milestone.save()
         return Response.success(data=milestone.to_dict(), message="Milestone updated successfully")
     
-    @check_any_role(roles=['instructor', 'admin'])
+    @check_any_role(roles=['instructor', 'admin', 'ta'])
     def delete(self, project_id, milestone_id):
         """
         Route: DELETE /api/milestones/<project_id>/<milestone_id>

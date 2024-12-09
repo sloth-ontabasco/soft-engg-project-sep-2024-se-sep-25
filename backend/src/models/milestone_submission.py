@@ -8,7 +8,8 @@ class MilestoneSubmission(db.Document):
     team = db.ReferenceField('Team', reverse_delete_rule=db.CASCADE)  # Delete submission if team is deleted
     status = db.IntField(choices=[(0, 'Not Yet Started'), (1, 'In Progress'), (2, 'Complete'), (3, 'Late Submission')])
     submission = db.FileField()
-    grade = db.StringField()
+    file_name = db.StringField()
+    grade = db.StringField(choices=['A', 'B', 'C', 'D', 'F'])
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
 
@@ -16,11 +17,7 @@ class MilestoneSubmission(db.Document):
         return f"<MilestoneSubmission for Milestone {self.milestone.title}>"
     
     def to_dict(self):
-        submission_id = None
-        # if self.submission:
-        #     file_data = self.submission.read()
-        #     sha256_hash = hashlib.sha256(file_data).hexdigest()
-        #     submission_id = sha256_hash
+        submission_exists = bool(self.submission)
 
         return {
             "id": str(self.id),
@@ -32,7 +29,8 @@ class MilestoneSubmission(db.Document):
             "team_name": self.team.team_name,
             "team_id": str(self.team.id),
             "status": self.status,
-            "submission_id": submission_id,
+            "submission": submission_exists,
+            "file_name": self.file_name,
             "grade": self.grade,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()

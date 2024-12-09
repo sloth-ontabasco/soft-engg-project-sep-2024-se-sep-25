@@ -46,10 +46,12 @@ OAUTH2_PROVIDERS = {
         'token_url': 'https://github.com/login/oauth/access_token',
         'userinfo':{
             'url': 'https://api.github.com/user',
+            # 'url': 'https://api.github.com/user/emails',
             'email': lambda json: json['login'],
             'repos_url': lambda json: json['reops_url']
         },
-        'scopes': ['user:email','repo','user']
+        # 'scopes': ['user:email','repo','user']
+        'scopes': ['user','repo','user:email']
     }
 }
 
@@ -68,4 +70,3 @@ class Config:
 class LocalDevConfig(Config):
     DEBUG = True
     WTF_CSRF_ENABLED = False
-    

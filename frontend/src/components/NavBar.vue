@@ -34,11 +34,22 @@ import { Button } from 'primevue'
         class="top-[132px] left-0 opacity-60 [font-family:'Poppins-Regular',Helvetica] font-normal text-white text-[17px] tracking-[0] leading-[27px] whitespace-nowrap"
       >
         {{ user.email }}
+        <span>
+          <Button
+            icon="pi pi-sign-out"
+            severity="danger"
+            variant="text"
+            rounded
+            aria-label="Cancel"
+            @click="this.$store.dispatch('logout').then(() => this.$router.push('/login'))"
+          />
+        </span>
       </div>
     </div>
 
     <div>
-      <RouterLink v-for="r in routes" :key="r.path" :to="r.path">
+      <RouterLink v-for="r in routes" :key="r.path" :to="{name: r.name, params: {projectId: projectId}}">
+
         <div
           :class="[
             'font-family:\'Poppins-SemiBold\',Helvetica',
@@ -68,11 +79,21 @@ export default {
     routes() {
       return this.$router
         .getRoutes()
-        .filter(r => Object.prototype.hasOwnProperty.call(r.meta, 'home'))
+        .filter(r => Object.prototype.hasOwnProperty.call(r.meta, this.sidebarType))
+        .filter(r => Object.prototype.hasOwnProperty.call(r.meta, this.user.role))
     },
   },
   props: {
-    sidebarType: String,
+    sidebarType: {
+      type: String,
+      default: 'home',
+      required: true
+    },
+    projectId: {
+      type: String,
+      default: null,
+      required: false
+    }
   },
 }
 </script>

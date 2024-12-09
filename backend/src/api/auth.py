@@ -141,7 +141,9 @@ class CallbackAPI(Resource):
 
             team = Team.objects(members__in=[user]).first()
             if not team:
-                return Response.error(code=404, message="Team not found")
+                error_repo = urlencode({"error":"Team not found",
+                              "repo": repo_list})
+                return redirect(FRONTEND_URI + '?' + error_repo)
             
             print(team.to_dict())
 

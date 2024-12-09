@@ -13,11 +13,34 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv, find_dotenv
+import requests
 
 load_dotenv(find_dotenv(), override=True)
 if 'GOOGLE_API_KEY' not in os.environ:
     os.environ['GOOGLE_API_KEY'] = getpass.getpass('Provide your Google API Key: ')
 
+if ('USE_POPPLER' not in os.environ or os.environ['USE_POPPLER'] == 'y') and 'POPPLER_PATH' not in os.environ:
+    os.environ['USE_POPPLER'] = input('Do you want to use Poppler for PDF conversion? (y/n): ')
+    if os.environ['USE_POPPLER'].lower() == 'y':
+        if 'POPPLER_PATH' not in os.environ:
+            os.environ['POPPLER_DOWNLOAD'] = input('Do you want to download Poppler? (y/n): ')
+        
+        if os.environ['POPPLER_DOWNLOAD'].lower() == 'y':
+            url = 'https://github.com/oschwartz10612/poppler-windows/releases/download/v24.08.0-0/Release-24.08.0-0.zip'
+            local_filename = url.split('/')[-1]
+            print(f'Downloading {local_filename}...')
+            response = requests.get(url, stream=True)
+            with open(local_filename, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            print(f'Download completed: {local_filename}')
+
+if 'POPPLER_PATH' not in os.environ and os.environ['USE_POPPLER'] == 'y':
+    os.environ['POPPLER_PATH'] = input('Enter the path to the Poppler bin directory here or provide it in the .env file with key POPPLER_PATH: ')
+    
+poppler_path = os.environ.get('POPPLER_PATH', None)
+ 
 class ResponseFormatter(BaseModel):
     answer: str = Field(description="A high level summary of the submission. This is a mandatory field.")
     summary: str = Field(description="A brief summary of the submission. This is a mandatory field.")
@@ -58,7 +81,7 @@ def generate_html(output):
         <title>Submission Evaluation</title>
     </head>
     <body>
-        <h1>Submission Evaluation for: {{ team }}</h1>
+        <h1>Submission Evaluation</h1>
         <p><strong>Summary:</strong> {{ summary }}</p>
         <p><strong>Completed:</strong> {{ completed }}</p>
         <p><strong>Not or Partially Completed:</strong> {{ not_or_partially_completed }}</p>
@@ -101,7 +124,7 @@ milestone_description = "Identify users of the application - primary, secondary 
 # milestone_title = "Scheduling and Design"
 # milestone_description = "Project Schedule - come up with a schedule of your overall project based on the user stories created in the previous milestones. Create a schedule for your sprints and iterations, timings of your scrum meetings etc. Trello board, Gantt chart - specifying your tasks and contributions. Project Scheduling Tools - which tools are you using? E.g. Pivotal Tracker, Jira. Design of Components - Describe different components of your system based on the user stories created in the previous milestones. Software Design - Basic class diagrams of your proposed system. Details/Minutes of a few scrum meetings. Most of the pages in the UI."
 
-def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_description):
+def process_files(zip_file_data, rubrics_text, milestone_title, milestone_description):
     
     total_start_time = time.time()
     
@@ -124,7 +147,10 @@ def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_de
     os.makedirs(images_folder, exist_ok=True)
     
     start_time = time.time()
-    images = convert_from_path(file_path)
+    if('USE_POPPLER' in os.environ and os.environ['USE_POPPLER'] == 'y' and 'POPPLER_PATH' != None):
+        images = convert_from_path(file_path, poppler_path=poppler_path)
+    else:
+        images = convert_from_path(file_path)
     end_time = time.time()
     print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
     
@@ -147,27 +173,35 @@ def process_files(zip_file_data, rubrix_file_path, milestone_title, milestone_de
     # Combine all responses into a single text
     combined_responses = "\n".join(responses)
     
+    print("Rubrics provided: ", rubrics_text)
+    rubrix_provided = bool(rubrics_text.strip())
+
     full_template = """
     
     {setting}
 
-    The submssion is as follows : {submission}
+    The submission is as follows : {submission}
     
     The milestone title is : {milestone_title} and the milestone description is : {milestone_description}.
+    
+    The rubrics provided are : {rubrics_text}
     
     Ensure all outputs use HTML tags for formatting.
     """
     
     full_prompt = (PromptTemplate.from_template(full_template))
     
-    full_prompt = full_prompt.format(setting = "You are an instructor evaluting the submission of a student project! Your task is to guide me in providing a comprehensive evaluation of the provided submission. Write in an informative and instructional style. Ensure clarity and coherence, catering to an audience keen on enhancing their overall submission that are inline with the requirements.", 
+    full_prompt = full_prompt.format(setting = "You are an instructor evaluating the submission of a student project! Your task is to guide me in providing a comprehensive evaluation of the provided submission. Write in an informative and instructional style. Ensure clarity and coherence, catering to an audience keen on enhancing their overall submission that are inline with the requirements.", 
                        submission = combined_responses, 
                        milestone_title = milestone_title, 
-                       milestone_description = milestone_description
-                );
+                       milestone_description = milestone_description,
+                       rubrics_text = rubrics_text
+                )
     
     model_with_structure = llm.with_structured_output(ResponseFormatter)
     output = model_with_structure.invoke(full_prompt)
+    
+    output.rubrix_provided = rubrix_provided
     
     html_output = generate_html(output.model_dump())
     
@@ -199,7 +233,10 @@ if __name__ == "__main__":
     os.makedirs(images_folder, exist_ok=True)
     
     start_time = time.time()
-    images = convert_from_path(file_path)
+    if('USE_POPPLER' in os.environ and os.environ['USE_POPPLER'] == 'y' and 'POPPLER_PATH' != None):
+        images = convert_from_path(file_path, poppler_path=poppler_path)
+    else:
+        images = convert_from_path(file_path)
     end_time = time.time()
     print(f"Time taken to convert PDF to images: {end_time - start_time} seconds")
     

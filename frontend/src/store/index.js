@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 import { login } from '../api/auth'
 import { getUsers, updateUser } from '../api/user'
+import createPersistedState from "vuex-persistedstate";
 import * as jose from 'jose'
 
 const user = JSON.parse(localStorage.getItem('user'))
@@ -21,6 +22,7 @@ const initialState = user
     }
 
 export default createStore({
+  plugins: [createPersistedState()],
   state: initialState,
   actions: {
     async getAuthToken({ dispatch, commit }, jwt) {

@@ -74,7 +74,7 @@
             {{ errors.projectId }}
           </p>
         </div>
-  
+        
         <!-- Buttons -->
         <div class="flex items-center justify-between">
           <button

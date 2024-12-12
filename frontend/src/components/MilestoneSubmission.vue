@@ -32,7 +32,7 @@
             class="w-full md:w-56 custom-select"
           />
         </template>
-        <button>Add a MIlestons</button>
+        
       </nav>
 
       <!-- Header -->
@@ -300,10 +300,7 @@ export default {
       pdfURL: null, // URL for the fetched PDF
       deadline: '2024-12-07T07:22:04.216+00:00',
       isDeadlineNear: false,
-      milestones: [
-        
-        { id: null, title: 'Add a milestone' },
-      ],
+      milestones: [],
       teams: [],
       selectedMilestone: { id: '', title: 'Loading...' },
       selectedTeam: { id: '', team_name: 'Loading...' },
@@ -645,6 +642,12 @@ export default {
       this.editedRubrics = this.selectedMilestone.rubrics; // Reset editedRubrics to current rubrics
       this.showRubricsModal = false
       this.isEditingRubrics = false
+    },
+    toggleDeadlineEdit() {
+      this.editingDeadline = !this.editingDeadline;
+      if(this.editingDeadline){
+        this.editedDeadline = this.deadline;
+      }
     },
   },
 }

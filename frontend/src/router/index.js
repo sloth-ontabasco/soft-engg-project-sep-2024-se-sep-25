@@ -8,7 +8,7 @@ import UserTable from '@/components/UserTable.vue'
 import TeamTable from '@/components/TeamTable.vue'
 import MilestoneSubmission from '@/components/MilestoneSubmission.vue'
 import ProjectView from '@/views/ProjectView.vue'
-import Annoucements from '@/components/Annoucements.vue'
+import Announcements from '@/components/Announcements.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,7 +17,7 @@ const router = createRouter({
       path: '/project/:projectId',
       component: ProjectView,
       children: [
-        { path: '', component: Annoucements, name: 'project' },
+        { path: '', component: Announcements, name: 'project' },
         {
           path: 'team',
           component: TeamTable,
@@ -31,7 +31,7 @@ const router = createRouter({
           name: 'Milestones',
         },
         {
-          path: 'announcements',
+          path: 'Announcements',
           component: Annoucements,
           meta: { project: true, ta: true, student: true, instructor: true },
           name: 'Announcements',

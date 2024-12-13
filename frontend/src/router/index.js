@@ -40,7 +40,7 @@ const router = createRouter({
         {
           path: 'createmilestone',
           component: CreateMilestone,
-          meta: { project: true, ta: true, instructor: true },
+          meta: { ta: true, instructor: true },
           name: 'CreateMilestone',
         },
       ],

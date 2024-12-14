@@ -59,6 +59,7 @@ def setup_auth(app: Flask):
 def setup_api(app, api):
     # Authentication Routes
     api.add_resource(LoginAPI, "/api/<string:provider>/login")
+    api.add_resource(GithubLoginAPI, "/api/<string:provider>/<string:teamid>/login")
     api.add_resource(CallbackAPI, "/api/<string:provider>/callback",endpoint='oauth2_callback')
     api.add_resource(TokenAPI,"/api/token")
 

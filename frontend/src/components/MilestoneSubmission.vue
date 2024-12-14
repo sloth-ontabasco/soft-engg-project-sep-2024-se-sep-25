@@ -57,7 +57,7 @@
       <div v-else>
         <div class="flex justify-end mb-5">
         <!-- Github Button -->
-        <button ref="githubButton" @click="loginWithGithub"
+        <button v-if="isStudent" ref="githubButton" @click="loginWithGithub"
           class="bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200">
           Link GitHub
         </button>
@@ -240,7 +240,7 @@
           <h2 class="text-black text-lg font-bold mb-3">
             GitHub Tracker - {{ selectedMilestone.title }}
           </h2>
-          <div v-if="isGitHubLinked">
+          <div v-if="isGitHubLinked || canEdit">
             <p style="color: black;">Chosen Repository:</p>
             <select v-model="selectedRepo" @change="handleRepoChange" class="w-full md:w-56 custom-select">
               <option v-for="repo in repos" :key="repo" :value="repo">{{ repo }}</option>
@@ -255,8 +255,7 @@
                 <li v-for="commit in commits" :key="commit.sha" class="mb-2">
                   <a :href="commit.url" target="_blank" class="hover:text-blue-600 text-black"
                     style="text-decoration: underline">Visit Commit URL</a>
-                  <p style="color: black;"><strong>Message:</strong> {{ commit.message.length > 150 ?
-                    commit.message.slice(0, 149) + "..." : commit.message }}</p>
+                  <p style="color: black;"><strong>Message:</strong> {{ commit.message.length > 150 ? commit.message.slice(0, 149) + "..." : commit.message }}</p>
                   <p style="color: black;"><strong>Author:</strong> {{ commit.author }}</p>
                   <p style="color: black;"><strong>Date:</strong> {{ new Date(commit.date).toLocaleString() }}</p>
                 </li>
@@ -370,6 +369,9 @@ export default {
     ...mapState(['user', 'selectedProjectName']),
     canEdit() {
       return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role)
+    },
+    isStudent() {
+      return this.user && this.user.role === 'student';
     },
     projectName() {
       return this.selectedProjectName;

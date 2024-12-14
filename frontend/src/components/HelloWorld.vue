@@ -1,10 +1,6 @@
-
 <template>
   <div class="greetings">
-    <h1 class="green">{{ msg }}</h1>
-    <h3>
-      Made by IITM SE 2024 Team 25
-    </h3>
+    <h2 class="text-4xl">{{ msg }}</h2>
   </div>
 </template>
 

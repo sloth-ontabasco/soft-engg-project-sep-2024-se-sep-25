@@ -1,7 +1,9 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
+  <div class="flex-col min-h-screen bg-gray-100">
+  <main class="flex-1 p-10">
+  
     <!-- Main Content -->
-    <main class="flex-1 p-10">
+    
       <!-- Breadcrumb Navigation -->
       <nav class="text-sm text-gray-600 mb-5">
         <router-link :to="'/projects'" class="hover:underline">All Projects</router-link>
@@ -16,6 +18,7 @@
             :defaultValue="selectedTeam.id" @update:modelValue="handleTeamChange"
             class="w-full md:w-56 custom-select" />
         </template>
+        
       </nav>
 
       <!-- Add Milestone Button -->
@@ -38,8 +41,13 @@
           <h1 v-if="!editingHeading" class="text-black text-3xl font-bold mb-5">
             Milestone - {{ selectedMilestone.title }}
           </h1>
-          <input v-else type="text" v-model="editedHeading" class="border p-2 rounded text-3xl font-bold mb-5"
-            @keyup.enter="saveHeading" />
+          <input
+            v-else
+            type="text"
+            v-model="editedHeading"
+            class="border p-2 rounded text-3xl bg-gray-100 text-black font-bold mb-5"
+            @keyup.enter="saveHeading"
+          />
         </div>
         <i v-if="canEdit" @click="toggleHeadingEdit"
           class="fa fa-edit text-blue-500 hover:text-blue-700 cursor-pointer"></i>
@@ -77,9 +85,15 @@
         <i v-if="canEdit" @click="toggleDeadlineEdit"
           class="fa fa-edit text-blue-500 hover:text-blue-700 cursor-pointer"></i>
       </div>
+      <button
+          class="hidden group-hover:inline-block text-white px-4 py-2 rounded"
+          @click="toggleDeadlineEdit"
+        >
+          ✏️
+        </button>
       <br />
       <br />
-
+      
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Files Submitted Section -->
         <div class="bg-white shadow-md rounded-lg p-5">
@@ -213,7 +227,7 @@
 <script>
 import ProgressSpinner from 'primevue/progressspinner';
 import Feedbacks from './Feedbacks.vue'
-import { getProjectMilestones, updateMilestone } from '../api/milestone'
+import { getProjectMilestones, createMilestone,updateMilestone } from '../api/milestone'
 import { getProjectTeams } from '../api/team'
 import { getGithubRepos, getGithubCommits } from '../api/github' // Import the API method to fetch repos and commit data
 
@@ -282,9 +296,9 @@ export default {
       editedDeadline: '',
     }
   },
-  // eslint-disable-next-line no-dupe-keys
   computed: {
     ...mapState(['user']),
+    // eslint-disable-next-line vue/no-dupe-keys
     canEdit() {
       return this.user && ['instructor', 'ta', 'admin'].includes(this.user.role)
     },
@@ -297,7 +311,6 @@ export default {
       return `${day}-${month}-${year}`
     },
   },
-  // eslint-disable-next-line no-dupe-keys
   async mounted() {
     await this.fetchMilestones()
     await this.fetchTeams()
@@ -396,6 +409,7 @@ export default {
       } catch (error) {
         this.hasSubmission = false
         this.hasFile = false
+        console.log(error);
       }
     },
 
@@ -403,6 +417,9 @@ export default {
       this.selectedMilestone = this.milestones.find(
         milestone => milestone.id === value,
       )
+      if(this.selectedMilestone === null){
+        this.addNewMilestone();
+      } else {
       console.log('Selected Milestone:', {
         id: this.selectedMilestone.id,
         title: this.selectedMilestone.title,
@@ -413,8 +430,22 @@ export default {
         this.refreshFeedbacks()
         this.fetchSubmissionStatus()
       })
+    }
     },
-
+    async addNewMilestone(){
+      try {
+        const newMilestone = await createMilestone(this.projectId , this.milestones);
+        this.milestones.push(newMilestone);
+        this.selectedMilestone = newMilestone.id;
+        this.newMilestoneTitle = '';
+        this.newMilestoneDesc = '';
+        this.newMilestoneDueDate = '';
+        console.log("Milestone added successfully", newMilestone);
+    } catch (error) {
+      console.error("Error adding milestone:", error);
+      alert("failed to create milestone. please try again.");
+    }
+  },
     handleTeamChange(value) {
       this.selectedTeam = this.teams.find(team => team.id === value)
       console.log('Selected Team:', {

@@ -19,7 +19,7 @@
           :defaultValue="selectedMilestone.id"
           @update:modelValue="handleMilestoneChange"
           class="w-full md:w-56 custom-select"
-          v-if="milestones.length > 0"
+          v-if="milestones.length > 0 && canEdit"
         />
         <template v-if="canEdit && milestones.length > 0">
           /

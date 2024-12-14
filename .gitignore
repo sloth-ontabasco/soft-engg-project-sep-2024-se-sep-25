@@ -3,3 +3,6 @@ se_env/
 .env
 *.pyc
 venv/
+backend/extracted_files/
+backend/images/
+backend/*.html

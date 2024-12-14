@@ -106,6 +106,7 @@ def setup_api(app, api):
 
     # Analytics Routes
     api.add_resource(ProjectAnalyticsAPI, '/api/<string:project_id>/analytics')
+    api.add_resource(ProjectByStudentAPI, '/api/projects/student/<string:user_id>')
 
     api.add_resource(CreateGithubIntegrationAPI, '/api/github/integration')
     api.add_resource(GetRepoCommitsAPI, '/api/github/commits/<string:team_id>')

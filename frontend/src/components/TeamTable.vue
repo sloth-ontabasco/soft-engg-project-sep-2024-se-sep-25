@@ -33,6 +33,8 @@
             id="members"
             v-model="team.members"
             :options="allMembers"
+            
+
             filter
             optionLabel="email"
             optionValue="id"
@@ -158,9 +160,11 @@ export default {
     DataTable,
     Column,
     InputText,
+    // eslint-disable-next-line vue/no-reserved-component-names, vue/no-unused-components
     Textarea,
     Toolbar,
     MultiSelect,
+    // eslint-disable-next-line vue/no-reserved-component-names
     Dialog,
     Button,
   },
@@ -169,7 +173,6 @@ export default {
       teams: [],
       team: {
         team_name: '',
-        members: '',
       },
       columns: [
         { field: 'team_name', header: 'Team Name' },

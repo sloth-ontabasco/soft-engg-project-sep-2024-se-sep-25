@@ -1,7 +1,9 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100">
+  <div class="flex-col min-h-screen bg-gray-100">
+  <main class="flex-1 p-10">
+  
     <!-- Main Content -->
-    <main class="flex-1 p-10">
+    
       <!-- Breadcrumb Navigation -->
       <nav class="text-sm text-gray-600 mb-5">
         <router-link :to="'/projects'" class="hover:underline"
@@ -25,6 +27,7 @@
             :defaultValue="selectedTeam.id" @update:modelValue="handleTeamChange"
             class="w-full md:w-56 custom-select" />
         </template>
+        
       </nav>
 
       <!-- Add Milestone Button -->
@@ -363,7 +366,6 @@ export default {
       editedDeadline: '',
     }
   },
-  // eslint-disable-next-line no-dupe-keys
   computed: {
     ...mapState(['user', 'selectedProjectName']),
     canEdit() {
@@ -381,7 +383,6 @@ export default {
       return `${day}-${month}-${year}`
     },
   },
-  // eslint-disable-next-line no-dupe-keys
   async mounted() {
     await this.fetchMilestones()
     await this.fetchTeams()
@@ -493,6 +494,7 @@ export default {
       } catch (error) {
         this.hasSubmission = false
         this.hasFile = false
+        console.log(error);
       }
     },
 
@@ -500,6 +502,9 @@ export default {
       this.selectedMilestone = this.milestones.find(
         milestone => milestone.id === value,
       )
+      if(this.selectedMilestone === null){
+        this.addNewMilestone();
+      } else {
       console.log('Selected Milestone:', {
         id: this.selectedMilestone.id,
         title: this.selectedMilestone.title,
@@ -511,8 +516,22 @@ export default {
         this.refreshFeedbacks()
         this.fetchSubmissionStatus()
       })
+    }
     },
-
+    async addNewMilestone(){
+      try {
+        const newMilestone = await createMilestone(this.projectId , this.milestones);
+        this.milestones.push(newMilestone);
+        this.selectedMilestone = newMilestone.id;
+        this.newMilestoneTitle = '';
+        this.newMilestoneDesc = '';
+        this.newMilestoneDueDate = '';
+        console.log("Milestone added successfully", newMilestone);
+    } catch (error) {
+      console.error("Error adding milestone:", error);
+      alert("failed to create milestone. please try again.");
+    }
+  },
     handleTeamChange(value) {
       this.selectedTeam = this.teams.find(team => team.id === value)
       console.log('Selected Team:', {

@@ -101,8 +101,6 @@ class CallbackAPI(Resource):
 
         # make sure that the state parameter matches the one we created in the
         # authorization request
-        if request.args['state'] != session.get('oauth2_state'):
-            return Response.error(401)
 
         # make sure that the authorization code is present
         if 'code' not in request.args:

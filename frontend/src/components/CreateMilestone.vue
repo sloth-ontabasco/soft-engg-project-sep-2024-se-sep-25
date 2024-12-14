@@ -56,7 +56,7 @@
             {{ errors.deadline }}
           </p>
         </div>
-
+        
         <!-- Buttons -->
         <div class="flex items-center justify-between">
           <button
@@ -87,12 +87,12 @@
         form: {
           title: "",
           description: "",
-          deadline: "",
+          deadline: ""
         },
         errors: {
           title: null,
           description: null,
-          deadline: null,
+          deadline: null
         },
       };
     },

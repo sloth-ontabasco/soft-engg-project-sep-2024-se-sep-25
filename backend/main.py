@@ -14,7 +14,7 @@ def setup_app() -> Flask:
     app = Flask(__name__)
     cors = CORS(
         app=app,
-        resources={r"/api/*": {"origins": "http://localhost:5173"}},
+        resources={r"/api/*": {"origins": ["http://localhost:5173","https://staging.d280xoh0le8k1m.amplifyapp.com","https://kq3n548nd6.execute-api.ap-south-1.amazonaws.com"]}},
         supports_credentials=True,
     )
     limiter = Limiter(

@@ -6,6 +6,7 @@ from flask_restful import Api
 import src.models
 from src.config import CI, PORT, Config, LocalDevConfig
 from src.setup import setup_api, setup_auth
+import logging
 
 app, api = None, None
 
@@ -42,3 +43,8 @@ if __name__ == "__main__":
         app.run(port=None, debug=False)
     else:
         app.run(port=8081, debug=True)
+
+if __name__ != "__main__":
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)

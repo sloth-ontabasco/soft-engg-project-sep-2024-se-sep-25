@@ -2,6 +2,7 @@ import secrets
 import time
 from urllib.parse import urlencode
 
+from bson import ObjectId
 import requests
 from flask_cors import cross_origin
 from flask import make_response, redirect, request, session, url_for
@@ -21,7 +22,7 @@ class LoginAPI(Resource):
     """
     Route: /api/<str:provider>/login
     """
-
+    
     def get(self, provider):
         """
         Login endpoint, redirects to provider OAuth.
@@ -46,7 +47,35 @@ class LoginAPI(Resource):
         # redirect the user to the OAuth2 provider authorization URL
         return redirect(provider_data['authorize_url'] + '?' + qs)
 
+class GithubLoginAPI(Resource):
+    """
+    Route: /api/<str:provider>/<str:teamid>/login
+    """
+    
+    def get(self, provider, teamid):
+        """
+        Login endpoint, redirects to provider OAuth.
+        """
+        provider_data = OAUTH2_PROVIDERS.get(provider)
+        if provider_data is None:
+            return Response.error(404)
 
+        # generate a random string for the state parameter
+        session['oauth2_state'] = secrets.token_urlsafe(16)
+
+        # create a query string with all the OAuth2 parameters
+        qs = urlencode({
+            'client_id': provider_data['client_id'],
+            'redirect_uri': url_for('oauth2_callback', provider=provider, 
+                                    teamid=teamid, _external=True),
+            'response_type': 'code',
+            'scope': ' '.join(provider_data['scopes']),
+            'state': session['oauth2_state'],
+        })
+
+        # redirect the user to the OAuth2 provider authorization URL
+        return redirect(provider_data['authorize_url'] + '?' + qs)
+    
 class CallbackAPI(Resource):
     """
     Route: /api/<str:provider>/callback
@@ -59,6 +88,7 @@ class CallbackAPI(Resource):
         """
         print('callback provider', provider)
         provider_data = OAUTH2_PROVIDERS.get(provider)
+        teamid = request.args.get('teamid')
         if provider_data is None:
             return Response.error(404)
 
@@ -127,7 +157,7 @@ class CallbackAPI(Resource):
                 return Response.error(code=404, message="No repositories found")
 
             # list of repos with url
-            repo_list = [{repo['full_name']: repo['html_url']} for repo in repos]
+            repo_list = [repo['full_name'] for repo in repos]
             # endcoded repo list query string
             rqs = urlencode({"repos": repo_list})
             
@@ -135,35 +165,42 @@ class CallbackAPI(Resource):
             # Save the OAuth2 token to database
             user_email = provider_data['userinfo']['email'](user_info)
             user = User.objects(email=user_email).first()
-            if not user:
-                user = User(email=user_email, username=user_email.split('@')[0], role='student')  # Adjust role as needed
-                user.save()
-
-            team = Team.objects(members__in=[user]).first()
+            # if not user:
+            #     user = User(email=user_email, username=user_email.split('@')[0], role='student')  # Adjust role as needed
+            #     user.save()
+            print(user.to_dict())
+            # team = Team.objects(members__in=[user]).first()
+            print(teamid)
+            # team = Team.objects(team_id=teamid).first()
+            team = Team.objects.get(id=ObjectId(teamid))
+            print(team.to_dict())
+            project_id = team.to_dict()['project_id']
             if not team:
                 error_repo = urlencode({"error":"Team not found",
                               "repo": repo_list})
                 return redirect(FRONTEND_URI + '?' + error_repo)
-            
-            print(team.to_dict())
 
+            print(repo_list)
             github_integration = GithubIntegration.objects(team=team).first()
             if not github_integration:
                 github_integration = GithubIntegration(
                     team=team,
                     token=oauth2_token,
-                    last_commit=None
+                    last_commit=None,
+                    repos=repo_list
                 )
             else:
+                github_integration.repos = repo_list
                 github_integration.token = oauth2_token
+                github_integration.updated_at = datetime.datetime.utcnow()
 
             github_integration.save()
 
-
+            print(github_integration.to_dict())
             # save OAuth2 token in session 
             session['oauth2_token'] = oauth2_token
             # return repo_list
-            return redirect(FRONTEND_URI + '?' + rqs)
+            return redirect(FRONTEND_URI + "project/" + project_id + "/milestonesubmission" +'?githubLoginSuccess=true')
         
         email = provider_data['userinfo']['email'](response.json())
         if provider == 'google':
@@ -172,7 +209,6 @@ class CallbackAPI(Resource):
         # find or create the user in the database
         user = User.objects(email=email).first()
         if user is None:
-            user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
             user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
             user.save()
 
@@ -186,7 +222,7 @@ class CallbackAPI(Resource):
 
 class GetRepoCommitsAPI(Resource):
     """
-    Route: /api/github/commits/<sting:team_id>
+    Route: /api/github/commits/<str:team_id>
     """
 
     def get(self,team_id):
@@ -199,7 +235,11 @@ class GetRepoCommitsAPI(Resource):
         if not repo_name:
             return Response.error(code=400, message="Missing repository name")
 
-        oauth2_token = session.get('oauth2_token')
+        team = Team.objects.get(id=ObjectId(team_id))
+        project_id = team.to_dict()['project_id']
+        github_integration = GithubIntegration.objects(team=team).first()
+            
+        oauth2_token = github_integration.to_dict()['token']
         if not oauth2_token:
             return Response.error(code=401, message="Missing OAuth2 token")
 
@@ -214,10 +254,14 @@ class GetRepoCommitsAPI(Resource):
             return Response.error(code=repo_response.status_code, message="Failed to fetch repository details")
 
         repo = repo_response.json()
-        default_branch = repo['default_branch']
+        # default_branch = repo['default_branch']
+        default_branch = 'staging'
 
+        owner = repo_name.split('/')[0]
+        repo = repo_name.split('/')[1]
         # Fetch commits from the default branch
-        commits_url = f"https://api.github.com/repos/{repo_name}/commits?sha={default_branch}&since={start_date}&until={end_date}"
+        # commits_url = f"https://api.github.com/repos/{repo_name}/commits?sha={default_branch}&since={start_date}&until={end_date}"
+        commits_url = f"https://api.github.com/repos/{owner}/{repo}/commits"
         commits_response = requests.get(commits_url, headers={
             'Authorization': f'token {oauth2_token}',
             'Accept': 'application/json'
@@ -227,6 +271,7 @@ class GetRepoCommitsAPI(Resource):
             return Response.error(code=commits_response.status_code, message="Failed to fetch commits")
 
         commits = commits_response.json()
+        print(commits)
         all_commit_comments = []
 
         for commit in commits:
@@ -234,11 +279,13 @@ class GetRepoCommitsAPI(Resource):
                 'sha': commit['sha'],
                 'message': commit['commit']['message'],
                 'author': commit['commit']['author']['name'],
-                'date': commit['commit']['author']['date']
+                'date': commit['commit']['author']['date'],
+                'url': commit['html_url']
             }
             
             all_commit_comments.append(commit_data)
 
+        print(all_commit_comments)
         # Save commits to the database
         team = team_id  # Replace with logic to fetch the current team, e.g., from session or request context
         integration = GithubIntegration.objects(team=team).first()

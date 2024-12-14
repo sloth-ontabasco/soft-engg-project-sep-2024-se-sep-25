@@ -82,6 +82,7 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import Select from 'primevue/select';
 import Button from 'primevue/button';
+import { error, success, info } from '../utils/toast'
 import { DatePicker } from 'primevue';
 import { FilterMatchMode } from '@primevue/core/api';
 
@@ -128,11 +129,12 @@ export default {
       return this.$store.state.users;
     },
   },
-  async created() {
+  async mounted() {
     // Dispatch an action to fetch users from the API
     try {
       this.loading = true;
       await this.$store.dispatch('getAllUsers');
+      info('Success', 'Users fetched successfully')
       this.loading = false;
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -149,6 +151,7 @@ export default {
         id: user.id,
         details: user,
       });
+      success('Success', 'User role updated successfully')
     },
     exportCSV() {
       this.$refs.dt.exportCSV();

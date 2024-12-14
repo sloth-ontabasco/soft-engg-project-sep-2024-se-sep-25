@@ -6,7 +6,7 @@ from datetime import datetime
 from ..models.response import Response
 from ..models.project import Project
 from ..models.user import User
-from ..models.milestone import Milestone
+from ..models.team import Team  
 from ..lib.auth import check_any_role
 
 class ProjectAPI(Resource):
@@ -78,6 +78,23 @@ class ProjectsByUserAPI(Resource):
         projects = Project.objects(mentors=user)
         return Response.success(data=[project.to_dict() for project in projects])
     
+class ProjectByStudentAPI(Resource):
+    def get(self, user_id):
+        """
+        Route: GET /api/projects/student/<user_id>
+        Description: Retrieves all projects assigned to a specific user.
+        Requires JWT authentication.
+        """
+        user = User.objects(id=user_id).first()
+        if not user:
+            return Response.error(code=404, message="User not found")
+        
+        # get all the teams that user is part of 
+        # return all the projects that the teams are part of
+        teams = Team.objects(members__in=[user])
+        projects = [team.project for team in teams]
+        return Response.success(data=[project.to_dict() for project in projects])
+
 class ProjectByIdAPI(Resource):
     
     @check_any_role(roles=['instructor', 'admin','student'])

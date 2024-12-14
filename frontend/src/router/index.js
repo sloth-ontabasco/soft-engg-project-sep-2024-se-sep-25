@@ -23,7 +23,7 @@ const router = createRouter({
           path: 'team',
           component: TeamTable,
           name: 'Teams',
-          meta: { project: true, ta: true, student: true, instructor: true },
+          meta: { project: true, ta: true, instructor: true },
         },
         {
           path: 'milestonesubmission',
@@ -38,11 +38,11 @@ const router = createRouter({
           name: 'Announcements',
         },
         {
-          path: 'createmilestones',
+          path: 'createmilestone',
           component: CreateMilestone,
-          meta: { project: true, ta: true, student: true, instructor: true },
+          meta: { ta: true, instructor: true },
           name: 'CreateMilestone',
-        }
+        },
       ],
     },
     {

@@ -4,11 +4,15 @@ import { Button } from 'primevue'
 <template>
   <div class="flex grow-0 flex-col justify-around ps-10">
     <div>
-      <img
-        class="w-[72px] h-[72px] top-0 left-0"
-        alt="Profile"
-        :src="user.picture"
-      />
+      <!-- Back Button -->
+      <div v-if="sidebarType === 'project'" class="absolute top-4 left-4">
+        <Button
+          icon="pi pi-arrow-left"
+          label="Back"
+          class="p-button-text text-white"
+          @click="goBack"
+        />
+      </div>
       <div
         class="top-[92px] left-0 [font-family:'Poppins-SemiBold',Helvetica] font-semibold text-white text-3xl tracking-[0] leading-[35px] whitespace-nowrap capitalize"
       >
@@ -34,21 +38,16 @@ import { Button } from 'primevue'
         class="top-[132px] left-0 opacity-60 [font-family:'Poppins-Regular',Helvetica] font-normal text-white text-[17px] tracking-[0] leading-[27px] whitespace-nowrap"
       >
         {{ user.email }}
-        <span>
-          <Button
-            icon="pi pi-sign-out"
-            severity="danger"
-            variant="text"
-            rounded
-            aria-label="Cancel"
-            @click="this.$store.dispatch('logout').then(() => this.$router.push('/login'))"
-          />
-        </span>
       </div>
     </div>
 
     <div>
-      <RouterLink v-for="r in routes" :key="r.path" :to="{name: r.name, params: {projectId: projectId}}">
+      <RouterLink 
+        v-for="r in routes" 
+        :key="r.path" 
+        :to="{name: r.name, params: {projectId: projectId}}"
+        :class="[$route.name === r.name ? 'opacity-100' : 'opacity-50']"
+      >
 
         <div
           :class="[
@@ -59,7 +58,6 @@ import { Button } from 'primevue'
             'tracking-[0]',
             'leading-[35px]',
             'whitespace-nowrap',
-            $route.path === r.path ? 'opacity-100' : 'opacity-50',
           ]"
         >
           {{ r.name }}
@@ -94,6 +92,11 @@ export default {
       default: null,
       required: false
     }
+  },
+  methods: {
+    goBack() {
+      this.$router.push({ name: 'Projects' });
+    },
   },
 }
 </script>

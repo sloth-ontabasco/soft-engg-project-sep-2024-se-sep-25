@@ -1,6 +1,7 @@
 from ..db import db
 import datetime
 from mongoengine import *
+from dateutil import parser
 
 class SaveCommitHistory(EmbeddedDocument):
     sha = StringField(required=True)
@@ -13,6 +14,7 @@ class GithubIntegration(db.Document):
     team = db.ReferenceField("Team", required=True, reverse_delete_rule=db.CASCADE)  # Delete integration if team is deleted
     token = db.StringField()
     repo_url = db.URLField()
+    repos = db.ListField(db.StringField())
     last_commit = db.ListField(EmbeddedDocumentField(SaveCommitHistory))
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
@@ -27,6 +29,7 @@ class GithubIntegration(db.Document):
             "team_id": str(self.team.id),
             "token": self.token,
             "repo_url": self.repo_url,
+            "repos": self.repos,
             "last_commit": [commit.to_mongo() for commit in self.last_commit],
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
@@ -49,7 +52,7 @@ class GithubIntegration(db.Document):
                         sha=commit['sha'],
                         message=commit['message'],
                         author=commit['author'],
-                        date=datetime.datetime.fromisoformat(commit['date']) if commit['date'] else None
+                        date=parser.parse(commit['date']) if commit['date'] else None
                     )
                 )
         self.updated_at = datetime.datetime.utcnow()

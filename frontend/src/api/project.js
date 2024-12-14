@@ -87,3 +87,16 @@ export async function getProjectsByUser(userId) {
 
     throw new Error("Failed to fetch projects for user");
 }
+
+export async function getProjectsByStudent(studentId) {
+    const res = await fetch(`${BASE_URL}/projects/student/${studentId}`, {
+        method: "GET",
+        headers: header(),
+    });
+
+    if (res.status === 200) {
+        return res.json();
+    }
+
+    throw new Error("Failed to fetch projects for student");
+}

@@ -26,7 +26,7 @@ import { Button } from 'primevue'
             aria-label="Cancel"
             @click="
               () => {
-                this.$store.commit('logout')
+                store.commit('logout')
                 this.$router.push('/login')
               }
             "
@@ -69,6 +69,7 @@ import { Button } from 'primevue'
 
 <script>
 import { mapState } from 'vuex'
+import store from '@/store';
 
 export default {
   name: 'NavBar',

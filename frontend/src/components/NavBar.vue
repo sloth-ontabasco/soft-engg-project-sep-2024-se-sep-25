@@ -27,7 +27,7 @@ import { Button } from 'primevue'
             @click="
               () => {
                 store.commit('logout')
-                this.$router.push('/login')
+                router.push('/login')
               }
             "
           />
@@ -70,7 +70,7 @@ import { Button } from 'primevue'
 <script>
 import { mapState } from 'vuex'
 import store from '@/store';
-
+import router from '@/router';
 export default {
   name: 'NavBar',
   computed: {

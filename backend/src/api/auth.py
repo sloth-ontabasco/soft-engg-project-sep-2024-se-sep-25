@@ -210,7 +210,6 @@ class CallbackAPI(Resource):
         user = User.objects(email=email).first()
         if user is None:
             user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
-            user = User(email=email, username=email.split('@')[0], picture=picture if provider=='google' else None, role='student') # TODO: make dynamic based on role
             user.save()
 
         token = create_access_token(

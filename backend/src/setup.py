@@ -7,7 +7,7 @@ from flask_jwt_extended import JWTManager
 from src.api.gen_ai import *
 from src.api.auth import *
 from src.api.users import *
-<<<<<<< HEAD
+
 from src.api.teams import *
 from src.api.announcements import *
 from src.api.feedbacks import *

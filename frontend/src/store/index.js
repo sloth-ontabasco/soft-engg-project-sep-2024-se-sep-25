@@ -13,6 +13,7 @@ const initialState = user
       msg: '',
       loading: false,
       selectedMilestoneId: null,
+      selectedProjectName: '', // Add this line
     }
   : {
       loggedIn: false,
@@ -21,6 +22,7 @@ const initialState = user
       msg: '',
       loading: false,
       selectedMilestoneId: null,
+      selectedProjectName: '', // Add this line
     }
 
 export default createStore({
@@ -124,6 +126,9 @@ export default createStore({
     },
     setSelectedMilestoneId(state, milestoneId) {
       state.selectedMilestoneId = milestoneId;
+    },
+    setSelectedProjectName(state, projectName) {
+      state.selectedProjectName = projectName;
     },
   },
   modules: {

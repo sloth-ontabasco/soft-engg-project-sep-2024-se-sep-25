@@ -10,7 +10,6 @@
         / <a href="#" class="hover:underline">{{ projectName }}</a> /
 
         <Select
-          v-if="milestones.length > 0"
           v-model="selectedMilestone"
           :options="milestones"
           optionLabel="title"
@@ -18,6 +17,7 @@
           :defaultValue="selectedMilestone.id"
           @update:modelValue="handleMilestoneChange"
           class="w-full md:w-56 custom-select"
+          v-if="milestones.length > 0 && canEdit"
         />
         <template v-if="canEdit && milestones.length > 0">
           /
@@ -46,22 +46,18 @@
           @click="confirmDeleteMilestone"
           class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
         >
-          Delete Milestone
+          <i class="fas fa-trash-alt mr-2"></i> Delete Milestone
         </button>
       </div>
 
-      <!-- No Milestones Message for Instructor -->
-      <div v-if="canEdit && milestones.length === 0" class="text-center text-gray-600">
-        No milestones found. Start organizing your project now.
-      </div>
-
-      <!-- No Milestones Message for Students -->
-      <div v-if="!canEdit && milestones.length === 0" class="text-center text-gray-600">
-        You will see milestones here when uploaded by the instructor.
+      <!-- No Milestones Message -->
+      <div v-if="milestones.length === 0" class="text-center text-gray-600">
+        <p v-if="canEdit">No milestones found. Start organizing your project now.</p>
+        <p v-else>You will see milestones here when uploaded by the instructor.</p>
       </div>
 
       <!-- Milestone Details -->
-      <div v-if="milestones.length > 0">
+      <div v-else>
         <!-- Header -->
         <div class="group flex items-center justify-between">
           <div>
@@ -303,6 +299,7 @@
           :user="user"
           :selectedMilestone="selectedMilestone"
           :selectedTeam="selectedTeam"
+          :hasSubmission="hasSubmission"
           ref="feedbacksComponent"
         />
       </div>
@@ -724,17 +721,17 @@ export default {
       }
     },
     async deleteMilestone() {
-      try {
-        const projectId = this.$route.params.projectId;
-        const milestoneId = this.selectedMilestone.id;
-        await deleteMilestone(projectId, milestoneId);
-        success("Success", "Milestone deleted successfully!");
-        await this.fetchMilestones(); // Fetch the updated list of milestones
-        this.selectNearestUpcomingMilestone(); // Select the default (latest upcoming) milestone
-        this.$refs.feedbacksComponent.fetchFeedbacks(); // Refresh feedbacks
-        await this.fetchSubmissionStatus(); // Refresh submission status
-      } catch (error) {
-        console.error("Error deleting milestone:", error);
+        try {
+          const projectId = this.$route.params.projectId;
+          const milestoneId = this.selectedMilestone.id;
+          await deleteMilestone(projectId, milestoneId);
+          success("Success", "Milestone deleted successfully!");
+          await this.fetchMilestones(); // Fetch the updated list of milestones
+          this.selectNearestUpcomingMilestone(); // Select the default (latest upcoming) milestone
+          this.$refs.feedbacksComponent.fetchFeedbacks(); // Refresh feedbacks
+          await this.fetchSubmissionStatus(); // Refresh submission status
+        } catch (error) {
+          console.error("Error deleting milestone:", error);
         error("Error", "Failed to delete milestone.");
       }
     },

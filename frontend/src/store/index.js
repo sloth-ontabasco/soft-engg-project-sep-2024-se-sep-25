@@ -13,7 +13,7 @@ const initialState = user
       msg: '',
       loading: false,
       selectedMilestoneId: null,
-      selectedProjectName: '', // Add this line
+      selectedProjectName: '',
     }
   : {
       loggedIn: false,
@@ -22,7 +22,7 @@ const initialState = user
       msg: '',
       loading: false,
       selectedMilestoneId: null,
-      selectedProjectName: '', // Add this line
+      selectedProjectName: '',
     }
 
 export default createStore({

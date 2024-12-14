@@ -698,13 +698,17 @@ export default {
 }
 
 .commits-container {
-  max-height: 100px; /* Set a fixed height */
-  overflow-y: auto; /* Make it scrollable */
+  max-height: 100px;
+  /* Set a fixed height */
+  overflow-y: auto;
+  /* Make it scrollable */
 }
 
 .commits-list {
-  list-style-type: none; /* Remove default list styling */
-  padding: 0; /* Remove default padding */
+  list-style-type: none;
+  /* Remove default list styling */
+  padding: 0;
+  /* Remove default padding */
   margin: 0; /* Remove default margin */
 }
 </style>

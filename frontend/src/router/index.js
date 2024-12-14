@@ -50,7 +50,7 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
       children: [
-        { path: '', component: Profile },
+        { path: '', component: ProjectTable },
         {
           path: 'profile',
           component: Profile,

@@ -52,6 +52,10 @@ export default {
   background: rgba(255, 255, 255, 0.8); /* Translucent background */
 }
 
+.min-w-0{
+  min-width: 20%;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

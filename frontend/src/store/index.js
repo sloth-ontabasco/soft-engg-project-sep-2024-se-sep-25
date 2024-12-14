@@ -12,6 +12,7 @@ const initialState = user
       users: [],
       msg: '',
       loading: false,
+      selectedMilestoneId: null,
     }
   : {
       loggedIn: false,
@@ -19,6 +20,7 @@ const initialState = user
       users: [],
       msg: '',
       loading: false,
+      selectedMilestoneId: null,
     }
 
 export default createStore({
@@ -119,6 +121,9 @@ export default createStore({
         }
         return user;
       });
+    },
+    setSelectedMilestoneId(state, milestoneId) {
+      state.selectedMilestoneId = milestoneId;
     },
   },
   modules: {

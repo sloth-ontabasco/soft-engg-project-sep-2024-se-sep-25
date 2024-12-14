@@ -66,9 +66,6 @@
       <div class="group flex items-center justify-between">
         <div>
           <p v-if="!editingDescription" class="text-gray-700 mb-5">
-            Use the options below to manage files and review feedback for
-            {{ selectedMilestone.title }} for {{ selectedTeam.team_name }}.
-            <br/>
             {{ selectedMilestone.description || 'No description' }}
           </p>
           <textarea
@@ -309,21 +306,6 @@ export default {
       editingDescription: false,
       editedHeading: '',
       editedDescription: '',
-      feedbackList: [
-        {
-          text: 'Ensure all required files are uploaded before the deadline.',
-          username: 'TA John',
-          editing: false,
-          editedText: '',
-        },
-        {
-          text: 'Contact your TA for further clarifications.',
-          username: 'TA Jane',
-          editing: false,
-          editedText: '',
-        },
-      ],
-      newFeedback: '',
       isMilestoneSubmitted: true, // Example state
       showPDF: false, // Controls the visibility of the PDF modal
       pdfURL: null, // URL for the fetched PDF
@@ -363,6 +345,13 @@ export default {
   async mounted() {
     await this.fetchMilestones()
     await this.fetchTeams()
+    const milestoneId = this.$store.state.selectedMilestoneId;
+    if (milestoneId) {
+      this.selectedMilestone = this.milestones.find(milestone => milestone.id === milestoneId) || this.milestones[0];
+      this.$store.commit('setSelectedMilestoneId', null); // Clear the stored milestone ID
+    } else {
+      this.selectNearestUpcomingMilestone();
+    }
     if (this.selectedMilestone.id && this.selectedTeam.id) {
       this.$refs.feedbacksComponent.fetchFeedbacks()
       await this.fetchSubmissionStatus()
@@ -375,7 +364,7 @@ export default {
         const milestones = await getProjectMilestones(
           this.$route.params.projectId,
         )
-        this.milestones = Array.isArray(milestones) ? milestones : []
+        this.milestones = Array.isArray(milestones) ? milestones.sort((a, b) => new Date(a.due_date) - new Date(b.due_date)) : []
         if (this.milestones.length > 0) {
           this.selectedMilestone = this.milestones[0] // Select the first milestone by default
           console.log(this.selectedMilestone.title)
@@ -383,6 +372,11 @@ export default {
       } catch (error) {
         console.error('Error fetching milestones:', error)
       }
+    },
+    selectNearestUpcomingMilestone() {
+      const today = new Date();
+      const nearestMilestone = this.milestones.find(milestone => new Date(milestone.due_date) >= today);
+      this.selectedMilestone = nearestMilestone || this.milestones[0];
     },
     async fetchTeams() {
       try {
@@ -433,6 +427,7 @@ export default {
         description: this.selectedMilestone.description,
         due_date: this.selectedMilestone.due_date,
       })
+      this.checkDeadline(); // Update the deadline status
       this.$nextTick(() => {
         this.refreshFeedbacks()
         this.fetchSubmissionStatus()

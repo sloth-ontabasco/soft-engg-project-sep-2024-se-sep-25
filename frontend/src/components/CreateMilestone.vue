@@ -106,12 +106,13 @@
         try {
           const projectId = this.$route.params.projectId;
           const formattedDeadline = new Date(this.form.deadline).toISOString().split('T')[0] + 'T00:00:00';
-          await createMilestone(projectId, {
+          const response = await createMilestone(projectId, {
             title: this.form.title,
             description: this.form.description,
             due_date: formattedDeadline,
           });
           alert("Milestone created successfully!");
+          this.$store.commit('setSelectedMilestoneId', response.data.id);
           this.$router.push({ name: 'Milestones', params: { projectId } });
         } catch (error) {
           console.error("Error creating milestone:", error);
@@ -127,11 +128,6 @@
   
         if (!this.form.title) {
           this.errors.title = "Title is required.";
-          isValid = false;
-        }
-  
-        if (!this.form.description) {
-          this.errors.description = "Description is required.";
           isValid = false;
         }
   

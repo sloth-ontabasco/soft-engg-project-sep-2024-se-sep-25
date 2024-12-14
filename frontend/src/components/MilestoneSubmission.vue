@@ -153,11 +153,18 @@
             <select v-model="selectedRepo" @change="handleRepoChange" class="w-full md:w-56 custom-select">
               <option v-for="repo in repos" :key="repo" :value="repo">{{ repo }}</option>
             </select>
+            <div v-if="isLoading" class="pt-5">
+              <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" fill="transparent"
+                animationDuration=".5s" aria-label="Custom ProgressSpinner" />
+            </div>
             <div v-if="commits.length > 0" class="mt-5 commits-container">
               <h3 class="text-black text-md font-bold mb-3">Commits:</h3>
               <ul>
                 <li v-for="commit in commits" :key="commit.sha" class="mb-2">
-                  <p style="color: black;"><strong>Message:</strong> {{ commit.message }}</p>
+                  <a :href="commit.url" target="_blank" class="hover:text-blue-600 text-black"
+                    style="text-decoration: underline">Visit Commit URL</a>
+                  <p style="color: black;"><strong>Message:</strong> {{ commit.message.length > 150 ?
+                    commit.message.slice(0, 149) + "..." : commit.message }}</p>
                   <p style="color: black;"><strong>Author:</strong> {{ commit.author }}</p>
                   <p style="color: black;"><strong>Date:</strong> {{ new Date(commit.date).toLocaleString() }}</p>
                 </li>
@@ -204,6 +211,7 @@
 </template>
 
 <script>
+import ProgressSpinner from 'primevue/progressspinner';
 import Feedbacks from './Feedbacks.vue'
 import { getProjectMilestones, updateMilestone } from '../api/milestone'
 import { getProjectTeams } from '../api/team'
@@ -226,6 +234,7 @@ export default {
     Feedbacks,
     // eslint-disable-next-line vue/no-reserved-component-names
     Select,
+    ProgressSpinner
   },
   data() {
     return {
@@ -237,6 +246,7 @@ export default {
       repos: [],
       selectedRepo: '',
       commits: [],
+      isLoading: false,
       feedbackList: [
         {
           text: 'Ensure all required files are uploaded before the deadline.',
@@ -326,6 +336,7 @@ export default {
     },
     async handleRepoChange() {
       console.log('Selected Repo:', this.selectedRepo);
+      this.isLoading = true;
       // Handle repo change logic here
       try {
         const response = await getGithubCommits(this.selectedTeam['id'], this.selectedRepo);
@@ -333,6 +344,7 @@ export default {
       } catch (error) {
         console.error('Error fetching GitHub repositories:', error);
       }
+      this.isLoading = false;
     },
     async fetchMilestones() {
       try {
@@ -698,7 +710,7 @@ export default {
 }
 
 .commits-container {
-  max-height: 100px;
+  max-height: 200px;
   /* Set a fixed height */
   overflow-y: auto;
   /* Make it scrollable */
@@ -709,6 +721,7 @@ export default {
   /* Remove default list styling */
   padding: 0;
   /* Remove default padding */
-  margin: 0; /* Remove default margin */
+  margin: 0;
+  /* Remove default margin */
 }
 </style>

@@ -280,7 +280,8 @@ class GetRepoCommitsAPI(Resource):
                 'sha': commit['sha'],
                 'message': commit['commit']['message'],
                 'author': commit['commit']['author']['name'],
-                'date': commit['commit']['author']['date']
+                'date': commit['commit']['author']['date'],
+                'url': commit['html_url']
             }
             
             all_commit_comments.append(commit_data)

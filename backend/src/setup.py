@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager
 from src.api.gen_ai import *
 from src.api.auth import *
 from src.api.users import *
+
 from src.api.teams import *
 from src.api.announcements import *
 from src.api.feedbacks import *
@@ -58,6 +59,7 @@ def setup_auth(app: Flask):
 def setup_api(app, api):
     # Authentication Routes
     api.add_resource(LoginAPI, "/api/<string:provider>/login")
+    api.add_resource(GithubLoginAPI, "/api/<string:provider>/<string:teamid>/login")
     api.add_resource(CallbackAPI, "/api/<string:provider>/callback",endpoint='oauth2_callback')
     api.add_resource(TokenAPI,"/api/token")
 
@@ -104,6 +106,7 @@ def setup_api(app, api):
 
     # Analytics Routes
     api.add_resource(ProjectAnalyticsAPI, '/api/<string:project_id>/analytics')
+    api.add_resource(ProjectByStudentAPI, '/api/projects/student/<string:user_id>')
 
     api.add_resource(CreateGithubIntegrationAPI, '/api/github/integration')
     api.add_resource(GetRepoCommitsAPI, '/api/github/commits/<string:team_id>')

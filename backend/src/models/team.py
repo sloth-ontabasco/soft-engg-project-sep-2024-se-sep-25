@@ -22,7 +22,7 @@ class Team(db.Document):
             "grade": self.grade,
             "project_id": str(self.project.id),
             "project_title": self.project.title,
-            "members": [member.email for member in self.members],
+            "members": [str(member.id) for member in self.members],
             "member_count": len(self.members),
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.created_at else None,

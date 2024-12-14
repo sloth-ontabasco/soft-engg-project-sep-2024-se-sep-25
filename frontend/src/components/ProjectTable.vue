@@ -2,12 +2,7 @@
   <div class="p-4">
     <Toolbar class="mb-6" v-if="$store.state.user.role !== 'student'">
       <template #start>
-        <Button
-          label="New"
-          icon="pi pi-plus"
-          class="mr-2"
-          @click="openNew"
-        />
+        <Button label="New" icon="pi pi-plus" class="mr-2" @click="openNew" />
       </template>
 
       <template #end>
@@ -216,10 +211,16 @@ import IconField from 'primevue/iconfield'
 import { Toolbar, MultiSelect } from 'primevue'
 import { Dialog } from 'primevue'
 import Button from 'primevue/button'
-import { getProjects, updateProject, createProject,deleteProject } from '../api/project'
+import {
+  getProjects,
+  updateProject,
+  createProject,
+  deleteProject,
+  getProjectsByStudent
+} from '../api/project'
 import { DatePicker, Textarea } from 'primevue'
 import { error, success, info } from '../utils/toast'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import { formatDate } from '../utils/dateUtils'
 // eslint-disable-next-line no-unused-vars
 const dt = ref()
@@ -241,7 +242,6 @@ export default {
     Toolbar,
     // eslint-disable-next-line vue/no-reserved-component-names
     Dialog,
-
   },
   data() {
     return {
@@ -275,42 +275,64 @@ export default {
   },
   computed: {
     ...mapGetters(['allTAs', 'allInstructors']),
+    ...mapState(['user']),
     allMentors() {
       return [...this.allTAs, ...this.allInstructors]
     },
   },
   mounted() {
-
     this.loading = true
-    getProjects()
-      .then(response => {
-        if (response.success) {
-          this.projects = response.data
-          info('Success', 'Projects fetched successfully')
-          this.loading = false
-        } else {
-          console.error('Failed to fetch projects:', response.message)
+    if (this.user.role === 'student') {
+      getProjectsByStudent(this.user.id)
+        .then(response => {
+          if (response.success) {
+            this.projects = response.data
+            info('Success', 'Projects fetched successfully')
+            this.loading = false
+          } else {
+            console.error('Failed to fetch projects:', response.message)
+            error('Error', 'Failed to fetch projects')
+            this.loading = false
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch projects:', error)
           error('Error', 'Failed to fetch projects')
           this.loading = false
-        }
-      })
-      .catch(error => {
-        console.error('Failed to fetch projects:', error)
-        error('Error', 'Failed to fetch projects')
-        this.loading = false
-      })
+        })
+    } else {
+      getProjects()
+        .then(response => {
+          if (response.success) {
+            this.projects = response.data
+            info('Success', 'Projects fetched successfully')
+            this.loading = false
+          } else {
+            console.error('Failed to fetch projects:', response.message)
+            error('Error', 'Failed to fetch projects')
+            this.loading = false
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch projects:', error)
+          error('Error', 'Failed to fetch projects')
+          this.loading = false
+        })
+    }
   },
   methods: {
     confirmDelete(project) {
       if (confirm('Are you sure you wish to delete this Project?')) {
-        this.deleteProject(project.id);
+        this.deleteProject(project.id)
       }
     },
     async deleteProject(projectId) {
       try {
         const response = await deleteProject(projectId)
         if (response.success) {
-          this.projects = this.projects.filter(project => project.id !== projectId)
+          this.projects = this.projects.filter(
+            project => project.id !== projectId,
+          )
           success('Success', 'Project deleted successfully')
         } else {
           error('Error', response.message)

@@ -21,15 +21,9 @@
         />
         <template v-if="canEdit && milestones.length > 0">
           /
-          <Select
-            v-model="selectedTeam"
-            :options="teams"
-            optionLabel="team_name"
-            optionValue="id"
-            :defaultValue="selectedTeam.id"
-            @update:modelValue="handleTeamChange"
-            class="w-full md:w-56 custom-select"
-          />
+          <Select v-model="selectedTeam" :options="teams" optionLabel="team_name" optionValue="id"
+            :defaultValue="selectedTeam.id" @update:modelValue="handleTeamChange"
+            class="w-full md:w-56 custom-select" />
         </template>
       </nav>
 
@@ -58,6 +52,13 @@
 
       <!-- Milestone Details -->
       <div v-else>
+        <div class="flex justify-end mb-5">
+        <!-- Github Button -->
+        <button ref="githubButton" @click="loginWithGithub"
+          class="bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200">
+          Link GitHub
+        </button>
+      </div>
         <!-- Header -->
         <div class="group flex items-center justify-between">
           <div>
@@ -228,68 +229,39 @@
               </div>
             </div>
           </div>
-
-          <!-- GitHub Tracker Section -->
-          <div class="bg-white shadow-md rounded-lg p-5">
-            <h2 class="text-black text-lg font-bold mb-3">
-              GitHub Tracker - {{ selectedMilestone.title }}
-            </h2>
-            <ul>
-              <li class="mb-3">
-                <span class="text-blue-500">JIRA-5677 Google OAuth</span>
-                <p class="text-gray-600 text-sm">
-                  @student.email closed this issue Oct 1, 3:33PM
-                </p>
-              </li>
-              <li class="mb-3">
-                <span class="text-blue-500"
-                  >JIRA-Issue-5902 Google OAuth Login Bug</span
-                >
-                <p class="text-gray-600 text-sm">
-                  @student.email closed this issue Oct 1, 3:33PM
-                </p>
-              </li>
-            </ul>
-          </div>
         </div>
         <!-- Rubrics Section -->
 
-        <!-- Modal for Rubrics -->
-        <div
-          v-if="showRubricsModal"
-          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        >
-          <div class="bg-white p-6 rounded-lg w-1/3 shadow-lg">
-            <h3 class="text-lg font-bold mb-4">
-              {{ isEditingRubrics ? 'Edit Rubrics' : 'Add Rubrics' }}
-            </h3>
-            <form @submit.prevent="saveRubrics">
-              <div class="mb-4">
-                <label for="rubrics" class="block font-medium text-gray-700"
-                  >Rubrics</label
-                >
-                <textarea
-                  v-model="editedRubrics"
-                  id="rubrics"
-                  class="w-full border border-gray-300 rounded p-2"
-                ></textarea>
-              </div>
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeRubricsModal"
-                  class="bg-gray-300 text-gray-700 py-2 px-4 rounded mr-2 hover:bg-gray-400 focus:outline-none"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+        <!-- GitHub Tracker Section -->
+        <div class="bg-white shadow-md rounded-lg p-5">
+          <h2 class="text-black text-lg font-bold mb-3">
+            GitHub Tracker - {{ selectedMilestone.title }}
+          </h2>
+          <div v-if="isGitHubLinked">
+            <p style="color: black;">Chosen Repository:</p>
+            <select v-model="selectedRepo" @change="handleRepoChange" class="w-full md:w-56 custom-select">
+              <option v-for="repo in repos" :key="repo" :value="repo">{{ repo }}</option>
+            </select>
+            <div v-if="isLoading" class="pt-5">
+              <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" fill="transparent"
+                animationDuration=".5s" aria-label="Custom ProgressSpinner" />
+            </div>
+            <div v-if="commits.length > 0" class="mt-5 commits-container">
+              <h3 class="text-black text-md font-bold mb-3">Commits:</h3>
+              <ul>
+                <li v-for="commit in commits" :key="commit.sha" class="mb-2">
+                  <a :href="commit.url" target="_blank" class="hover:text-blue-600 text-black"
+                    style="text-decoration: underline">Visit Commit URL</a>
+                  <p style="color: black;"><strong>Message:</strong> {{ commit.message.length > 150 ?
+                    commit.message.slice(0, 149) + "..." : commit.message }}</p>
+                  <p style="color: black;"><strong>Author:</strong> {{ commit.author }}</p>
+                  <p style="color: black;"><strong>Date:</strong> {{ new Date(commit.date).toLocaleString() }}</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div v-else>
+            <p style="color: black;">Please link your GitHub account to view repositories.</p>
           </div>
         </div>
         <!-- Feedback Section -->
@@ -303,14 +275,44 @@
           ref="feedbacksComponent"
         />
       </div>
+      <!-- Rubrics Section -->
+
+      <!-- Modal for Rubrics -->
+      <div v-if="showRubricsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg w-1/3 shadow-lg">
+          <h3 class="text-lg font-bold mb-4">
+            {{ isEditingRubrics ? 'Edit Rubrics' : 'Add Rubrics' }}
+          </h3>
+          <form @submit.prevent="saveRubrics">
+            <div class="mb-4">
+              <label for="rubrics" class="block font-medium text-gray-700">Rubrics</label>
+              <textarea v-model="editedRubrics" id="rubrics"
+                class="w-full border border-gray-300 rounded p-2"></textarea>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" @click="closeRubricsModal"
+                class="bg-gray-300 text-gray-700 py-2 px-4 rounded mr-2 hover:bg-gray-400 focus:outline-none">
+                Cancel
+              </button>
+              <button type="submit"
+                class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none">
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
   </div>
 </template>
 
 <script>
+import ProgressSpinner from 'primevue/progressspinner';
 import Feedbacks from './Feedbacks.vue'
 import { getProjectMilestones, updateMilestone, deleteMilestone } from '../api/milestone'
 import { getProjectTeams } from '../api/team'
+import { getGithubRepos, getGithubCommits } from '../api/github'
+
 import {
   getSubmission,
   createSubmission,
@@ -328,6 +330,7 @@ export default {
     Feedbacks,
     // eslint-disable-next-line vue/no-reserved-component-names
     Select,
+    ProgressSpinner
   },
   data() {
     return {
@@ -335,7 +338,12 @@ export default {
       editingDescription: false,
       editedHeading: '',
       editedDescription: '',
-      isMilestoneSubmitted: true, // Example state
+      isGitHubLinked: false,
+      repos: [],
+      selectedRepo: '',
+      commits: [],
+      isLoading: false,
+      isMilestoneSubmitted: true,
       showPDF: false, // Controls the visibility of the PDF modal
       pdfURL: null, // URL for the fetched PDF
       deadline: '2024-12-07T07:22:04.216+00:00',
@@ -365,12 +373,12 @@ export default {
       return this.selectedProjectName;
     },
     formattedDeadline() {
-      if (!this.selectedMilestone.due_date) return 'No deadline';
-      const date = new Date(this.selectedMilestone.due_date);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
+      if (!this.selectedMilestone.due_date) return 'No deadline'
+      const date = new Date(this.selectedMilestone.due_date)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
     },
   },
   // eslint-disable-next-line no-dupe-keys
@@ -384,6 +392,8 @@ export default {
     } else {
       this.selectNearestUpcomingMilestone();
     }
+    await this.fetchGithubRepos()
+    this.checkGithubLogin()
     if (this.selectedMilestone.id && this.selectedTeam.id) {
       this.$refs.feedbacksComponent.fetchFeedbacks()
       await this.fetchSubmissionStatus()
@@ -391,6 +401,42 @@ export default {
     this.checkDeadline()
   },
   methods: {
+    // Method to handle GitHub login redirect,
+    loginWithGithub() {
+      // Redirect to the backend GitHub login route to initiate OAuth flow
+      window.location.href = import.meta.env.VITE_SERVER_BASE_URL + '/github/' + this.selectedTeam['id'] + '/login'; // Adjust if needed
+    },
+    checkGithubLogin() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('githubLoginSuccess') || this.repos.length > 0) {
+        const githubButton = this.$refs.githubButton;
+        githubButton.style.backgroundColor = 'green';
+        githubButton.disabled = true;
+        githubButton.innerText = 'GitHub Linked';
+        this.isGitHubLinked = true;
+        this.fetchGithubRepos(); // Fetch repos if GitHub is linked
+      }
+    },
+    async fetchGithubRepos() {
+      try {
+        const response = await getGithubRepos(this.selectedTeam['id']);
+        this.repos = response.data.repos;
+      } catch (error) {
+        console.error('Error fetching GitHub repositories:', error);
+      }
+    },
+    async handleRepoChange() {
+      console.log('Selected Repo:', this.selectedRepo);
+      this.isLoading = true;
+      // Handle repo change logic here
+      try {
+        const response = await getGithubCommits(this.selectedTeam['id'], this.selectedRepo);
+        this.commits = response['commits'];
+      } catch (error) {
+        console.error('Error fetching GitHub repositories:', error);
+      }
+      this.isLoading = false;
+    },
     async fetchMilestones() {
       try {
         const milestones = await getProjectMilestones(
@@ -419,13 +465,13 @@ export default {
           console.log('!!!! dewgwe')
           this.teams = response
         } else if (response && response.team) {
-        console.log('here!!!!!')
+          console.log('here!!!!!')
           this.teams = [response.team]
         } else {
           this.teams = []
         }
         if (this.teams.length > 0) {
-          console.log("kdjwcksdjch")
+          console.log('kdjwcksdjch')
           this.selectedTeam = this.teams[0]
         }
       } catch (error) {
@@ -502,9 +548,9 @@ export default {
         )
         this.selectedMilestone.title = this.editedHeading.trim()
         this.editingHeading = false
-        success("Success", "Milestone title updated successfully")
+        success('Success', 'Milestone title updated successfully')
       } catch (err) {
-        error("Error", "Error updating milestone title")
+        error('Error', 'Error updating milestone title')
         console.error('Error updating milestone title:', err)
       }
     },
@@ -527,9 +573,9 @@ export default {
         )
         this.selectedMilestone.description = this.editedDescription.trim()
         this.editingDescription = false
-        success("Success", "Milestone description updated successfully")
+        success('Success', 'Milestone description updated successfully')
       } catch (err) {
-        error("Error", "Error updating milestone description")
+        error('Error', 'Error updating milestone description')
         console.error('Error updating milestone description:', err)
       }
     },
@@ -561,15 +607,15 @@ export default {
               this.selectedMilestone.id,
               formData,
             )
-            success("Success", "File updated successfully")
+            success('Success', 'File updated successfully')
           } else {
             await createSubmission(formData)
-            success("Success", "File uploaded successfully")
+            success('Success', 'File uploaded successfully')
           }
           await this.fetchSubmissionStatus()
           event.target.value = '' // Reset the file input
         } catch (err) {
-          error("Error", "Error uploading file")
+          error('Error', 'Error uploading file')
           console.error('Error uploading file:', err)
         }
       }
@@ -613,11 +659,11 @@ export default {
           this.selectedMilestone.id,
           formData,
         )
-        success("Success", "Submission deleted successfully")
+        success('Success', 'Submission deleted successfully')
         await this.fetchSubmissionStatus()
         document.querySelector('input[type="file"]').value = '' // Reset the file input
       } catch (err) {
-        error("Error", "Error deleting submission")
+        error('Error', 'Error deleting submission')
         console.error('Error deleting submission:', err)
       }
     },
@@ -678,14 +724,14 @@ export default {
         this.selectedMilestone.rubrics = this.editedRubrics
         this.showRubricsModal = false
         this.isEditingRubrics = false
-        success("Success", "Rubrics saved successfully")
+        success('Success', 'Rubrics saved successfully')
       } catch (err) {
-        error("Error", "Error saving rubrics")
+        error('Error', 'Error saving rubrics')
         console.error('Error saving rubrics:', err)
       }
     },
     closeRubricsModal() {
-      this.editedRubrics = this.selectedMilestone.rubrics; // Reset editedRubrics to current rubrics
+      this.editedRubrics = this.selectedMilestone.rubrics // Reset editedRubrics to current rubrics
       this.showRubricsModal = false
       this.isEditingRubrics = false
     },
@@ -699,7 +745,8 @@ export default {
       try {
         const updatedMilestone = {
           ...this.selectedMilestone,
-          due_date: new Date(this.editedDeadline).toISOString().split('.')[0] + 'Z', // Remove milliseconds and add 'Z'
+          due_date:
+            new Date(this.editedDeadline).toISOString().split('.')[0] + 'Z', // Remove milliseconds and add 'Z'
         }
         await updateMilestone(
           this.selectedMilestone.project,
@@ -711,7 +758,7 @@ export default {
         this.checkDeadline() // Update the deadline status
         success("Success", "Milestone deadline updated successfully")
       } catch (err) {
-        error("Error", "Error updating milestone deadline")
+        error('Error', 'Error updating milestone deadline')
         console.error('Error updating milestone deadline:', err)
       }
     },
@@ -746,7 +793,8 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8); /* Translucent background */
+  background: rgba(0, 0, 0, 0.8);
+  /* Translucent background */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -754,24 +802,45 @@ export default {
 }
 
 .loader {
-  border: 16px solid rgba(243, 243, 243, 0.7); /* Translucent border */
+  border: 16px solid rgba(243, 243, 243, 0.7);
+  /* Translucent border */
   border-radius: 50%;
-  border-top: 16px solid rgba(52, 152, 219, 8); /* Translucent border-top */
+  border-top: 16px solid rgba(52, 152, 219, 0.8);
+  /* Translucent border-top */
   width: 120px;
   height: 120px;
   animation: spin 2s linear infinite;
-  background: rgba(255, 255, 255, 0.8); /* Translucent background */
+  background: rgba(255, 255, 255, 0.8);
+  /* Translucent background */
 }
 
 @keyframes spin {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
+
 .custom-select {
   background-color: rgb(82, 88, 126);
+}
+
+.commits-container {
+  max-height: 200px;
+  /* Set a fixed height */
+  overflow-y: auto;
+  /* Make it scrollable */
+}
+
+.commits-list {
+  list-style-type: none;
+  /* Remove default list styling */
+  padding: 0;
+  /* Remove default padding */
+  margin: 0;
+  /* Remove default margin */
 }
 </style>

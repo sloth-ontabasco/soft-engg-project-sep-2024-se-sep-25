@@ -6,6 +6,7 @@ from flask_restful import Api
 import src.models
 from src.config import CI, PORT, Config, LocalDevConfig
 from src.setup import setup_api, setup_auth
+import logging
 
 app, api = None, None
 
@@ -14,7 +15,7 @@ def setup_app() -> Flask:
     app = Flask(__name__)
     cors = CORS(
         app=app,
-        resources={r"/api/*": {"origins": "http://localhost:5173"}},
+        resources={r"/api/*": {"origins": ["http://localhost:5173","https://staging.d280xoh0le8k1m.amplifyapp.com","https://kq3n548nd6.execute-api.ap-south-1.amazonaws.com"]}},
         supports_credentials=True,
     )
     limiter = Limiter(
@@ -42,3 +43,8 @@ if __name__ == "__main__":
         app.run(port=None, debug=False)
     else:
         app.run(port=8081, debug=True)
+
+if __name__ != "__main__":
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)

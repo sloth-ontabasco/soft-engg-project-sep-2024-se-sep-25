@@ -1,9 +1,13 @@
 <template>
   <div class="p-4">
-    <h1 class="text-2xl font-bold mb-4">Projects</h1>
-    <Toolbar class="mb-6">
+    <Toolbar class="mb-6" v-if="$store.state.user.role !== 'student'">
       <template #start>
-        <Button label="New" icon="pi pi-plus" class="mr-2" @click="openNew" />
+        <Button
+          label="New"
+          icon="pi pi-plus"
+          class="mr-2"
+          @click="openNew"
+        />
       </template>
 
       <template #end>
@@ -168,6 +172,7 @@
       <Column>
         <template #body="{ data }">
           <Button
+            v-if="$store.state.user.role !== 'student'"
             icon="pi pi-pencil"
             class="p-button-secondary"
             rounded
@@ -178,6 +183,7 @@
       <Column>
         <template #body="{ data }">
           <Button
+            v-if="$store.state.user.role !== 'student'"
             icon="pi pi-trash"
             class="p-button-warning"
             rounded

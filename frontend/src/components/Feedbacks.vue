@@ -6,6 +6,8 @@
         v-if="canEdit"
         @click="showModal = true"
         class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none flex items-center"
+        :disabled="!hasSubmission"
+        :class="{ 'opacity-50 hover:bg-blue-500': !hasSubmission }"
       >
         <i class="fa fa-comment-dots mr-2"></i> Post
       </button>
@@ -107,6 +109,10 @@ export default {
     },
     selectedTeam: {
       type: Object,
+      required: true
+    },
+    hasSubmission: {
+      type: Boolean,
       required: true
     }
   },

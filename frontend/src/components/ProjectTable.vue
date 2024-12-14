@@ -189,9 +189,7 @@
       <Column v-if="allowView" class="w-24 !text-end">
         <template #body="{ data }">
           <Button
-            @click="
-              () => $router.push(`/project/${data.id}/milestonesubmission`)
-            "
+            @click="viewProject(data)"
             icon="pi pi-search"
             class="p-button-secondary"
             rounded
@@ -398,6 +396,10 @@ export default {
     },
     formatDate(date) {
       return formatDate(date)
+    },
+    viewProject(project) {
+      this.$store.commit('setSelectedProjectName', project.title);
+      this.$router.push(`/project/${project.id}/milestonesubmission`);
     },
   },
 }

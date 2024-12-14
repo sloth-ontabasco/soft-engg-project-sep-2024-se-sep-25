@@ -79,6 +79,7 @@
 
   <script>
   import { createMilestone } from '../api/milestone'
+  import { success, error } from '../utils/toast'
 
   export default {
     data() {
@@ -111,12 +112,12 @@
             description: this.form.description,
             due_date: formattedDeadline,
           });
-          alert("Milestone created successfully!");
+          success("Success", "Milestone created successfully!");
           this.$store.commit('setSelectedMilestoneId', response.data.id);
           this.$router.push({ name: 'Milestones', params: { projectId } });
-        } catch (error) {
-          console.error("Error creating milestone:", error);
-          alert("Failed to create milestone.");
+        } catch (err) {
+          console.error("Error creating milestone:", err);
+          error("Error", "Failed to create milestone.");
         }
       },
       cancelCreation() {

@@ -41,6 +41,13 @@
         >
           Add Milestone
         </button>
+        <button
+          v-if="milestones.length > 0"
+          @click="confirmDeleteMilestone"
+          class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Delete Milestone
+        </button>
       </div>
 
       <!-- No Milestones Message for Instructor -->
@@ -704,27 +711,31 @@ export default {
         )
         this.selectedMilestone.due_date = updatedMilestone.due_date
         this.editingDeadline = false
+        this.checkDeadline() // Update the deadline status
         success("Success", "Milestone deadline updated successfully")
       } catch (err) {
         error("Error", "Error updating milestone deadline")
         console.error('Error updating milestone deadline:', err)
       }
     },
-    async deleteMilestone() {
+    confirmDeleteMilestone() {
       if (confirm(`Are you sure you want to delete "${this.selectedMilestone.title}"?`)) {
-        try {
-          const projectId = this.$route.params.projectId;
-          const milestoneId = this.selectedMilestone.id;
-          await deleteMilestone(projectId, milestoneId);
-          success("Success", "Milestone deleted successfully!");
-          await this.fetchMilestones(); // Fetch the updated list of milestones
-          this.selectNearestUpcomingMilestone(); // Select the default (latest upcoming) milestone
-          this.$refs.feedbacksComponent.fetchFeedbacks(); // Refresh feedbacks
-          await this.fetchSubmissionStatus(); // Refresh submission status
-        } catch (error) {
-          console.error("Error deleting milestone:", error);
-          alert("Failed to delete milestone.");
-        }
+        this.deleteMilestone();
+      }
+    },
+    async deleteMilestone() {
+      try {
+        const projectId = this.$route.params.projectId;
+        const milestoneId = this.selectedMilestone.id;
+        await deleteMilestone(projectId, milestoneId);
+        success("Success", "Milestone deleted successfully!");
+        await this.fetchMilestones(); // Fetch the updated list of milestones
+        this.selectNearestUpcomingMilestone(); // Select the default (latest upcoming) milestone
+        this.$refs.feedbacksComponent.fetchFeedbacks(); // Refresh feedbacks
+        await this.fetchSubmissionStatus(); // Refresh submission status
+      } catch (error) {
+        console.error("Error deleting milestone:", error);
+        error("Error", "Failed to delete milestone.");
       }
     },
   },
